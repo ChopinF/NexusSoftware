@@ -1,3 +1,4 @@
+# Table of contents
 <!--toc:start-->
 - [Tabele](#tabele)
 - [Descriere tabele](#descriere-tabele)
@@ -7,7 +8,6 @@
   - [Review](#review)
   - [Notification](#notification)
 <!--toc:end-->
-
 # Tabele
 
 - *User*
@@ -15,10 +15,6 @@
 - *Order*
 - *Review*
 - *Notification*
-
-1) Login / Register
-
-2) Main page - filtrare, paginare de produse
 
 # Descriere tabele
 
