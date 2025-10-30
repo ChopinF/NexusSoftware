@@ -1,7 +1,7 @@
+# Table of contents
 <!--toc:start-->
 - [Functionalitati](#functionalitati)
 <!--toc:end-->
-
 # Functionalitati
 
 1) authentificare
