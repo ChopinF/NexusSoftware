@@ -1,6 +1,6 @@
 # Table of contents
 <!--toc:start-->
-- [API](#you-can-found-API-endpoints-in-api.md)
+- [API](#you-can-find-api-endpoints-in-api.md)
 - [Tehnologii](#tehnologii)
 - [How to run](#how-to-run)
 - [Tabele](#tabele)
@@ -11,7 +11,7 @@
   - [Review](#review)
   - [Notification](#notification)
 <!--toc:end-->
-# You can found API endpoints in api.md
+# You can find API endpoints in api.md
 
 # Tehnologii
 
