@@ -1,0 +1,41 @@
+*.log
+.env
+
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.*.local
+
+# SQLite database
+*.db
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+
+# Build / temp / cache
+dist/
+build/
+tmp/
+temp/
+.cache/
+coverage/
+
+# Logs
+logs/
+*.log
+
+# OS / Editor junk
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Optional: ignore local API docs if auto-generated
+api.md
