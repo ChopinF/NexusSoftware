@@ -37,5 +37,3 @@ Thumbs.db
 .vscode/
 *.swp
 
-# Optional: ignore local API docs if auto-generated
-api.md
