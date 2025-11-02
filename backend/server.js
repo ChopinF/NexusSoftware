@@ -1,5 +1,4 @@
 import express from "express";
-import crypto from "crypto";
 import { v4 as uuid } from "uuid";
 import { db, run, get, all, migrate } from "./db.js";
 import dotenv from "dotenv";
@@ -208,18 +207,6 @@ app.post('/register', async (req, res, next) => {
     });
   } catch (e) {
     next(e);
-  }
-})
-
-app.post('/register', async (req, res, next) => {
-  try {
-    const { name, email, password, role = Roles.Untrusted, tara, oras } = req.body;
-    assert(name && email && password, "name, email, password sunt obligatorii");
-    assert(Object.values(Roles).includes(role), "role invalid");
-    assert(Countries.includes(tara), "tara invalida");
-    assert(Cities[tara]?.includes(oras), "oras invalid pentru tara");
-  } catch (e) {
-
   }
 })
 
