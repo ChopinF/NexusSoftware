@@ -6,10 +6,19 @@ import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import OpenAI from "openai";
+import cors from "cors";
 
 dotenv.config();
 
 const app = express();
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 const openai = new OpenAI({
@@ -232,6 +241,36 @@ app.post("/register", async (req, res, next) => {
       token,
       user: { id, name, email, role, tara, oras },
     });
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.get("/me", async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Missing or invalid token" });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    let payload;
+    try {
+      payload = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
+
+    const user = await get(`SELECT id, name, email, role, tara, oras FROM users WHERE id = ?`, [
+      payload.sub,
+    ]);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    return res.status(200).json({ user });
   } catch (e) {
     next(e);
   }

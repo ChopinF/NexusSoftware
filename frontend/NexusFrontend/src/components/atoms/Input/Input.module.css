@@ -1,0 +1,23 @@
+.inputBase {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  line-height: 1.5;
+  transition: border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
+}
+
+.inputBase:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  border-color: #6366f1;
+  
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05), 0 0 0 2px #6366f1;
+}
+
+.inputBase:disabled {
+  background-color: #f9fafb;
+  cursor: not-allowed;
+  border-color: #e5e7eb; 
+}

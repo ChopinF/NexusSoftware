@@ -1,0 +1,12 @@
+.layoutWrapper {
+  display: flex;
+  flex-direction: column;
+  background-color: #f9fafb;
+}
+
+.contentArea {
+  flex-grow: 1;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}

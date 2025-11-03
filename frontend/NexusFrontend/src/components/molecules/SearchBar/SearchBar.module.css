@@ -1,0 +1,17 @@
+.searchBarContainer {
+  display: flex;
+  width: 100%;
+  max-width: 500px;
+}
+
+.searchInput {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: none;
+  margin-right: 10px;
+}
+
+.searchButton {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
