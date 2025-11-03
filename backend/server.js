@@ -222,6 +222,140 @@ app.get('/products', async (req, res, next) => {
   }
 })
 
+
+const products = await all(`SELECT id, title FROM products`);
+const users = await all(`SELECT id, email FROM users`);
+
+const byTitle = Object.fromEntries(products.map(p => [p.title, p.id]));
+const byUserEmail = Object.fromEntries(users.map(u => [u.email, u.id]));
+
+const demoReviews = [
+    {
+        productTitle: "Carte JS pentru Începători",
+        userEmail: "b@gmail.com",
+        rating: 5,
+        comment: "Excelentă pentru începători, explică clar conceptele!",
+    },
+    {
+        productTitle: "Carte JS pentru Începători",
+        userEmail: "a@yahoo.com",
+        rating: 4,
+        comment: "Utilă, dar putea avea mai multe exemple practice.",
+    },
+    {
+        productTitle: "Mouse Office",
+        userEmail: "b@gmail.com",
+        rating: 4,
+        comment: "Funcționează bine, raport calitate-preț corect.",
+    },
+    {
+        productTitle: "Pernă decorativă",
+        userEmail: "b@gmail.com",
+        rating: 5,
+        comment: "Foarte moale și arată exact ca în poze.",
+    }
+];
+
+for (const r of demoReviews) {
+    const produsId = byTitle[r.productTitle];
+    const userId = byUserEmail[r.userEmail];
+
+    if (!produsId || !userId) {
+        console.warn(`[seed] nu pot crea review pt '${r.productTitle}' / ${r.userEmail}`);
+        continue;
+    }
+
+    const exists = await get(
+        `SELECT 1 AS ok FROM reviews WHERE produs = ? AND user = ?`,
+        [produsId, userId]
+    );
+    if (exists) {
+        console.log(`[seed] review deja există pentru ${r.userEmail} -> ${r.productTitle}`);
+        continue;
+    }
+
+    const rid = uuid();
+    await run(
+        `INSERT INTO reviews (id, produs, user, rating, comment)
+       VALUES (?, ?, ?, ?, ?)`,
+        [rid, produsId, userId, r.rating, r.comment]
+    );
+    console.log(`[seed] created review '${r.comment.slice(0, 30)}...' pentru ${r.productTitle}`);
+}
+
+
+app.get('/reviews', async (req, res, next) => {
+    log(`Got into /reviews`)
+    try {
+        const rows = await all('SELECT * FROM reviews');
+        res.json(rows);
+    }
+    catch (e) {
+        next(e)
+    }
+})
+
+
+
+
+const demoOrders = [
+    {
+        buyerEmail: "b@gmail.com",
+        pret: 120,
+        status: "pending",
+    },
+    {
+        buyerEmail: "b@gmail.com",
+        pret: 60,
+        status: "paid",
+    },
+    {
+        buyerEmail: "a@yahoo.com",
+        pret: 45,
+        status: "shipped",
+    },
+];
+
+const byUser = Object.fromEntries(users.map(u => [u.email, u.id]));
+
+for (const o of demoOrders) {
+    const buyerId = byUser[o.buyerEmail];
+    if (!buyerId) {
+        console.warn(`[seed] nu pot crea order pentru ${o.buyerEmail}`);
+        continue;
+    }
+
+    const exists = await get(
+        `SELECT 1 AS ok FROM orders WHERE buyer = ? AND pret = ? AND status = ?`,
+        [buyerId, o.pret, o.status]
+    );
+    if (exists) {
+        console.log(`[seed] order deja există pentru ${o.buyerEmail} cu status ${o.status}`);
+        continue;
+    }
+
+    const oid = uuid();
+    await run(
+        `INSERT INTO orders (id, buyer, pret, status) VALUES (?, ?, ?, ?)`,
+        [oid, buyerId, o.pret, o.status]
+    );
+    console.log(`[seed] created order for ${o.buyerEmail} (${o.status})`);
+}
+
+
+app.get('/orders', async (req, res, next) => {
+    log(`Got into /orders`)
+    try {
+        const rows = await all('SELECT * FROM orders');
+        res.json(rows);
+    }
+    catch (e) {
+        next(e)
+    }
+})
+
+
+
 const getResponseGPT = async (system, text, expectJson = false) => {
   const completion = await openai.chat.completions.create({
     model: "gpt-3.5-turbo",
