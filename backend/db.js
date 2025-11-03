@@ -1,3 +1,4 @@
+// db.js
 import sqlite3 from 'sqlite3'
 
 sqlite3.verbose()
@@ -55,7 +56,7 @@ export async function migrate() {
     CREATE TABLE IF NOT EXISTS orders (
       id TEXT PRIMARY KEY,
       buyer TEXT NOT NULL,
-      pret INTEGER NOT NULL CHECK(pret >= 0),
+      price INTEGER NOT NULL CHECK(price >= 0),
       status TEXT NOT NULL CHECK(status IN ('pending','paid','shipped','delivered')),
       FOREIGN KEY(buyer) REFERENCES users(id) ON DELETE CASCADE
     );
