@@ -303,6 +303,188 @@ app.get("/orders", async (_req, res, next) => {
   }
 });
 
+function validateInteger(price){
+    return !isNaN(parseInt(price)) && parseInt(price) > 0;
+}
+
+function validateEmail(email) {
+    //TODO: proper email validation
+    return email && email.length > 0;
+}
+
+function validateProduct(product) {
+    const {title, description, price, sellerEmail, category} = product;
+    let errors = [];
+    if(!title) errors.push("Invalid title");
+    if(!description) errors.push("Invalid description");
+    if(!validateInteger(price)) errors.push("Invalid price");
+    if(!validateEmail(sellerEmail)) errors.push("Invalid seller");
+    if(!category) errors.push("Invalid category");
+    if(errors.length > 0) throw new Error(errors.join("; "));
+}
+
+function validateOrder(order) {
+    const {buyerEmail, price, status} = order;
+    let errors = [];
+    if(!buyerEmail) errors.push("Invalid buyer");
+    if(!validateInteger(price)) errors.push("Invalid price");
+    if(!status) errors.push("Invalid status");
+    if(errors.length > 0) throw new Error(errors.join("; "));
+}
+
+function validateReview(review) {
+    const {productTitle,user,rating,comment} = review;
+    let errors = [];
+    if(!productTitle) errors.push("Invalid product title");
+    if(!user) errors.push("Invalid user");
+    if(!validateInteger(rating)) errors.push("Invalid rating");
+    if(!comment) errors.push("Invalid comment");
+    if(errors.length > 0) throw new Error(errors.join("; "));
+}
+
+function validateNotification(notification) { //TODO: validations to be determined
+    const {user, message, type, is_read, created_at} = notification;
+    let errors = [];
+    if(!user) errors.push("Invalid user id");
+    if(!message) errors.push("Invalid message");
+    if(!type) errors.push("Invalid type");
+    if(!created_at) errors.push("Invalid creation date");
+    if(errors.length > 0) throw new Error(errors.join("; "));
+}
+
+app.post("/product", async (req, res, next) => {
+    try{
+        const product = req.body;
+        validateProduct(product);
+        const added = await run(
+            `INSERT INTO products (id, title, description, price, seller, category) VALUES (?, ?, ?, ?, ?, ?)`,
+            [uuid(), product.title, product.description, parseInt(product.price), product.sellerEmail, product.category],
+        );
+        res.json(added);
+    } catch (e) {
+        next(e);
+    }
+})
+
+app.post("/order", async (req, res, next) => {
+    try{
+        const order = req.body;
+        validateOrder(order);
+        const added = await run(
+            `INSERT INTO orders (id, buyer, price, status) VALUES (?,?,?,?)`,
+            [uuid(), order.buyerEmail, parseInt(order.price), order.status],
+        );
+        res.json(added);
+    } catch (e) {
+        next(e);
+    }
+})
+
+app.post("/review", async (req, res, next) => {
+    try{
+        const review = req.body;
+        validateReview(review);
+        const added = await run(
+            `INSERT INTO reviews (id, produs, user, rating, comment) VALUES (?, ?, ?, ?, ?)`,
+            [uuid(), review.productTitle, review.user, parseInt(review.rating), review.comment],
+        );
+        res.json(added);
+    } catch (e) {
+        next(e);
+    }
+})
+
+app.post("/notification", async (req, res, next) => {
+    try{
+        const notification = req.body;
+        notification.is_read = false; //TODO: to be determined where this is_read comes from
+        validateNotification(notification);
+        const added = await run(
+            `INSERT INTO notifications (id, id_user, message, notifcation_type, is_read, created_at) VALUES (?,?,?,?,?,?)`,
+            [uuid(), notification.user, notification.message, notification.type, notification.is_read, notification.created_at],
+        );
+        res.json(added);
+    } catch (e) {
+        next(e);
+    }
+})
+
+function prepareUpdateStatement(updatedData, table, allowedColumns) {
+    const allowedKeys = Object.keys(updatedData).filter(key => allowedColumns.includes(key));
+    const validKeys = allowedKeys.filter(key => {
+        const value = updatedData[key];
+        return value !== null && value !== undefined && value !== '';
+    });
+    if (validKeys.length === 0) throw new Error("No valid fields provided for update.");
+
+    const setClause = validKeys.map(key => `\`${key}\` = ?`).join(", ");
+    const values = validKeys.map(key => updatedData[key]);
+    const statement = `UPDATE \`${table}\` SET ${setClause} WHERE id = ?`;
+    return { statement, values };
+}
+
+function processBody(body, numericColumns) {
+    let processedBody = {...body};
+    for (const key of Object.keys(processedBody)) {
+        if (numericColumns.includes(key)) {
+            const value = processedBody[key];
+            if (value !== null && value !== undefined && value !== '') processedBody[key] = parseInt(value, 10);
+        }
+    }
+    return processedBody;
+}
+
+app.put("/product/:id", async (req, res, next) => {
+    try {
+        // here the request body is considered to not contain a product id
+        const { id } = req.params;
+        const numericColumns = ['price'];
+        const processedBody = processBody(req.body, numericColumns);
+        const PRODUCT_UPDATABLE_COLUMNS = ['title', 'description', 'price', 'category'];
+        const { updateStatement, updatedValues } = prepareUpdateStatement(processedBody, 'products', PRODUCT_UPDATABLE_COLUMNS);
+        const values = [...updatedValues, id];
+
+        const updated = await run(updateStatement, values);
+        res.json(updated);
+    } catch (e) {
+        next(e);
+    }
+})
+
+app.put("/order/:id", async (req, res, next) => {
+    try{
+        // here the request body is considered to not contain an order id;
+        const { id } = req.params;
+        const numericColumns = ['price'];
+        const processedBody = processBody(req.body, numericColumns);
+        const ORDER_UPDATABLE_COLUMNS = ['buyer', 'price', 'status'];
+        const { updateStatement , updatedValues } = prepareUpdateStatement(processedBody, `orders`, ORDER_UPDATABLE_COLUMNS);
+        const values = [...updatedValues, id];
+
+        const updated = await run(updateStatement, values);
+        res.json(updated);
+    } catch (e) {
+        next(e);
+    }
+})
+
+app.put("/review/:id", async (req, res, next) => {
+    try{
+        // here the request body is considered to not contain a review id;
+        const { id } = req.params;
+        const numericColumns = ['rating'];
+        const processedBody = processBody(req.body, numericColumns);
+        const REVIEW_UPDATABLE_COLUMNS = ['rating', 'comment'];
+        const { updateStatement , updatedValues } = prepareUpdateStatement(processedBody, `reviews`, REVIEW_UPDATABLE_COLUMNS);
+        const values = [...updatedValues, id];
+
+        const updated = await run(updateStatement, values);
+        res.json(updated);
+    } catch (e) {
+        next(e);
+    }
+})
+
 app.post("/crawler", async (req, res, next) => {
   const { text } = req.body;
   try {
