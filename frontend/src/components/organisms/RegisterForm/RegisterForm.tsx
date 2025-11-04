@@ -127,18 +127,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         </FormField>
 
         <SelectInput
-          label="City"
-          name="oras"
-          value={oras}
-          onChange={(e) => setOras(e.target.value)}
-          options={[
-            { value: "București", label: "București" },
-            { value: "Cluj-Napoca", label: "Cluj-Napoca" },
-            { value: "Timișoara", label: "Timișoara" },
-          ]}
-        />
-
-        <SelectInput
           label="Country"
           name="tara"
           value={tara}
@@ -147,6 +135,18 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             { value: "RO", label: "Romania" },
             { value: "BG", label: "Bulgaria" },
             { value: "HU", label: "Hungary" },
+          ]}
+        />
+
+        <SelectInput
+          label="City"
+          name="oras"
+          value={oras}
+          onChange={(e) => setOras(e.target.value)}
+          options={[
+            { value: "București", label: "București" },
+            { value: "Cluj-Napoca", label: "Cluj-Napoca" },
+            { value: "Timișoara", label: "Timișoara" },
           ]}
         />
 

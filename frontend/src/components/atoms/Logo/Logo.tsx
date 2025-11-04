@@ -9,7 +9,7 @@ export const Logo = ({ size = "md", className = "" }) => {
 
   return (
     <div className={logoClasses.trim()}>
-      Vinted<span className={styles.logoAccent}>Clone</span>
+      Nexus<span className={styles.logoAccent}>Software</span>
     </div>
   );
 };

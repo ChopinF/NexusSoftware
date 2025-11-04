@@ -1,3 +1,6 @@
+import styles from "./SelectInput.module.css";
+import React from "react";
+
 interface SelectOption {
   value: string;
   label: string;
@@ -20,12 +23,9 @@ export const SelectInput = ({
   disabled?: boolean;
   defaultOptionLabel?: string;
 }) => (
-  <div className="w-full">
+  <div className={styles.selectWrapper}>
     {label && (
-      <label
-        htmlFor={name}
-        className="block text-sm font-medium text-gray-700 mb-1"
-      >
+      <label htmlFor={name} className={styles.selectLabel}>
         {label}
       </label>
     )}
@@ -35,7 +35,7 @@ export const SelectInput = ({
       value={value}
       onChange={onChange}
       disabled={disabled}
-      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className={styles.selectBase}
     >
       <option value="" disabled>
         {defaultOptionLabel}

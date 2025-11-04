@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { MainTemplate } from "../../templates/MainTemplate/MainTemplate";
 import { ProductCard } from "../../organisms/ProductCard/ProductCard";
+import { Spinner } from "../../atoms/Spinner/Spinner";
 
 interface Product {
   id: string;
@@ -30,7 +31,16 @@ export const HomePage: React.FC = () => {
     <MainTemplate>
       <div>
         {loading ? (
-          <p>Loading...</p>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: "40vh",
+            }}
+          >
+            <Spinner size="lg" />
+          </div>
         ) : (
           products.map((product) => (
             <ProductCard key={product.id} product={product} />
