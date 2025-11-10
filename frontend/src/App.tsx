@@ -5,6 +5,8 @@ import { LoginPage } from "./components/pages/LoginPage/LoginPage";
 import { RegisterPage } from "./components/pages/RegisterPage/RegisterPage";
 import { HomePage } from "./components/pages/HomePage/HomePage";
 import { UserProvider } from "./contexts/UserContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { PostAdPage } from "./components/pages/PostAdPage/PostAdPage";
 
 const App: React.FC = () => {
   return (
@@ -13,6 +15,12 @@ const App: React.FC = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+
+        <Route element={<ProtectedRoute />}>
+          <Route path="/post-ad" element={<PostAdPage />} />
+          {/* Other routes to be added - ex: /profile, /my-orders */}
+        </Route>
+        
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </UserProvider>

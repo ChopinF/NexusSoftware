@@ -38,7 +38,7 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
         }}
         onSignOutClick={handleSignOut}
         onPostAdClick={() => {
-          /* navigate to /post-ad */
+          navigate("/post-ad");
         }}
         onSearch={(query) => {
           console.log("Search query:", query);
