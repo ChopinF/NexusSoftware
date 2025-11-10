@@ -34,6 +34,30 @@ const assert = (cond, msg, code = 400) => {
   }
 };
 
+// --- ADAUGĂ ACESTE FUNCȚII ---
+const authenticate = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Missing or invalid token" });
+  }
+  const token = authHeader.split(" ")[1];
+  
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = payload; // Atașează payload-ul (ex: { sub: 'user-guid', role: 'Trusted' })
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+};
+
+const requireTrusted = (req, res, next) => {
+  if (req.user.role !== "Trusted") {
+    return res.status(403).json({ error: "Forbidden: Only Trusted sellers can post products." });
+  }
+  next();
+};
+
 // valori enums
 const Roles = Object.freeze({ Trusted: "Trusted", Untrusted: "Untrusted" });
 const Countries = Object.freeze(["RO", "DE", "FR", "UK"]);
@@ -396,7 +420,7 @@ function validateProduct(product) {
     if(!title) errors.push("Invalid title");
     if(!description) errors.push("Invalid description");
     if(!validateInteger(price)) errors.push("Invalid price");
-    if(!validateEmail(sellerEmail)) errors.push("Invalid seller");
+    //if(!validateEmail(sellerEmail)) errors.push("Invalid seller");
     if(!category) errors.push("Invalid category");
     if(errors.length > 0) throw new Error(errors.join("; "));
 }
@@ -430,15 +454,21 @@ function validateNotification(notification) { //TODO: validations to be determin
     if(errors.length > 0) throw new Error(errors.join("; "));
 }
 
-app.post("/product", async (req, res, next) => {
+app.post("/product", authenticate, requireTrusted, async (req, res, next) => {
     try{
         const product = req.body;
+        const sellerId = req.user.sub;
         validateProduct(product);
-        const added = await run(
+        const newProductId = uuid();
+        
+        await run(
             `INSERT INTO products (id, title, description, price, seller, category) VALUES (?, ?, ?, ?, ?, ?)`,
-            [uuid(), product.title, product.description, parseInt(product.price), product.sellerEmail, product.category],
+            [newProductId, product.title, product.description, parseInt(product.price), sellerId, product.category],
         );
-        res.json(added);
+
+        const newProduct = await get(`SELECT * FROM products WHERE id = ?`, [newProductId]);
+        res.status(201).json(newProduct);
+
     } catch (e) {
         next(e);
     }
