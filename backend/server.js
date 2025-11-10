@@ -285,11 +285,89 @@ app.get("/products", async (_req, res, next) => {
   }
 });
 
+// Get single product by ID
+app.get("/product/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const product = await get(
+      `
+        SELECT 
+          p.id,
+          p.title,
+          p.description,
+          p.price,
+          p.category,
+          u.id AS seller_id,
+          u.name AS seller_name,
+          u.email AS seller_email,
+          u.role AS seller_role,
+          u.tara AS seller_country,
+          u.oras AS seller_city
+        FROM products p
+        INNER JOIN users u ON p.seller = u.id
+        WHERE p.id = ?
+      `,
+      [id]
+    );
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    res.json(product);
+  } catch (e) {
+    console.error("Error fetching product:", e);
+    next(e);
+  }
+});
+
 app.get("/reviews", async (_req, res, next) => {
   try {
     const rows = await all("SELECT * FROM reviews");
     res.json(rows);
   } catch (e) {
+    next(e);
+  }
+});
+
+// Get reviews for a specific product (by product ID)
+app.get("/product/:id/reviews", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    // First verify the product exists
+    const product = await get(`SELECT id, title FROM products WHERE id = ?`, [id]);
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    // Fetch reviews linked to this product ID
+    const reviews = await all(
+      `
+        SELECT 
+          r.id,
+          r.rating,
+          r.comment,
+          u.id AS user_id,
+          u.name AS user_name,
+          u.email AS user_email
+        FROM reviews r
+        INNER JOIN users u ON r.user = u.id
+        WHERE r.produs = ?
+        ORDER BY r.rating DESC
+      `,
+      [id]
+    );
+
+    res.json({
+      product: {
+        id: product.id,
+        title: product.title,
+      },
+      reviews,
+    });
+  } catch (e) {
+    console.error("Error fetching product reviews:", e);
     next(e);
   }
 });
