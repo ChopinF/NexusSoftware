@@ -1,0 +1,16 @@
+/*locatie*/
+.location-atom {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.location-icon {
+    font-size: 1rem;
+}
+
+.location-text {
+    color: #333;
+}

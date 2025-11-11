@@ -7,6 +7,7 @@ import { HomePage } from "./components/pages/HomePage/HomePage";
 import { UserProvider } from "./contexts/UserContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { PostAdPage } from "./components/pages/PostAdPage/PostAdPage";
+import ProductPage from "./components/pages/ProductPage/ProductPage.tsx";
 
 const App: React.FC = () => {
   return (
@@ -15,12 +16,13 @@ const App: React.FC = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+          <Route path="/product/:id" element={<ProductPage/>}/>
 
         <Route element={<ProtectedRoute />}>
           <Route path="/post-ad" element={<PostAdPage />} />
           {/* Other routes to be added - ex: /profile, /my-orders */}
         </Route>
-        
+
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </UserProvider>

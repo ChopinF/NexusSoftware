@@ -1,0 +1,42 @@
+/*seller*/
+.seller-atom {
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    width: fit-content;
+}
+
+.seller-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.seller-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #222;
+}
+
+.trusted-icon {
+    color: #22c55e; /* verde - trusted */
+}
+
+.not-trusted-icon {
+    color: #f97316; /* portocaliu - unverified */
+}
+
+.seller-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.seller-email {
+    font-size: 0.9rem;
+    color: #555;
+}

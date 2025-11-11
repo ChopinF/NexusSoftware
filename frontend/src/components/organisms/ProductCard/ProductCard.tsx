@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styles from "./ProductCard.module.css";
+import type {Product} from "../../../types/Product.ts";
 
 const HeartIcon = () => (
   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -21,35 +22,24 @@ const Link: React.FC<{
   </a>
 );
 
-export interface Product {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  category: string;
-  sellerEmail: string;
-  isFavorited?: boolean;
-  imageUrl?: string;
-  location?: string;
-  postedDate?: string;
-}
+
 
 interface ProductCardProps {
   product: Product;
-  onToggleFavorite?: (productId: string, isFavorited: boolean) => void;
+  onToggleFavorite?: (productId: string, isFavorite: boolean) => void;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
   product,
   onToggleFavorite,
 }) => {
-  const [isFavorited, setIsFavorited] = useState(product.isFavorited);
+  const [isFavorite, setIsFavorited] = useState(product.isFavorite);
 
   const handleFavoriteClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const newFavoriteState = !isFavorited;
+    const newFavoriteState = !isFavorite;
     setIsFavorited(newFavoriteState);
 
     if (onToggleFavorite) {
@@ -70,10 +60,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       <button
         type="button"
         className={`${styles.favoriteButton} ${
-          isFavorited ? styles.favorited : ""
+          isFavorite ? styles.favorited : ""
         }`}
         onClick={handleFavoriteClick}
-        aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
+        aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
       >
         <HeartIcon />
       </button>
@@ -94,10 +84,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         <span className={styles.price}>{formatPrice(product.price)}</span>
         <h3 className={styles.title}>{product.title}</h3>
 
-        <div className={styles.metaWrapper}>
-          <span className={styles.location}>{product.location}</span>
-          <span className={styles.postedDate}>{product.postedDate}</span>
-        </div>
       </div>
     </Link>
   );

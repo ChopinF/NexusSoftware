@@ -1,0 +1,13 @@
+/* Page Container */
+.product-page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 3rem 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .product-page {
+        padding: 2rem 1rem;
+    }
+}

@@ -2,15 +2,7 @@ import React, { useEffect, useState } from "react";
 import { MainTemplate } from "../../templates/MainTemplate/MainTemplate";
 import { ProductCard } from "../../organisms/ProductCard/ProductCard";
 import { Spinner } from "../../atoms/Spinner/Spinner";
-
-interface Product {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  category: string;
-  sellerEmail: string;
-}
+import type { Product } from "../../../types/Product";
 
 export const HomePage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
