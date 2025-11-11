@@ -1,0 +1,33 @@
+.chatFab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+
+  background-color: #4f46e5;
+  color: #ffffff;
+
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  cursor: pointer;
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.chatFab:hover {
+  background-color: #4338ca;
+  transform: scale(1.05);
+}
+
+.chatIcon {
+  width: 1.75rem;
+  height: 1.75rem;
+}

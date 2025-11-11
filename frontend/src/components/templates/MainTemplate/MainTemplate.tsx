@@ -1,9 +1,13 @@
-import React from "react";
+import React, {useState} from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../../organisms/Header/Header";
 import { Footer } from "../../organisms/Footer/Footer";
 import { useUser } from "../../../contexts/UserContext";
 import styles from "./MainTemplate.module.css";
+
+// chatbot imports
+import { ChatFab } from "../../molecules/ChatFab/ChatFab";
+import { ChatWindow } from "../../organisms/ChatWindow/ChatWindow";
 
 interface MainTemplateProps {
   children: React.ReactNode;
@@ -12,6 +16,8 @@ interface MainTemplateProps {
 export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
   const navigate = useNavigate();
   const { user, setUser, setToken } = useUser();
+
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const handleSignOut = async (): Promise<void> => {
     setUser(null);
@@ -49,6 +55,10 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
       />
 
       <main className={styles.contentArea}>{children}</main>
+
+      {/* chatbot components */}
+      {isChatOpen && <ChatWindow onClose={() => setIsChatOpen(false)} />}
+      {!isChatOpen && <ChatFab onClick={() => setIsChatOpen(true)} />}
 
       <Footer />
     </div>
