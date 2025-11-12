@@ -547,12 +547,11 @@ function validateEmail(email) {
 }
 
 function validateProduct(product) {
-    const {title, description, price, sellerEmail, category} = product;
+    const {title, description, price, category} = product; 
     let errors = [];
     if(!title) errors.push("Invalid title");
     if(!description) errors.push("Invalid description");
     if(!validateInteger(price)) errors.push("Invalid price");
-    if(!validateEmail(sellerEmail)) errors.push("Invalid seller");
     if(!category) errors.push("Invalid category");
     if(errors.length > 0) throw new Error(errors.join("; "));
 }
