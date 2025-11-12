@@ -80,7 +80,7 @@ export async function migrate() {
       id TEXT PRIMARY KEY,
       id_user TEXT NOT NULL,
       message TEXT NOT NULL,
-      notifcation_type TEXT NOT NULL CHECK(notifcation_type IN ('order','payment','review','system')),
+      notification_type TEXT NOT NULL CHECK(notification_type IN ('order','payment','review','system')),
       is_read INTEGER NOT NULL DEFAULT 0, -- 0=false, 1=true
       created_at TEXT NOT NULL,
       FOREIGN KEY(id_user) REFERENCES users(id) ON DELETE CASCADE

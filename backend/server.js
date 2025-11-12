@@ -187,6 +187,50 @@ async function seed() {
     );
     console.log(`[seed] created product '${p.title}' pentru seller ${p.sellerEmail}`);
   }
+
+  // notifications demo
+  const demoNotifications = [
+    {
+      userEmail: "a@yahoo.com",
+      message: "Ai primit un review nou de 4 stele pentru 'Mouse Office'!",
+      type: "review",
+      is_read: 0
+    },
+    {
+      userEmail:"b@gmail.com",
+      message: "Comanda ta (#1002) pentru 'Carte JS pentru Începători' a fost expediată.",
+      type: "order",
+      is_read: 0
+    },
+    {
+      userEmail:"a@yahoo.com",
+      message: "Comanda nouă (#1001) plasată de b@gmail.com pentru 'Pernă decorativă'.",
+      type: "order",
+      is_read: 1
+    }];
+
+    for (const n of demoNotifications){
+      const user = byEmail[n.userEmail];
+      if(!user.id){
+        continue;
+      }
+
+      const exists = await get(
+        `SELECT 1 AS ok FROM notifications WHERE id_user = ? AND message = ?`,
+        [user.id,n.message]
+      );
+      if(exists){
+        continue;
+      }
+
+      const nid = uuid();
+      await run(
+      `INSERT INTO notifications (id, id_user, message, notification_type, is_read, created_at) 
+      VALUES (?, ?, ?, ?, ?, datetime('now'))`, 
+      [nid, user.id, n.message, n.type, n.is_read]
+      );
+  
+    }
 }
 
 const getResponseGPT = async (system, text, expectJson = false) => {
@@ -495,8 +539,11 @@ function validateInteger(price){
 }
 
 function validateEmail(email) {
-    //TODO: proper email validation
-    return email && email.length > 0;
+    if(!email || typeof email !== 'string'){
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email.trim());
 }
 
 function validateProduct(product) {
@@ -505,7 +552,7 @@ function validateProduct(product) {
     if(!title) errors.push("Invalid title");
     if(!description) errors.push("Invalid description");
     if(!validateInteger(price)) errors.push("Invalid price");
-    //if(!validateEmail(sellerEmail)) errors.push("Invalid seller");
+    if(!validateEmail(sellerEmail)) errors.push("Invalid seller");
     if(!category) errors.push("Invalid category");
     if(errors.length > 0) throw new Error(errors.join("; "));
 }
@@ -602,13 +649,75 @@ app.post("/review", async (req, res, next) => {
     }
 })
 
+app.get("/my-notifications", authenticate,async (req,res,next) =>{
+  try{
+    const userId = req.user.sub;
+
+    const notifications = await all(
+      `SELECT id, id_user, message, notification_type, is_read, created_at
+      FROM notifications
+      WHERE id_user = ?
+      ORDER BY created_at DESC`,
+      [userId]
+    );
+    res.json(notifications);
+  }
+  catch(e){
+    next(e);
+  }
+});
+
+app.put("/notification/:id/read",authenticate,async (req,res,next) =>{
+  try{
+    const notificationId = req.params.id;
+    const userId = req.user.sub;
+
+    const updated = await run(
+      `UPDATE notifications
+      SET is_read = 1
+      WHERE id = ? AND id_user = ?`,
+      [notificationId,userId]
+    );
+
+    if(updated.changes === 0){
+      return res.status(404).json({error: "Notification not found or you do not have permission to update it."});
+    }
+
+    res.status(200).json({message: "Notification marked as read"});
+  }
+  catch(e){
+    next(e);
+  }
+});
+
+app.put("/my-notifications/read-all",authenticate, async(req,res,next) => {
+  try{
+    const userId = req.user.sub;
+
+    const updated = await run(
+      `UPDATE notifications
+      SET is_read = 1
+      WHERE id_user = ? AND is_read = 0`,
+      [userId]
+    );
+
+    res.status(200).json({
+      message: "All unread notifications marked as read.",
+      count: updated.changes
+    });
+  }
+  catch(e){
+    next(e);
+  }
+});
+
 app.post("/notification", async (req, res, next) => {
     try{
         const notification = req.body;
-        notification.is_read = false; //TODO: to be determined where this is_read comes from
+        notification.is_read = false;
         validateNotification(notification);
         const added = await run(
-            `INSERT INTO notifications (id, id_user, message, notifcation_type, is_read, created_at) VALUES (?,?,?,?,?,?)`,
+            `INSERT INTO notifications (id, id_user, message, notification_type, is_read, created_at) VALUES (?,?,?,?,?,?)`,
             [uuid(), notification.user, notification.message, notification.type, notification.is_read, notification.created_at],
         );
         res.json(added);
@@ -616,6 +725,28 @@ app.post("/notification", async (req, res, next) => {
         next(e);
     }
 })
+
+app.delete("/notification/:id",authenticate, async (req,res,next) =>{
+  try{
+    const notificationId = req.params.id;
+    const userId = req.user.sub;
+
+    const deleted = await run(
+      `DELETE FROM notifications
+      WHERE id=? and id_user= ?`,
+      [notificationId,userId]
+    );
+
+    if(deleted.changes === 0){
+      return res.status(404).json({error: "Notification not found or you do not have permission to delete it."});
+    }
+
+    return res.status(200).json({message: "Notification deleted successfully"});
+  }
+  catch(e){
+    next(e);
+  }
+});
 
 function prepareUpdateStatement(updatedData, table, allowedColumns) {
     const allowedKeys = Object.keys(updatedData).filter(key => allowedColumns.includes(key));
