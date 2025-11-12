@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import styles from "./Header.module.css";
 
 import { Logo } from "../../atoms/Logo/Logo";
@@ -6,6 +6,13 @@ import { Button } from "../../atoms/Button/Button";
 import { Avatar } from "../../atoms/Avatar/Avatar";
 import { NavItem } from "../../molecules/NavItem/NavItem";
 import { SearchBar } from "../../molecules/SearchBar/SearchBar";
+import type {Product} from "../../../types/Product.ts";
+import { useCategory } from "../../../contexts/CategoryContext";
+
+
+
+
+
 
 interface User {
   name: string;
@@ -38,9 +45,29 @@ export const Header: React.FC<HeaderProps> = ({
     const first = names[0]?.[0] || "";
     const last = names[names.length - 1]?.[0] || "";
     return `${first}${last}`.toUpperCase();
+
   };
 
+
+  const { selectedCategory, setSelectedCategory, setSearchQuery } = useCategory();
+  const [categories, setCategories] = useState<string[]>([]);
+
+  React.useEffect(() => {
+    fetch("http://localhost:3000/categories")
+        .then((res) => res.json())
+        .then((data: string[]) => {
+          setCategories(data);
+        })
+        .catch(console.error);
+  }, []);
+
+
+
+
+
+
   return (
+
     <header className={styles.headerContainer}>
       <div className={styles.headerLeft}>
         <a href="/" aria-label="Homepage">
@@ -65,8 +92,16 @@ export const Header: React.FC<HeaderProps> = ({
         </nav>
 
         <div className={styles.headerSearch}>
-          <SearchBar placeholder="Search for items..." onSearch={onSearch} />
+          <SearchBar
+              placeholder="Search for items..."
+              onSearch={onSearch}
+              categories={categories}
+          />
+
         </div>
+
+
+
       </div>
 
       <div className={styles.headerRight}>

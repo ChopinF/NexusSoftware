@@ -7,11 +7,13 @@ import { HomePage } from "./components/pages/HomePage/HomePage";
 import { UserProvider } from "./contexts/UserContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { PostAdPage } from "./components/pages/PostAdPage/PostAdPage";
+import { CategoryProvider } from "./contexts/CategoryContext";
 import ProductPage from "./components/pages/ProductPage/ProductPage.tsx";
 
 const App: React.FC = () => {
   return (
     <UserProvider>
+      <CategoryProvider>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
@@ -25,6 +27,7 @@ const App: React.FC = () => {
 
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
+      </CategoryProvider>
     </UserProvider>
   );
 };
