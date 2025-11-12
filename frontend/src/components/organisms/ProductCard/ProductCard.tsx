@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import styles from "./ProductCard.module.css";
 import type {Product} from "../../../types/Product.ts";
 
+const API_URL = "http://localhost:3000";
+
 const HeartIcon = () => (
   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path
@@ -21,8 +23,6 @@ const Link: React.FC<{
     {children}
   </a>
 );
-
-
 
 interface ProductCardProps {
   product: Product;
@@ -55,6 +55,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     }).format(price);
   };
 
+  const imageUrl = product.imageUrl 
+    ? `${API_URL}${product.imageUrl}`
+    : "";
+
   return (
     <Link href={`/product/${product.id}`} className={styles.cardLink}>
       <button
@@ -70,7 +74,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
       <div className={styles.imageWrapper}>
         <img
-          src={product.imageUrl}
+          src={imageUrl}
           alt={product.title}
           className={styles.productImage}
           onError={(e) =>

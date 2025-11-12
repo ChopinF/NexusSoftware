@@ -1,9 +1,7 @@
-// frontend/src/components/organisms/PostAdForm/PostAdForm.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../../contexts/UserContext";
 
-// Importă componentele atomice/moleculare
 import { Input } from "../../atoms/Input/Input";
 import { Textarea } from "../../atoms/Textarea/Textarea";
 import { SelectInput } from "../../atoms/SelectInput/SelectInput";
@@ -11,11 +9,8 @@ import { Button } from "../../atoms/Button/Button";
 import { Spinner } from "../../atoms/Spinner/Spinner";
 import { FormField } from "../../molecules/FormField/FormField";
 import { AlertMessage } from "../../molecules/AlertMessage/AlertMessage";
-
-// Refolosește stilurile din RegisterForm pentru consistență
 import styles from "../RegisterForm/RegisterForm.module.css";
 
-// Categoriile trebuie să corespundă cu cele din backend (db.js)
 const categories = [
   { value: "Electronics", label: "Electronics" },
   { value: "Books", label: "Books" },
@@ -32,11 +27,11 @@ export const PostAdForm: React.FC = () => {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("");
+    const [imageFile, setImageFile] = useState<File | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Verifică dacă utilizatorul are rolul 'Trusted' (conform logicii din backend)
   if (user?.role !== "Trusted") {
     return (
       <AlertMessage
@@ -45,6 +40,14 @@ export const PostAdForm: React.FC = () => {
       />
     );
   }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0]);
+    } else {
+      setImageFile(null);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -55,34 +58,42 @@ export const PostAdForm: React.FC = () => {
       return;
     }
 
+    // picture is optional
+    // if (!imageFile) {
+    //   setError("Te rog adaugă o imagine.");
+    //   return;
+    // }
+
     setIsLoading(true);
 
-    try {
-      const res = await fetch("http://localhost:3000/product", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // <-- Trimite token-ul!
-        },
-        body: JSON.stringify({
-          title,
-          description,
-          price: parseInt(price), // Backend-ul așteaptă un număr
-          category,
-        }),
-      });
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("price", price);
+    formData.append("category", category);
+    
+    if (imageFile) {
+      formData.append("image", imageFile); 
+    }
 
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || "A eșuat postarea anunțului.");
-      }
+    try {
+      const res = await fetch("http://localhost:3000/product", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
 
-      // const newProduct = await res.json(); // Opțional, poți folosi 'newProduct'
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "A eșuat postarea anunțului.");
+      }
 
-      // SUCCES!
-      // Redirecționează la pagina principală.
-      // HomePage își va da refresh automat la date (din useEffect-ul său).
-      navigate("/");
+      const newProduct = await res.json();
+      console.log("Produs postat:", newProduct);
+      window.location.assign("/");
+      
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "A apărut o eroare necunoscută.";
@@ -138,6 +149,16 @@ export const PostAdForm: React.FC = () => {
             required
           />
         </FormField>
+
+        <FormField label="Imagine Produs (Opțional)" htmlFor="ad-image">
+          <Input
+            type="file"
+            id="ad-image"
+            accept="image/png, image/jpeg"
+            onChange={handleImageChange}
+            disabled={isLoading}
+          />
+        </FormField>
 
         <SelectInput
           label="Categorie"

@@ -5,6 +5,8 @@ import {useState} from "react";
 import SellerCard from "../../molecules/SellerCard/SellerCard.tsx";
 import "./ProductContent.css"
 
+const API_URL = "http://localhost:3000";
+
 const ProductHeader: React.FC<{
     title: string;
     category: string;
@@ -39,12 +41,16 @@ const ProductDetails: React.FC<{
 const ProductContent: React.FC<{ product: Product }> = ({product}) => {
     const [isFavorite, setIsFavorite] = useState(false);
 
+    const imageUrl = product.imageUrl 
+    ? `${API_URL}${product.imageUrl}` 
+    : null;
+
     return (
         <div className="product-content">
             <div className="image-column">
                 <div className="product-image">
-                    {product.imageUrl ? (
-                        <img src={product.imageUrl} alt={product.title}/>
+                    {imageUrl ? (
+                        <img src={imageUrl} alt={product.title}/>
                     ) : (
                         <span className="no-image">No Image Available</span>
                     )}

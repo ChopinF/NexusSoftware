@@ -2,24 +2,16 @@ export interface Product {
     id: string;
     title: string;
     description: string;
-    price: number;
     category: string;
-    sellerEmail: string;
-    isFavorite?: boolean;
+    price: number;
     imageUrl?: string;
-}
-
-export interface Product {
-    id: string;
-    title: string;
-    description: string;
-    category: string;
-    price: number;
+    isFavorite?: boolean;
+    
     seller_id: string;
     seller_name: string;
     seller_email: string;
     seller_city: string;
     seller_country: string;
     seller_role: string;
-    imageUrl?: string;
+
 }
