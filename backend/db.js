@@ -48,6 +48,7 @@ export async function migrate() {
       price INTEGER NOT NULL CHECK(price >= 0),
       seller TEXT NOT NULL,
       category TEXT NOT NULL CHECK(category IN ('Electronics','Books','Clothes','Home','Other')),
+      imageUrl TEXT,
       FOREIGN KEY(seller) REFERENCES users(id) ON DELETE CASCADE
     );
   `);

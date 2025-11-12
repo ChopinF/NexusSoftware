@@ -7,6 +7,9 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import OpenAI from "openai";
 import cors from "cors";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 
 dotenv.config();
 
@@ -20,6 +23,26 @@ app.use(
 );
 
 app.use(express.json());
+
+// uploads config
+const uploadDir = "uploads";
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage: storage });
+
+app.use("/uploads", express.static("uploads"));
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -302,7 +325,16 @@ app.get("/me", async (req, res, next) => {
 
 app.get("/products", async (_req, res, next) => {
   try {
-    const rows = await all("SELECT * FROM products");
+    //const rows = await all("SELECT * FROM products");
+    const rows = await all(`
+      SELECT 
+        p.id, p.title, p.description, p.price, p.category, p.imageUrl,
+        u.id AS seller_id, u.name AS seller_name, u.email AS seller_email,
+        u.role AS seller_role, u.tara AS seller_country, u.oras AS seller_city
+      FROM products p
+      INNER JOIN users u ON p.seller = u.id
+      ORDER BY p.title
+    `);
     res.json(rows);
   } catch (e) {
     next(e);
@@ -321,6 +353,7 @@ app.get("/product/:id", async (req, res, next) => {
           p.description,
           p.price,
           p.category,
+          p.imageUrl,
           u.id AS seller_id,
           u.name AS seller_name,
           u.email AS seller_email,
@@ -454,19 +487,34 @@ function validateNotification(notification) { //TODO: validations to be determin
     if(errors.length > 0) throw new Error(errors.join("; "));
 }
 
-app.post("/product", authenticate, requireTrusted, async (req, res, next) => {
+app.post("/product", authenticate, requireTrusted, upload.single("image"), async (req, res, next) => {
     try{
         const product = req.body;
+        const imageFile = req.file;
         const sellerId = req.user.sub;
         validateProduct(product);
         const newProductId = uuid();
         
+        let imageUrl = null;
+        if (imageFile) {
+          imageUrl = `/uploads/${imageFile.filename}`;
+        }
+        
         await run(
-            `INSERT INTO products (id, title, description, price, seller, category) VALUES (?, ?, ?, ?, ?, ?)`,
-            [newProductId, product.title, product.description, parseInt(product.price), sellerId, product.category],
+            `INSERT INTO products (id, title, description, price, seller, category, imageUrl) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [newProductId, product.title, product.description, parseInt(product.price), sellerId, product.category, imageUrl],
         );
 
-        const newProduct = await get(`SELECT * FROM products WHERE id = ?`, [newProductId]);
+        //const newProduct = await get(`SELECT * FROM products WHERE id = ?`, [newProductId]);
+        const newProduct = await get(`
+          SELECT 
+            p.id, p.title, p.description, p.price, p.category, p.imageUrl,
+            u.id AS seller_id, u.name AS seller_name, u.email AS seller_email,
+            u.role AS seller_role, u.tara AS seller_country, u.oras AS seller_city
+          FROM products p
+          INNER JOIN users u ON p.seller = u.id
+          WHERE p.id = ?
+        `, [newProductId]);
         res.status(201).json(newProduct);
 
     } catch (e) {
