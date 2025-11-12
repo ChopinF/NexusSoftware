@@ -138,3 +138,86 @@
 ```
 { "message": "BMW i4 eDrive40 — autonomie ~590 km WLTP, 340 CP, 0–100 km/h 5.7s, RWD, baterie ~83.9 kWh." }
 ```
+
+# /notification POST
+- Request
+```
+{
+  "user": "a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890",
+  "message": "Comanda ta a fost plasată cu succes.",
+  "type": "order",
+  "created_at": "2025-11-12T17:30:00Z"
+}
+```
+- Response
+```
+{
+  "changes": 1,
+  "lastID": "..."
+}
+```
+
+# /my-notifications GET
+
+- Request(needs auth) -> empty
+- Response
+```
+[
+  {
+    "id": "guid-notif-1",
+    "id_user": "a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890",
+    "message": "Comanda ta (#1002) a fost expediată.",
+    "notification_type": "order",
+    "is_read": 0,
+    "created_at": "2025-11-12T10:00:00Z"
+  },
+  {
+    "id": "guid-notif-2",
+    "id_user": "a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890",
+    "message": "Bine ai venit pe NexusSoftware Marketplace!",
+    "notification_type": "system",
+    "is_read": 1,
+    "created_at": "2025-11-11T09:00:00Z"
+  }
+]
+```
+
+# /notification/:id/read PUT
+- Request(needs auth) -> empty
+- Response (Success 200)
+```
+{
+  "message": "Notification marked as read"
+}
+```
+- Response (Failure 404)
+```
+{
+  "error": "Notification not found or you do not have permission to update it."
+}
+```
+
+# /my-notifications/read-all PUT
+- Request(needs auth) -> empty
+- Response
+```
+{
+  "message": "All unread notifications marked as read.",
+  "count": 2
+}
+```
+
+# /notification/:id DELETE
+- Request(needs auth) -> empty
+- Response (Success 200)
+```
+{
+  "message": "Notification deleted successfully"
+}
+```
+- Response (Failure 404)
+```
+{
+  "error": "Notification not found or you do not have permission to delete it."
+}
+```
