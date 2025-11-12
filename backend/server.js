@@ -323,23 +323,75 @@ app.get("/me", async (req, res, next) => {
   }
 });
 
-app.get("/products", async (_req, res, next) => {
-  try {
-    //const rows = await all("SELECT * FROM products");
-    const rows = await all(`
-      SELECT 
-        p.id, p.title, p.description, p.price, p.category, p.imageUrl,
-        u.id AS seller_id, u.name AS seller_name, u.email AS seller_email,
-        u.role AS seller_role, u.tara AS seller_country, u.oras AS seller_city
-      FROM products p
-      INNER JOIN users u ON p.seller = u.id
-      ORDER BY p.title
-    `);
-    res.json(rows);
-  } catch (e) {
-    next(e);
-  }
+
+app.get("/products", async (req, res, next) => {
+    try {
+        const { category, search } = req.query;
+
+        let sql = `
+            SELECT p.id,
+                   p.title,
+                   p.description,
+                   p.price,
+                   p.category,
+                   p.imageUrl,
+                   u.id    AS seller_id,
+                   u.name  AS seller_name,
+                   u.email AS seller_email,
+                   u.role  AS seller_role,
+                   u.tara  AS seller_country,
+                   u.oras  AS seller_city
+            FROM products p
+                     INNER JOIN users u ON p.seller = u.id
+        `;
+
+        const conditions = [];
+        const params = [];
+
+        if (category) {
+            conditions.push("LOWER(p.category) = LOWER(?)");
+            params.push(category);
+        }
+
+        if (search) {
+            conditions.push(
+                "(LOWER(p.title) LIKE LOWER(?) OR LOWER(p.description) LIKE LOWER(?))"
+            );
+            params.push(`%${search}%`, `%${search}%`);
+        }
+
+        if (conditions.length > 0) {
+            sql += " WHERE " + conditions.join(" AND ");
+        }
+
+        sql += " ORDER BY p.title";
+
+        const rows = await all(sql, params);
+
+        res.json(rows);
+    } catch (e) {
+        next(e);
+    }
 });
+
+
+app.get("/categories", async (_req, res, next) => {
+    try {
+        const rows = await all(`
+            SELECT DISTINCT p.category
+            FROM products p
+            WHERE p.category IS NOT NULL AND p.category <> ''
+            ORDER BY p.category COLLATE NOCASE
+        `);
+
+        const categories = rows.map((r) => r.category);
+
+        res.json(categories);
+    } catch (e) {
+        next(e);
+    }
+});
+
 
 // Get single product by ID
 app.get("/product/:id", async (req, res, next) => {
