@@ -1,4 +1,3 @@
-// server.js
 import express from "express";
 import { v4 as uuid } from "uuid";
 import { db, run, get, all, migrate } from "./db.js";
@@ -48,7 +47,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// --- utils ---
+// utils
 const assert = (cond, msg, code = 400) => {
   if (!cond) {
     const e = new Error(msg);
@@ -57,7 +56,6 @@ const assert = (cond, msg, code = 400) => {
   }
 };
 
-// --- ADAUGĂ ACESTE FUNCȚII ---
 const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -67,7 +65,7 @@ const authenticate = (req, res, next) => {
   
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = payload; // Atașează payload-ul (ex: { sub: 'user-guid', role: 'Trusted' })
+    req.user = payload;
     next();
   } catch (err) {
     return res.status(401).json({ error: "Invalid or expired token" });
@@ -81,7 +79,7 @@ const requireTrusted = (req, res, next) => {
   next();
 };
 
-// valori enums
+// enum values
 const Roles = Object.freeze({ Trusted: "Trusted", Untrusted: "Untrusted" });
 const Countries = Object.freeze(["RO", "DE", "FR", "UK"]);
 const Cities = Object.freeze({
@@ -92,7 +90,7 @@ const Cities = Object.freeze({
 });
 
 async function seed() {
-  // utilizatori demo
+  // --- Demo Users ---
   const demoUsers = [
     {
       name: "a",
@@ -128,13 +126,15 @@ async function seed() {
     }
   }
 
-  // produse demo 
+  // --- Map-uri pentru ID-uri ---
+  // (Folosite de produsele, recenziile și comenzile de mai jos)
   const sellers = await all(
     `SELECT id, email, role FROM users WHERE email IN (?, ?)`,
     ["a@yahoo.com", "b@gmail.com"]
   );
   const byEmail = Object.fromEntries(sellers.map((s) => [s.email, s]));
 
+  // --- Demo Products ---
   const demoProducts = [
     {
       title: "Carte JS pentru Începători",
@@ -142,6 +142,7 @@ async function seed() {
       price: 120,
       sellerEmail: "a@yahoo.com",
       category: "Books",
+      imageUrl: "/uploads/js-book.jpg"
     },
     {
       title: "Mouse Office",
@@ -149,6 +150,7 @@ async function seed() {
       price: 60,
       sellerEmail: "a@yahoo.com",
       category: "Electronics",
+      imageUrl: "/uploads/office-mouse.jpg"
     },
     {
       title: "Pernă decorativă",
@@ -156,6 +158,7 @@ async function seed() {
       price: 45,
       sellerEmail: "a@yahoo.com",
       category: "Home",
+      imageUrl: "/uploads/decorative-pillow.png"
     },
   ];
 
@@ -181,14 +184,14 @@ async function seed() {
 
     const pid = uuid();
     await run(
-      `INSERT INTO products (id, title, description, price, seller, category)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [pid, p.title, p.description ?? "", p.price, seller.id, p.category]
+      `INSERT INTO products (id, title, description, price, seller, category, imageUrl)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`, // Adăugat imageUrl
+      [pid, p.title, p.description ?? "", p.price, seller.id, p.category, p.imageUrl ?? null] // Adăugat p.imageUrl
     );
     console.log(`[seed] created product '${p.title}' pentru seller ${p.sellerEmail}`);
   }
 
-  // notifications demo
+  // --- Demo Notifications ---
   const demoNotifications = [
     {
       userEmail: "a@yahoo.com",
@@ -211,7 +214,8 @@ async function seed() {
 
     for (const n of demoNotifications){
       const user = byEmail[n.userEmail];
-      if(!user.id){
+      if(!user || !user.id){ // Verificare actualizată
+        console.warn(`[seed] nu găsesc user pentru notificare: ${n.userEmail}`);
         continue;
       }
 
@@ -220,6 +224,7 @@ async function seed() {
         [user.id,n.message]
       );
       if(exists){
+        console.log(`[seed] notificare deja există pentru ${n.userEmail}`);
         continue;
       }
 
@@ -229,8 +234,102 @@ async function seed() {
       VALUES (?, ?, ?, ?, ?, datetime('now'))`, 
       [nid, user.id, n.message, n.type, n.is_read]
       );
-  
+      console.log(`[seed] created notification for ${n.userEmail}`);
     }
+
+  // --- Demo Reviews (Mutat din main) ---
+  const products = await all(`SELECT id, title FROM products`);
+  const byTitle = Object.fromEntries(products.map((p) => [p.title, p.id]));
+  // Reutilizăm 'byEmail' de mai sus
+
+  const demoReviews = [
+    {
+      productTitle: "Carte JS pentru Începători",
+      userEmail: "b@gmail.com",
+      rating: 5,
+      comment: "Excelentă pentru începători, explică clar conceptele!",
+    },
+    {
+      productTitle: "Carte JS pentru Începători",
+      userEmail: "a@yahoo.com",
+      rating: 4,
+      comment: "Utilă, dar putea avea mai multe exemple practice.",
+    },
+    {
+      productTitle: "Mouse Office",
+      userEmail: "b@gmail.com",
+      rating: 4,
+      comment: "Funcționează bine, raport calitate-preț corect.",
+    },
+    {
+      productTitle: "Pernă decorativă",
+      userEmail: "b@gmail.com",
+      rating: 5,
+      comment: "Foarte moale și arată exact ca în poze.",
+    },
+  ];
+
+  for (const r of demoReviews) {
+    const produsId = byTitle[r.productTitle];
+    const user = byEmail[r.userEmail]; // Folosim map-ul 'byEmail'
+    if (!produsId || !user) { // Verificăm dacă user există
+      console.warn(`[seed] nu pot crea review pt '${r.productTitle}' / ${r.userEmail}`);
+      continue;
+    }
+
+    const exists = await get(
+      `SELECT 1 AS ok FROM reviews WHERE produs = ? AND user = ?`,
+      [produsId, user.id] // Folosim user.id
+    );
+    if (exists) {
+      console.log(`[seed] review deja există pentru ${r.userEmail} -> ${r.productTitle}`);
+      continue;
+    }
+
+    const rid = uuid();
+    await run(
+      `INSERT INTO reviews (id, produs, user, rating, comment)
+       VALUES (?, ?, ?, ?, ?)`,
+      [rid, produsId, user.id, r.rating, r.comment] // Folosim user.id
+    );
+    console.log(
+      `[seed] created review '${r.comment.slice(0, 30)}...' pentru ${r.productTitle}`
+    );
+  }
+
+  // --- Demo Orders (Mutat din main) ---
+  const demoOrders = [
+    { buyerEmail: "b@gmail.com", price: 120, status: "pending" },
+    { buyerEmail: "b@gmail.com", price: 60, status: "paid" },
+    { buyerEmail: "a@yahoo.com", price: 45, status: "shipped" },
+  ];
+
+  // Reutilizăm 'byEmail' de mai sus (în loc de 'byUser')
+  for (const o of demoOrders) {
+    const buyer = byEmail[o.buyerEmail]; // Folosim map-ul 'byEmail'
+    if (!buyer) { // Verificăm dacă buyer există
+      console.warn(`[seed] nu pot crea order pentru ${o.buyerEmail}`);
+      continue;
+    }
+
+    const exists = await get(
+      `SELECT 1 AS ok FROM orders WHERE buyer = ? AND price = ? AND status = ?`,
+      [buyer.id, o.price, o.status] // Folosim buyer.id
+    );
+    if (exists) {
+      console.log(
+        `[seed] order deja există pentru ${o.buyerEmail} cu status ${o.status}`
+      );
+      continue;
+    }
+
+    const oid = uuid();
+    await run(
+      `INSERT INTO orders (id, buyer, price, status) VALUES (?, ?, ?, ?)`,
+      [oid, buyer.id, o.price, o.status] // Folosim buyer.id
+    );
+    console.log(`[seed] created order for ${o.buyerEmail} (${o.status})`);
+  } 
 }
 
 const getResponseGPT = async (system, text, expectJson = false) => {
@@ -893,102 +992,8 @@ const PORT = process.env.PORT || 3000;
 async function main() {
   await migrate();
 
+  //DB population - uncomment at first run
   await seed();
-
-  const products = await all(`SELECT id, title FROM products`);
-  const users = await all(`SELECT id, email FROM users`);
-
-  const byTitle = Object.fromEntries(products.map((p) => [p.title, p.id]));
-  const byUserEmail = Object.fromEntries(users.map((u) => [u.email, u.id]));
-
-  const demoReviews = [
-    {
-      productTitle: "Carte JS pentru Începători",
-      userEmail: "b@gmail.com",
-      rating: 5,
-      comment: "Excelentă pentru începători, explică clar conceptele!",
-    },
-    {
-      productTitle: "Carte JS pentru Începători",
-      userEmail: "a@yahoo.com",
-      rating: 4,
-      comment: "Utilă, dar putea avea mai multe exemple practice.",
-    },
-    {
-      productTitle: "Mouse Office",
-      userEmail: "b@gmail.com",
-      rating: 4,
-      comment: "Funcționează bine, raport calitate-preț corect.",
-    },
-    {
-      productTitle: "Pernă decorativă",
-      userEmail: "b@gmail.com",
-      rating: 5,
-      comment: "Foarte moale și arată exact ca în poze.",
-    },
-  ];
-
-  for (const r of demoReviews) {
-    const produsId = byTitle[r.productTitle];
-    const userId = byUserEmail[r.userEmail];
-    if (!produsId || !userId) {
-      console.warn(`[seed] nu pot crea review pt '${r.productTitle}' / ${r.userEmail}`);
-      continue;
-    }
-
-    const exists = await get(
-      `SELECT 1 AS ok FROM reviews WHERE produs = ? AND user = ?`,
-      [produsId, userId]
-    );
-    if (exists) {
-      console.log(`[seed] review deja există pentru ${r.userEmail} -> ${r.productTitle}`);
-      continue;
-    }
-
-    const rid = uuid();
-    await run(
-      `INSERT INTO reviews (id, produs, user, rating, comment)
-       VALUES (?, ?, ?, ?, ?)`,
-      [rid, produsId, userId, r.rating, r.comment]
-    );
-    console.log(
-      `[seed] created review '${r.comment.slice(0, 30)}...' pentru ${r.productTitle}`
-    );
-  }
-
-  const demoOrders = [
-    { buyerEmail: "b@gmail.com", price: 120, status: "pending" },
-    { buyerEmail: "b@gmail.com", price: 60, status: "paid" },
-    { buyerEmail: "a@yahoo.com", price: 45, status: "shipped" },
-  ];
-
-  const byUser = Object.fromEntries(users.map((u) => [u.email, u.id]));
-
-  for (const o of demoOrders) {
-    const buyerId = byUser[o.buyerEmail];
-    if (!buyerId) {
-      console.warn(`[seed] nu pot crea order pentru ${o.buyerEmail}`);
-      continue;
-    }
-
-    const exists = await get(
-      `SELECT 1 AS ok FROM orders WHERE buyer = ? AND price = ? AND status = ?`,
-      [buyerId, o.price, o.status]
-    );
-    if (exists) {
-      console.log(
-        `[seed] order deja există pentru ${o.buyerEmail} cu status ${o.status}`
-      );
-      continue;
-    }
-
-    const oid = uuid();
-    await run(
-      `INSERT INTO orders (id, buyer, price, status) VALUES (?, ?, ?, ?)`,
-      [oid, buyerId, o.price, o.status]
-    );
-    console.log(`[seed] created order for ${o.buyerEmail} (${o.status})`);
-  }
 
   // start 
   app.listen(PORT, () => console.log(`Listening on http://localhost:${PORT}`));
