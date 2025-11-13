@@ -90,9 +90,14 @@ export const PostAdForm: React.FC = () => {
         throw new Error(errData.error || "A eșuat postarea anunțului.");
       }
 
-      const newProduct = await res.json();
-      console.log("Produs postat:", newProduct);
-      window.location.assign("/");
+      await res.json();
+
+      localStorage.setItem("products-updated-signal", new Date().toISOString());
+      navigate("/");
+      
+      //const newProduct = await res.json();
+      //console.log("Produs postat:", newProduct);
+      //window.location.assign("/");
       
     } catch (err) {
       const errorMessage =
