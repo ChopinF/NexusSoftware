@@ -1,21 +1,20 @@
-/* Favorite Button */
 .favorite-button {
     padding: 0.75rem;
     border-radius: 9999px;
-    border: 1px solid #d1d5db;
-    background: white;
+    border: 1px solid #4B5563;
+    background: rgba(31, 41, 55, 0.8);
     cursor: pointer;
     transition: background-color 0.2s;
 }
 
 .favorite-button:hover {
-    background-color: #f9fafb;
+    background-color: #1F2937;
 }
 
 .heart-icon {
     width: 1.75rem;
     height: 1.75rem;
-    color: #4b5563;
+    color: #D1D5DB;
 }
 
 .heart-icon.favorited {

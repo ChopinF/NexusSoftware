@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { v4 as uuid } from "uuid";
 import styles from "./ChatWindow.module.css";
 
+// Asigură-te că aceste căi sunt corecte conform structurii folderului tău
 import { Input } from "../../atoms/Input/Input";
 import { Button } from "../../atoms/Button/Button";
 import { Spinner } from "../../atoms/Spinner/Spinner";
@@ -41,25 +42,25 @@ interface ChatWindowProps {
 }
 
 const defaultMessage: Message = {
-  id: uuid(),
-  text: "Bună! Sunt asistentul tău virtual. Cum te pot ajuta azi?",
-  sender: "bot",
+  id: uuid(),
+  text: "Bună! Sunt asistentul tău virtual. Cum te pot ajuta azi?",
+  sender: "bot",
 };
 
 export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
   const [messages, setMessages] = useState<Message[]>(() => {
     const savedMessages = sessionStorage.getItem("chatMessages");
-    return savedMessages ? JSON.parse(savedMessages) : [defaultMessage];
+    return savedMessages ? JSON.parse(savedMessages) : [defaultMessage];
   });
 
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messageListRef = useRef<HTMLDivElement>(null);
 
-  // save session chat
-  useEffect(() => {
-    sessionStorage.setItem("chatMessages", JSON.stringify(messages));
-  }, [messages]);
+  // save session chat
+  useEffect(() => {
+    sessionStorage.setItem("chatMessages", JSON.stringify(messages));
+  }, [messages]);
 
   // automated scrolling to most recent message
   useEffect(() => {
@@ -113,7 +114,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
   return (
     <div className={styles.chatOverlay}>
       <header className={styles.header}>
-        <h3 className={styles.headerTitle}>Marketplace Asistent</h3>
+        <h3 className={styles.headerTitle}>Edger Assistant</h3>
         <button
           type="button"
           className={styles.closeButton}

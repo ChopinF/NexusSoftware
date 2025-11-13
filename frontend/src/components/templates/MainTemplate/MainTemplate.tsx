@@ -4,8 +4,6 @@ import { Header } from "../../organisms/Header/Header";
 import { Footer } from "../../organisms/Footer/Footer";
 import { useUser } from "../../../contexts/UserContext";
 import styles from "./MainTemplate.module.css";
-
-// chatbot imports
 import { ChatFab } from "../../molecules/ChatFab/ChatFab";
 import { ChatWindow } from "../../organisms/ChatWindow/ChatWindow";
 
@@ -24,6 +22,8 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
     setToken(null);
     navigate("/login", { replace: true });
   };
+
+  const toggleChat = () => setIsChatOpen((prev) => !prev);
 
   return (
     <div className={styles.layoutWrapper}>
@@ -46,9 +46,6 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
         onPostAdClick={() => {
           navigate("/post-ad");
         }}
-        onSearch={(query) => {
-          console.log("Search query:", query);
-        }}
         onAvatarClick={() => {
           /* navigate to /profile */
         }}
@@ -57,8 +54,8 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
       <main className={styles.contentArea}>{children}</main>
 
       {/* chatbot components */}
-      {isChatOpen && <ChatWindow onClose={() => setIsChatOpen(false)} />}
-      {!isChatOpen && <ChatFab onClick={() => setIsChatOpen(true)} />}
+      {isChatOpen && <ChatWindow onClose={toggleChat} />}
+      <ChatFab onClick={toggleChat} />
 
       <Footer />
     </div>

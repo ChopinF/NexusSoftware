@@ -22,7 +22,6 @@ const App: React.FC = () => {
 
         <Route element={<ProtectedRoute />}>
           <Route path="/post-ad" element={<PostAdPage />} />
-          {/* Other routes to be added - ex: /profile, /my-orders */}
         </Route>
 
         <Route path="*" element={<Navigate to="/" />} />

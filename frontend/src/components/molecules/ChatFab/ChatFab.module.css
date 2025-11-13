@@ -4,7 +4,7 @@
   right: 2rem;
   z-index: 1000;
 
-  background-color: #4f46e5;
+  background-color: #6D28D9;
   color: #ffffff;
 
   width: 3.5rem;
@@ -23,7 +23,7 @@
 }
 
 .chatFab:hover {
-  background-color: #4338ca;
+  background-color: #5B21B6;
   transform: scale(1.05);
 }
 

@@ -4,14 +4,30 @@
   justify-content: space-between;
   width: 100%;
   padding: 1rem 2rem;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
+
+  /* --- MODIFICĂRI TEMĂ --- */
+  background-color: #111827;
+  /* Fundal întunecat (Charcoal) */
+  border-bottom: 1px solid #374151;
+  /* Border mai întunecat */
+  color: #F9FAFB;
+  /* Text principal alb */
+  /* --- SFÂRȘIT MODIFICĂRI --- */
+
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
   gap: 1.5rem;
 }
 
 .headerLeft {
   flex-shrink: 0;
+}
+
+/* Stil adăugat pentru a face logo-ul alb și vizibil */
+.headerLeft a {
+  color: #F9FAFB;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.5rem;
 }
 
 .headerCenter {
@@ -32,22 +48,19 @@
 }
 
 .headerSearch {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   flex: 1;
-  flex-wrap: nowrap;
-  overflow: hidden;
+  max-width: 600px;
 }
-.headerSearch select {
-  flex-shrink: 0;
-}
-
-
 
 .headerRight {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 0.75rem;
+}
+
+/* Stiluri adăugate pentru butoanele de login/register */
+.loginButton,
+.registerButton {
+  font-weight: 600;
 }

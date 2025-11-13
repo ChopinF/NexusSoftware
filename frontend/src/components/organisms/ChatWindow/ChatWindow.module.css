@@ -6,24 +6,23 @@
 
   width: 100%;
   max-width: 375px;
-  height: 500px;
+  height: 466px;
 
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
+  background-color: #1F2937;
+  border: 1px solid #374151;
+  color: #F9FAFB;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+
   border-radius: 0.75rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-
   display: flex;
   flex-direction: column;
   overflow: hidden;
-
-  color: #111827;
 }
 
 .header {
   padding: 1rem;
-  background-color: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  background-color: #111827;
+  border-bottom: 1px solid #374151;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -33,6 +32,7 @@
 .headerTitle {
   font-size: 1.125rem;
   font-weight: 600;
+  color: #F9FAFB;
 }
 
 .closeButton {
@@ -42,13 +42,15 @@
   padding: 0.25rem;
   opacity: 0.7;
 }
+
 .closeButton:hover {
   opacity: 1;
 }
+
 .closeIcon {
   width: 1.25rem;
   height: 1.25rem;
-  color: #374151;
+  color: #9CA3AF;
 }
 
 .messageList {
@@ -58,7 +60,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  background-color: #f3f4f6;
+  background-color: #111827;
 }
 
 .message {
@@ -70,14 +72,14 @@
 }
 
 .messageUser {
-  background-color: #4f46e5;
+  background-color: #6D28D9;
   color: #ffffff;
   align-self: flex-end;
 }
 
 .messageBot {
-  background-color: #e5e7eb;
-  color: #1f2937;
+  background-color: #374151;
+  color: #E5E7EB;
   align-self: flex-start;
 }
 
@@ -89,9 +91,9 @@
 .inputArea {
   display: flex;
   padding: 0.75rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #374151;
   gap: 0.5rem;
-  background-color: #ffffff;
+  background-color: #1F2937;
   flex-shrink: 0;
 }
 

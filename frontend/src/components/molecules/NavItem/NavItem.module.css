@@ -9,21 +9,34 @@
   border-radius: 0.375rem;
   font-size: 0.95rem;
   font-weight: 500;
-  color: #374151;
+
+  /* --- MODIFICĂRI TEMĂ --- */
+  color: #9CA3AF;
+  /* Gri deschis (text secundar) */
+  /* --- SFÂRȘIT MODIFICĂRI --- */
+
   text-decoration: none;
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
 .navLink:hover,
 .navLink:focus {
-  background-color: #f3f4f6;
-  color: #111827;
+  /* --- MODIFICĂRI TEMĂ --- */
+  background-color: #374151;
+  /* Fundal hover întunecat */
+  color: #F9FAFB;
+  /* Text alb */
+  /* --- SFÂRȘIT MODIFICĂRI --- */
   outline: none;
 }
 
 .navLinkActive {
-  background-color: #f3f4f6;
-  color: #111827;
+  /* --- MODIFICĂRI TEMĂ --- */
+  background-color: #374151;
+  /* Fundal activ întunecat */
+  color: #F9FAFB;
+  /* Text alb */
+  /* --- SFÂRȘIT MODIFICĂRI --- */
   font-weight: 600;
 }
 

@@ -9,7 +9,8 @@ import { Button } from "../../atoms/Button/Button";
 import { Spinner } from "../../atoms/Spinner/Spinner";
 import { FormField } from "../../molecules/FormField/FormField";
 import { AlertMessage } from "../../molecules/AlertMessage/AlertMessage";
-import styles from "../RegisterForm/RegisterForm.module.css";
+//import styles from "../RegisterForm/RegisterForm.module.css";
+import styles from "./PostAdForm.module.css";
 
 const categories = [
   { value: "Electronics", label: "Electronics" },

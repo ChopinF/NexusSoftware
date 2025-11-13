@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react"; // 1. Importă useCallback
+import React, { useEffect, useState, useCallback } from "react";
 import { MainTemplate } from "../../templates/MainTemplate/MainTemplate";
 import { ProductCard } from "../../organisms/ProductCard/ProductCard";
 import { Spinner } from "../../atoms/Spinner/Spinner";

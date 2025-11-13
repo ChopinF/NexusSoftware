@@ -1,42 +1,42 @@
 .formContainer {
   width: 100%;
-  max-width: 420px;
-  padding: 2rem;
-  background-color: #ffffff;
+  max-width: 380px;
+  padding: 1rem;
+  background-color: #1F2937;
   border-radius: 0.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 3px solid #8B5CF6;
 }
 
 .formTitle {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: #111827;
+  color: #F9FAFB;
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.5rem;
 }
 
 .buttonWrapper {
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
   display: flex;
   justify-content: center;
 }
 
 .footerLink {
-  margin-top: 1.5rem;
+  margin-top: 1rem;
   text-align: center;
-  font-size: 0.9rem;
-  color: #4b5563;
+  font-size: 0.85rem;
+  color: #9CA3AF;
 }
 
 .footerLink a {
-  color: #3b82f6;
+  color: #8B5CF6;
   font-weight: 500;
   text-decoration: none;
 }

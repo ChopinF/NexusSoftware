@@ -1,21 +1,22 @@
 .cardLink {
   display: flex;
   flex-direction: row;
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
+  background-color: #1F2937;
+  border: 1px solid #374151;
+  color: #F3F4F6;
   border-radius: 0.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
   overflow: hidden;
   text-decoration: none;
-  color: inherit;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.2s ease;
   position: relative;
   max-width: 1000px;
   margin: 0 auto;
+  margin-bottom: 1rem;
 }
 
 .cardLink:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background-color: #374151;
   transform: translateY(-2px);
 }
 
@@ -23,7 +24,7 @@
   width: 250px;
   min-width: 250px;
   aspect-ratio: 4 / 3;
-  background-color: #f3f4f6;
+  background-color: #374151;
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -43,44 +44,45 @@
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   flex: 1;
 }
 
 .price {
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 700;
-  color: #111827;
+  color: #F3F4F6;
   margin-bottom: 0.25rem;
 }
 
 .title {
-  font-size: 1rem;
+  font-size: 1.25rem;
   font-weight: 500;
-  color: #374151;
+  color: #8B5CF6;
   margin-bottom: 0.5rem;
   line-height: 1.4;
 }
 
 .description {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: #9CA3AF;
   margin-bottom: 0.5rem;
 }
 
 .metaWrapper {
   font-size: 0.8rem;
-  color: #6b7280;
+  color: #9CA3AF;
   display: flex;
   justify-content: space-between;
+  margin-top: auto;
 }
 
 .favoriteButton {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 1px solid #e5e7eb;
+  background-color: rgba(31, 41, 55, 0.8);
+  border: 1px solid #4B5563;
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -94,14 +96,14 @@
 }
 
 .favoriteButton:hover {
-  background-color: #ffffff;
+  background-color: #1F2937;
   transform: scale(1.1);
 }
 
 .favoriteButton svg {
   width: 20px;
   height: 20px;
-  color: #4b5563;
+  color: #D1D5DB;
   stroke-width: 2;
 }
 

@@ -6,74 +6,104 @@
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
   line-height: 1.5;
+  cursor: pointer;
+  /* Asigură-te că este pointer */
+  border: 1px solid transparent;
+  /* Adăugat pentru consistență */
 }
 
 .baseStyles:focus {
   outline: 2px solid transparent;
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.4);
+  /* Umbra de focus violet */
 }
 
 .baseStyles:disabled {
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
-/* --- Variants --- */
+/* --- MODIFICARE TEMĂ: Varianta 'primary' (Violet) --- */
 .primary {
-  background-color: #4f46e5;
+  background-color: #6D28D9;
+  /* Violet-700 */
   color: #ffffff;
+  border-color: #6D28D9;
 }
+
 .primary:hover {
-  background-color: #4338ca;
+  background-color: #5B21B6;
+  /* Violet-800 */
+  border-color: #5B21B6;
 }
+
 .primary:disabled {
-  background-color: #a5b4fc;
+  background-color: #5B21B6;
 }
 
+/* --- MODIFICARE TEMĂ: Varianta 'secondary' (Light/Dark-aware) --- */
 .secondary {
-  background-color: #f3f4f6;
-  color: #374151;
-}
-.secondary:hover {
-  background-color: #e5e7eb;
-}
-.secondary:disabled {
-  background-color: #f9fafb;
+  background-color: transparent;
+  color: #D1D5DB;
+  /* Gri deschis pentru text */
+  border-color: transparent;
 }
 
+.secondary:hover {
+  background-color: #1F2937;
+  /* Fundal hover întunecat */
+  color: #F9FAFB;
+  /* Text alb la hover */
+}
+
+.secondary:disabled {
+  background-color: #1F2937;
+  color: #4B5563;
+}
+
+/* --- Varianta 'outline' (Neschimbată, pentru fundaluri deschise) --- */
 .outline {
   border: 1px solid #d1d5db;
   color: #374151;
   background-color: #ffffff;
 }
+
 .outline:hover {
   background-color: #f9fafb;
 }
+
 .outline:disabled {
   border-color: #e5e7eb;
   color: #9ca3af;
 }
 
+/* --- Varianta 'danger' (Neschimbată) --- */
 .danger {
   background-color: #dc2626;
   color: #ffffff;
 }
+
 .danger:hover {
   background-color: #b91c1c;
 }
+
 .danger:disabled {
   background-color: #fca5a5;
 }
 
 
-/* --- Sizes --- */
+/* --- Sizes (Neschimbate) --- */
 .sm {
   padding: 0.375rem 0.75rem;
   font-size: 0.875rem;
 }
+
 .md {
   padding: 0.5rem 1rem;
   font-size: 1rem;
 }
+
 .lg {
   padding: 0.75rem 1.5rem;
   font-size: 1.125rem;

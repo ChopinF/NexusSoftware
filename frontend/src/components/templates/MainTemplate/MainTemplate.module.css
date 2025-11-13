@@ -1,13 +1,16 @@
 .layoutWrapper {
   display: flex;
   flex-direction: column;
-  background-color: #f9fafb;
+  background-color: #111827;
+  color: #F9FAFB;
   min-height: 100vh;
 }
 
 .contentArea {
   flex-grow: 1;
   width: 100%;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 2rem 1rem;
+  background-color: transparent;
 }

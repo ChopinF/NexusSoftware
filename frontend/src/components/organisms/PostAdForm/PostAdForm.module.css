@@ -1,15 +1,16 @@
 .formContainer {
   width: 100%;
-  max-width: 380px;
-  padding: 1rem;
+  max-width: 500px; 
+  padding: 1.5rem;
   background-color: #1F2937;
   border-radius: 0.5rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border: 3px solid #8B5CF6;
+  margin: 0 auto;
 }
 
 .formTitle {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: #F9FAFB;
   text-align: center;
@@ -19,28 +20,11 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
 }
 
 .buttonWrapper {
-  margin-top: 0.25rem;
+  margin-top: 0.5rem;
   display: flex;
   justify-content: center;
-}
-
-.footerLink {
-  margin-top: 1rem;
-  text-align: center;
-  font-size: 0.85rem;
-  color: #9CA3AF;
-}
-
-.footerLink a {
-  color: #8B5CF6;
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.footerLink a:hover {
-  text-decoration: underline;
 }

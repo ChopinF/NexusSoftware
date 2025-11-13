@@ -4,7 +4,7 @@
     align-items: center;
     gap: 4px;
     font-size: 0.9rem;
-    color: #555;
+    color: #b9bec5;
 }
 
 .location-icon {
@@ -12,5 +12,5 @@
 }
 
 .location-text {
-    color: #333;
+    color: #b9bec5;
 }

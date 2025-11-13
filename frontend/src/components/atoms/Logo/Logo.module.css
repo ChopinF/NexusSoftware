@@ -1,16 +1,15 @@
 .logoBase {
   font-weight: 700;
   letter-spacing: -0.025em;
-  color: #4f46e5;
+  color: #F9FAFB;
   line-height: 1.2;
   display: inline-block;
 }
 
 .logoAccent {
-  color: #111827;
+  color: #8B5CF6;
 }
 
-/* --- Sizes --- */
 .sm {
   font-size: 1.5rem;
 }

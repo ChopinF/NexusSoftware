@@ -1,150 +1,131 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./Header.module.css";
-
 import { Logo } from "../../atoms/Logo/Logo";
 import { Button } from "../../atoms/Button/Button";
 import { Avatar } from "../../atoms/Avatar/Avatar";
 import { NavItem } from "../../molecules/NavItem/NavItem";
 import { SearchBar } from "../../molecules/SearchBar/SearchBar";
-import type {Product} from "../../../types/Product.ts";
 import { useCategory } from "../../../contexts/CategoryContext";
 
-
-
-
-
-
 interface User {
-  name: string;
-  avatarUrl?: string;
+  name: string;
+  avatarUrl?: string;
 }
 
 interface HeaderProps {
-  user?: User;
-  onPostAdClick: () => void;
-  onLoginClick: () => void;
-  onRegisterClick: () => void;
-  onSignOutClick: () => void;
-  onSearch: (query: string) => void;
-  onAvatarClick: () => void;
+  user?: User;
+  onPostAdClick: () => void;
+  onLoginClick: () => void;
+  onRegisterClick: () => void;
+  onSignOutClick: () => void;
+  onAvatarClick: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  user,
-  onPostAdClick,
-  onLoginClick,
-  onRegisterClick,
-  onSignOutClick,
-  onSearch,
-  onAvatarClick,
+  user,
+  onPostAdClick,
+  onLoginClick,
+  onRegisterClick,
+  onSignOutClick,
+  onAvatarClick,
 }) => {
-  const currentPath = window.location.pathname;
+  const currentPath = window.location.pathname;
 
-  const getInitials = (name: string) => {
-    const names = name.split(" ");
-    const first = names[0]?.[0] || "";
-    const last = names[names.length - 1]?.[0] || "";
-    return `${first}${last}`.toUpperCase();
+  const getInitials = (name: string) => {
+    const names = name.split(" ");
+    const first = names[0]?.[0] || "";
+    const last = names[names.length - 1]?.[0] || "";
+    return `${first}${last}`.toUpperCase();
+  };
 
-  };
+  const { selectedCategory, setSelectedCategory, setSearchQuery } = useCategory();
+  const [categories, setCategories] = useState<string[]>([]);
 
+  React.useEffect(() => {
+    fetch("http://localhost:3000/categories")
+      .then((res) => res.json())
+      .then((data: string[]) => {
+        setCategories(data);
+      })
+      .catch(console.error);
+  }, []);
 
-  const { selectedCategory, setSelectedCategory, setSearchQuery } = useCategory();
-  const [categories, setCategories] = useState<string[]>([]);
+  return (
+    <header className={styles.headerContainer}>
+      <div className={styles.headerLeft}>
+        <a href="/" aria-label="Homepage">
+          <Logo />
+        </a>
+      </div>
 
-  React.useEffect(() => {
-    fetch("http://localhost:3000/categories")
-        .then((res) => res.json())
-        .then((data: string[]) => {
-          setCategories(data);
-        })
-        .catch(console.error);
-  }, []);
+      <div className={styles.headerCenter}>
+        <nav>
+          <ul className={styles.headerNav}>
+            <NavItem
+              label="Browse"
+              href="/browse"
+              isActive={currentPath === "/browse"}
+            />
+            <NavItem
+              label="About"
+              href="/about"
+              isActive={currentPath === "/about"}
+            />
+          </ul>
+        </nav>
 
+        <div className={styles.headerSearch}>
+          <SearchBar
+            placeholder="Search for items..."
+            onSearch={setSearchQuery} 
+            categories={categories}
+            onCategoryChange={setSelectedCategory}
+            selectedCategory={selectedCategory}
+          />
+        </div>
+      </div>
 
+      <div className={styles.headerRight}>
+        <Button onClick={onPostAdClick} variant="primary">
+          Post Ad
+        </Button>
 
-
-
-
-  return (
-
-    <header className={styles.headerContainer}>
-      <div className={styles.headerLeft}>
-        <a href="/" aria-label="Homepage">
-          <Logo />
-        </a>
-      </div>
-
-      <div className={styles.headerCenter}>
-        <nav>
-          <ul className={styles.headerNav}>
-            <NavItem
-              label="Browse"
-              href="/browse"
-              isActive={currentPath === "/browse"}
-            />
-            <NavItem
-              label="About"
-              href="/about"
-              isActive={currentPath === "/about"}
-            />
-          </ul>
-        </nav>
-
-        <div className={styles.headerSearch}>
-          <SearchBar
-              placeholder="Search for items..."
-              onSearch={onSearch}
-              categories={categories}
-          />
-
-        </div>
-
-
-
-      </div>
-
-      <div className={styles.headerRight}>
-        <Button onClick={onPostAdClick} variant="primary">
-          Post Ad
-        </Button>
-
-        {user ? (
-          <>
-            <Button
-              onClick={onSignOutClick}
-              variant="primary"
-              className={styles.userNameButton}
-            >
-              Sign Out
-            </Button>
-            <button
-              onClick={onAvatarClick}
-              className="rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              aria-label="User menu"
-            >
-              <Avatar src={user.avatarUrl} initials={getInitials(user.name)} />
-            </button>
-          </>
-        ) : (
-          <div>
-            <Button
-              onClick={onLoginClick}
-              variant="secondary"
-              className={styles.loginButton}
-            >
-              Login
-            </Button>
-            <Button
-              onClick={onRegisterClick}
-              variant="secondary"
-              className={styles.registerButton}
-            >
-              Register
-            </Button>
-          </div>
-        )}
-      </div>
-    </header>
-  );
+        {user ? (
+          <>
+            <Button
+              onClick={onSignOutClick}
+              variant="primary"
+              className={styles.userNameButton}
+            >
+              Sign Out
+            </Button>
+            <button
+              onClick={onAvatarClick}
+              className="rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              aria-label="User menu"
+            >
+              <Avatar src={user.avatarUrl} initials={getInitials(user.name)} />
+            </button>
+          </>
+        ) : (
+          <div>
+            <Button
+              onClick={onLoginClick}
+              variant="secondary"
+            	className={styles.loginButton}
+            >
+              Login
+            </Button>
+            <Button
+              onClick={onRegisterClick}
+              variant="secondary"
+            	className={styles.registerButton}
+            >
+              Register
+            </Button>
+          </div>
+        )}
+      </div>
+    </header>
+  );
 };

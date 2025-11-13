@@ -1,10 +1,9 @@
-/* Category Badge */
 .category-badge {
     display: inline-block;
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
     font-weight: 600;
-    background-color: #e0e7ff;
-    color: #3730a3;
+    background-color: #5B21B6;
+    color: #E5E7EB;
     border-radius: 9999px;
 }
