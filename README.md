@@ -1,11 +1,25 @@
 # Table of contents
 <!--toc:start-->
-- [Functionalitati](#functionalitati)
+- [AppDescription](#description)
+- [Functionalities](#functionalities)
 <!--toc:end-->
-# Functionalitati
+# AppDescription
 
-1) authentificare
-2) authorizare
-3) listare / filtrare de produse in functie de categorie / nume / locatie
-4) scraper pentru obiectul curent ca sa poti compara preturi (ex, ai un telefon de cumparat sh, si vrei sa te uiti la un telefon nou la pret)
-5) chatbot
+EdgeUp Marketplace is a full-stack web app, implementing a modern architecture design. The app uses Node.js & SQLite on backend and React and TypeScript on frontend.
+
+EdgeUp is an AI Enhanced Marketplace platform designed to connect buyers and sellers in a safe, fast, and intelligent way. Verified users can post ads, chat directly with potential buyers or sellers, search and filter products with ease, and manage their own listings or favorites. The platform includes a dedicated AI assistant and an automated price-comparison system powered by web scraping, offering a transparent, efficient, and trustworthy shopping experience.
+
+
+# Functionalities
+
+1) post ad (trusted user)
+2) (TODO) transitioning from unverified to trusted user
+3) (TODO) admin interface for approving/reject "trusted" requests
+4) (TODO) chat between potential buyer and seller
+5) ai assistant chatbot marketplace dedicated
+6) (TODO) web scraper&crawler to compare prices/products
+7) (TODO) add review
+8) (TODO) view my ads (for logged-in trusted user)
+9) (TODO) view favorite posts
+10) login/register user
+11) filter&search products
