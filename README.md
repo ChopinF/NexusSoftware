@@ -1,9 +1,11 @@
+# EdgeUp
+
 # Table of contents
 <!--toc:start-->
-- [AppDescription](#description)
+- [Description](#description)
 - [Functionalities](#functionalities)
 <!--toc:end-->
-# AppDescription
+# Description
 
 EdgeUp Marketplace is a full-stack web app, implementing a modern architecture design. The app uses Node.js & SQLite on backend and React and TypeScript on frontend.
 
