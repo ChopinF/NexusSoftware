@@ -1,18 +1,18 @@
 # EdgeUp
 
-# Table of contents
+## Table of contents
 <!--toc:start-->
-- [Description](#description)
-- [Functionalities](#functionalities)
+- [Description](##description)
+- [Functionalities](##functionalities)
 <!--toc:end-->
-# Description
+## Description
 
 EdgeUp Marketplace is a full-stack web app, implementing a modern architecture design. The app uses Node.js & SQLite on backend and React and TypeScript on frontend.
 
 EdgeUp is an AI Enhanced Marketplace platform designed to connect buyers and sellers in a safe, fast, and intelligent way. Verified users can post ads, chat directly with potential buyers or sellers, search and filter products with ease, and manage their own listings or favorites. The platform includes a dedicated AI assistant and an automated price-comparison system powered by web scraping, offering a transparent, efficient, and trustworthy shopping experience.
 
 
-# Functionalities
+## Functionalities
 
 1) post ad (trusted user)
 2) (TODO) transitioning from unverified to trusted user
