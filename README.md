@@ -2,8 +2,8 @@
 
 ## Table of contents
 <!--toc:start-->
-- [Description](##description)
-- [Functionalities](##functionalities)
+- [Description](#description)
+- [Functionalities](#functionalities)
 <!--toc:end-->
 ## Description
 
