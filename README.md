@@ -14,10 +14,11 @@ EdgeUp is an AI Enhanced Marketplace platform designed to connect buyers and sel
 
 ## Functionalities
 
+0) (TODO) deploy pipeline
 1) post ad (trusted user)
-2) (TODO) transitioning from unverified to trusted user
-3) (TODO) admin interface for approving/reject "trusted" requests
-4) (TODO) chat between potential buyer and seller
+2) [18-30nov] (TODO) transitioning from unverified to trusted user
+3) [18-30nov] (TODO) admin interface for approving/reject "trusted" requests
+4) [18-30nov] (TODO) chat between potential buyer and seller
 5) ai assistant chatbot marketplace dedicated
 6) (TODO) web scraper&crawler to compare prices/products
 7) (TODO) add review
