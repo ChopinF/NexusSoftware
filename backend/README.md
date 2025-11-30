@@ -128,7 +128,7 @@ buyer_id: GUID (id-ul userului cumparator relatie 1-n cu users)
 ```
 
 id: GUID,
-conversation_id: GUID (id-ul conversatiei relatie 1-n cu users),
+conversation_id: GUID (id-ul conversatiei relatie 1-n),
 message: string
 created_at: date
 is_read: bool
