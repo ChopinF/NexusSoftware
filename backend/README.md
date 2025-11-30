@@ -10,6 +10,8 @@
   - [Order](#order)
   - [Review](#review)
   - [Notification](#notification)
+  - [Conversation](#conversation)
+  - [Message](#message)
 <!--toc:end-->
 # You can find API endpoints in api.md
 
@@ -41,6 +43,8 @@ npm run dev
 - *Order*
 - *Review*
 - *Notification*
+- *Message*
+- *Conversation*
 
 # Descriere tabele
 
@@ -106,5 +110,29 @@ message: string
 notifcation_type: ENUM order / payment / review / system
 is_read: bool true apare ca si citit, false apare mare popup cand deschide aplicatia
 created_at: date
+
+```
+
+## Conversation
+
+```
+
+id: GUID
+seller_id: GUID (id-ul userului vanzator relatie 1-n cu users)
+buyer_id: GUID (id-ul userului cumparator relatie 1-n cu users)
+
+```
+
+## Message
+
+```
+
+id: GUID,
+conversation_id: GUID (id-ul conversatiei relatie 1-n cu users),
+message: string
+created_at: date
+is_read: bool
+from_user: GUID (id-ul userului sender relatie 1-n cu users)
+to_user: GUID (id-ul userului receiver relatie 1-n cu users)
 
 ```
