@@ -633,6 +633,57 @@ app.get("/orders", async (_req, res, next) => {
   }
 });
 
+// returneaza intreaga conversatie dupa id-ul unui user (buyer sau seller)
+app.get("/conversations/user/:userId", authenticate, async (req, res, next) => {
+    try{
+        const userId = req.params.userId;
+        const conversations = await all(
+            `SELECT c.id as conversation_id, c.seller_id, c.buyer_id, m.id as id, m.created_at, m.message, m.is_read, m.from_user, m.to_user
+                    FROM conversations c INNER JOIN messages m ON m.conversation_id = c.id
+                    WHERE c.seller_id = ? OR c.buyer_id = ? ORDER BY m.created_at DESC`,
+            [userId, userId]
+        );
+        res.json(conversations);
+    } catch(e){
+        next(e);
+    }
+})
+
+// returneaza intreaga conversatie dupa id
+app.get("/conversations/:id/user/:userId", authenticate, async (req, res, next) => {
+    try{
+        const userId = req.params.userId;
+        const conversationId = req.params.id;
+        const conversationMessages = await all(
+            `SELECT c.id as conversation_id, c.seller_id, c.buyer_id, m.id as id, m.created_at, m.message, m.is_read, m.from_user, m.to_user
+                    FROM conversations c INNER JOIN messages m ON m.conversation_id = c.id
+                    WHERE (c.seller_id = ? OR c.buyer_id = ?) AND c.id = ? ORDER BY m.created_at ASC`,
+            [userId, userId, conversationId]
+        );
+        if (!conversationMessages || conversationMessages.length === 0) return res.json([]); //conversatia exista dar nu are mesaje
+
+        res.json(conversationMessages);
+    } catch(e){
+        next(e);
+    }
+})
+
+app.get("/conversations/:cid/messages/:mid", authenticate, async (req, res, next) => {
+    try{
+        const conversationId = req.params.cid;
+        const messageId = req.params.mid;
+        const message = await get(
+            `SELECT m.id, m.created_at, m.message, m.is_read, m.from_user, m.to_user
+                    FROM messages m WHERE m.conversation_id = ? AND m.id = ?`,
+            [conversationId, messageId]
+        );
+        if(!message) return res.status(404).json({error: "Message not found"});
+        res.json(message);
+    } catch(e){
+        next(e);
+    }
+})
+
 function validateInteger(price){
     return !isNaN(parseInt(price)) && parseInt(price) > 0;
 }
@@ -846,6 +897,66 @@ app.delete("/notification/:id",authenticate, async (req,res,next) =>{
   }
 });
 
+app.post("/conversations",authenticate, async (req,res,next) =>{
+    try {
+        const {buyer_id, seller_id} = req.body;
+        const conversationId = uuid();
+        await run(
+            `INSERT INTO conversations (id, seller_id, buyer_id) VALUES (?,?,?)`,
+            [conversationId, seller_id, buyer_id]
+        );
+        const newConversation = {
+            id: conversationId,
+            seller_id,
+            buyer_id
+        };
+        res.status(201).json(newConversation);
+    } catch (e) {
+        next(e);
+    }
+})
+
+app.post("/conversations/:id/messages",authenticate, async (req,res,next) =>{
+    try {
+        const {message, from_user, created_at, is_read, to_user} = req.body;
+        const conversation_id = req.params.id;
+        const messageId = uuid();
+        await run(
+            `INSERT INTO messages (id, conversation_id, message, created_at, is_read, from_user, to_user) VALUES (?,?,?,?,?,?,?)`,
+            [messageId, conversation_id, message, created_at, parseInt(is_read), from_user, to_user]
+        );
+        const newMessage = {
+            id: messageId,
+            conversation_id,
+            message,
+            created_at,
+            is_read: parseInt(is_read),
+            from_user,
+            to_user
+        };
+        res.status(201).json(newMessage);
+    } catch (e) {
+        next(e);
+    }
+})
+
+app.put("/conversations/:cid/messages/:mid",authenticate, async (req,res,next) =>{
+    try{
+        const numericColumns = ['is_read'];
+        const processedBody = processBody(req.body, numericColumns);
+        const MESSAGE_UPDATABLE_COLUMNS = ['message', 'is_read', 'created_at'];
+        const { statement, values } = prepareUpdateStatement(processedBody, 'messages', MESSAGE_UPDATABLE_COLUMNS);
+        const finalValues = [...values, req.params.mid];
+
+        await run(statement, finalValues);
+        const updated = await get(`SELECT * FROM messages WHERE id = ?`, [req.params.mid]);
+        if (!updated) return res.status(404).json({ error: "Message not found after update" });
+        res.json(updated);
+    } catch (e) {
+        next(e);
+    }
+})
+
 function prepareUpdateStatement(updatedData, table, allowedColumns) {
     const allowedKeys = Object.keys(updatedData).filter(key => allowedColumns.includes(key));
     const validKeys = allowedKeys.filter(key => {
@@ -878,10 +989,10 @@ app.put("/product/:id", async (req, res, next) => {
         const numericColumns = ['price'];
         const processedBody = processBody(req.body, numericColumns);
         const PRODUCT_UPDATABLE_COLUMNS = ['title', 'description', 'price', 'category'];
-        const { updateStatement, updatedValues } = prepareUpdateStatement(processedBody, 'products', PRODUCT_UPDATABLE_COLUMNS);
-        const values = [...updatedValues, id];
+        const { statement, values } = prepareUpdateStatement(processedBody, 'products', PRODUCT_UPDATABLE_COLUMNS);
+        const finalValues = [...values, id];
 
-        const updated = await run(updateStatement, values);
+        const updated = await run(statement, finalValues);
         res.json(updated);
     } catch (e) {
         next(e);
@@ -895,10 +1006,10 @@ app.put("/order/:id", async (req, res, next) => {
         const numericColumns = ['price'];
         const processedBody = processBody(req.body, numericColumns);
         const ORDER_UPDATABLE_COLUMNS = ['buyer', 'price', 'status'];
-        const { updateStatement , updatedValues } = prepareUpdateStatement(processedBody, `orders`, ORDER_UPDATABLE_COLUMNS);
-        const values = [...updatedValues, id];
+        const { statement, values } = prepareUpdateStatement(processedBody, `orders`, ORDER_UPDATABLE_COLUMNS);
+        const finalValues = [...values, id];
 
-        const updated = await run(updateStatement, values);
+        const updated = await run(statement, finalValues);
         res.json(updated);
     } catch (e) {
         next(e);
@@ -912,10 +1023,10 @@ app.put("/review/:id", async (req, res, next) => {
         const numericColumns = ['rating'];
         const processedBody = processBody(req.body, numericColumns);
         const REVIEW_UPDATABLE_COLUMNS = ['rating', 'comment'];
-        const { updateStatement , updatedValues } = prepareUpdateStatement(processedBody, `reviews`, REVIEW_UPDATABLE_COLUMNS);
-        const values = [...updatedValues, id];
+        const { statement, values } = prepareUpdateStatement(processedBody, `reviews`, REVIEW_UPDATABLE_COLUMNS);
+        const finalValues = [...values, id];
 
-        const updated = await run(updateStatement, values);
+        const updated = await run(statement, finalValues);
         res.json(updated);
     } catch (e) {
         next(e);

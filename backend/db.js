@@ -87,10 +87,38 @@ export async function migrate() {
     );
   `);
 
+  await run(`
+    CREATE TABLE IF NOT EXISTS conversations (
+        id TEXT PRIMARY KEY,
+        seller_id TEXT NOT NULL,
+        buyer_id TEXT NOT NULL,
+        FOREIGN KEY(seller_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY(buyer_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `)
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS messages (
+        id TEXT PRIMARY KEY,
+        conversation_id TEXT NOT NULL,
+        message TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        is_read INTEGER NOT NULL DEFAULT 0, -- 0=false, 1=true
+        from_user TEXT NOT NULL,
+        to_user TEXT NOT NULL,
+        FOREIGN KEY(conversation_id) REFERENCES conversations(id) ON DELETE CASCADE,
+        FOREIGN KEY(from_user) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY(to_user) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `)
+
   // indexuri
   await run(`CREATE INDEX IF NOT EXISTS idx_products_seller ON products(seller);`);
   await run(`CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);`);
   await run(`CREATE INDEX IF NOT EXISTS idx_users_tara_oras ON users(tara, oras);`);
   await run(`CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(id_user, is_read);`);
+  await run(`CREATE INDEX IF NOT EXISTS idx_conversations_seller ON conversations(seller_id);`);
+  await run(`CREATE INDEX IF NOT EXISTS idx_conversations_buyer ON conversations(buyer_id);`);
+  await run(`CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id);`);
 }
 
