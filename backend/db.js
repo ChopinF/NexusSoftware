@@ -34,9 +34,10 @@ export async function migrate() {
       name TEXT NOT NULL,
       email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
-      role TEXT NOT NULL CHECK(role IN ('Trusted','Untrusted')),
-      tara TEXT NOT NULL,
-      oras TEXT NOT NULL
+      role TEXT NOT NULL CHECK(role IN ('Trusted','Untrusted', 'Admin')),
+      country TEXT NOT NULL,
+      city TEXT NOT NULL,
+      karma INTEGER DEFAULT 0
     );
   `);
 
@@ -112,13 +113,25 @@ export async function migrate() {
     )
   `)
 
+  await run(`
+    CREATE TABLE IF NOT EXISTS trusted_requests (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      pitch TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','approved','rejected')),
+      created_at TEXT NOT NULL,
+      FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+  `);
+
   // indexuri
   await run(`CREATE INDEX IF NOT EXISTS idx_products_seller ON products(seller);`);
   await run(`CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);`);
-  await run(`CREATE INDEX IF NOT EXISTS idx_users_tara_oras ON users(tara, oras);`);
+  await run(`CREATE INDEX IF NOT EXISTS idx_users_country_city ON users(country, city);`);
   await run(`CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(id_user, is_read);`);
   await run(`CREATE INDEX IF NOT EXISTS idx_conversations_seller ON conversations(seller_id);`);
   await run(`CREATE INDEX IF NOT EXISTS idx_conversations_buyer ON conversations(buyer_id);`);
   await run(`CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id);`);
+  await run(`CREATE INDEX IF NOT EXISTS idx_trusted_requests_status ON trusted_requests(status);`);
 }
 

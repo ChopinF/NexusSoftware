@@ -57,8 +57,8 @@ export const AuthTemplate: React.FC<AuthTemplateProps> = ({
     email: string,
     password: string,
     role: string,
-    tara: string,
-    oras: string
+    country: string,
+    city: string
   ): Promise<void> => {
     try {
       const res = await fetch(`${API_URL}/register`, {
@@ -66,7 +66,7 @@ export const AuthTemplate: React.FC<AuthTemplateProps> = ({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email, password, role, tara, oras }),
+        body: JSON.stringify({ name, email, password, role, country, city }),
       });
 
       if (!res.ok) {

@@ -1,0 +1,132 @@
+.formContainer {
+  width: 100%;
+  max-width: 500px; 
+  padding: 1.5rem;
+  background-color: #1F2937;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 3px solid #8B5CF6;
+  margin: 0 auto;
+}
+
+.formTitle {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #F9FAFB;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.buttonWrapper {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.karmaBadge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #374151;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid #4B5563;
+  margin-bottom: 1rem;
+}
+
+.karmaLabel {
+  color: #D1D5DB;
+  font-weight: 500;
+}
+
+.karmaValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.karmaValueGood {
+  color: #34D399; /* Green */
+}
+
+.karmaValueLow {
+  color: #FBBF24; /* Yellow */
+}
+
+.karmaNote {
+  font-size: 0.75rem;
+  color: #9CA3AF;
+  text-align: center;
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+}
+
+.agreementContainer {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.checkbox {
+  margin-top: 0.25rem;
+  height: 1rem;
+  width: 1rem;
+  border-radius: 0.25rem;
+  border: 1px solid #6B7280;
+  background-color: #374151;
+  color: #8B5CF6;
+  cursor: pointer;
+}
+
+.agreementLabel {
+  font-weight: 500;
+  color: #D1D5DB;
+  display: block;
+}
+
+.agreementText {
+  font-size: 0.75rem;
+  color: #9CA3AF;
+  margin-top: 0.25rem;
+}
+
+.statusContainer {
+  text-align: center;
+  padding: 1rem;
+}
+
+.iconWrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.statusIcon {
+  width: 4rem;
+  height: 4rem;
+}
+
+.statusTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #F9FAFB;
+  margin-bottom: 0.5rem;
+}
+
+.statusText {
+  color: #9CA3AF;
+  margin-bottom: 1.5rem;
+}
+
+.pitchPreview {
+  font-size: 0.875rem;
+  color: #6B7280;
+  font-style: italic;
+  margin-bottom: 1.5rem;
+}

@@ -73,8 +73,15 @@ const authenticate = (req, res, next) => {
 };
 
 const requireTrusted = (req, res, next) => {
-  if (req.user.role !== "Trusted") {
+  if (req.user.role !== "Trusted" && req.user.role !== "Admin") {
     return res.status(403).json({ error: "Forbidden: Only Trusted sellers can post products." });
+  }
+  next();
+};
+
+const requireAdmin = (req, res, next) => {
+  if (req.user.role !== "Admin") {
+    return res.status(403).json({ error: "Forbidden: Admin access required." });
   }
   next();
 };
@@ -92,22 +99,11 @@ const Cities = Object.freeze({
 async function seed() {
   // --- Demo Users ---
   const demoUsers = [
-    {
-      name: "a",
-      email: "a@yahoo.com",
-      password: "a",
-      role: "Trusted",
-      tara: "RO",
-      oras: "București",
-    },
-    {
-      name: "b",
-      email: "b@gmail.com",
-      password: "b",
-      role: "Untrusted",
-      tara: "RO",
-      oras: "Cluj-Napoca",
-    },
+    { name: "a", email: "a@yahoo.com", password: "a", role: "Trusted", country: "RO", city: "București", karma: 50 },
+    { name: "b", email: "b@gmail.com", password: "b", role: "Untrusted", country: "RO", city: "Cluj-Napoca", karma: 10 },
+    { name: "c", email: "c@gmail.com", password: "c", role: "Untrusted", country: "RO", city: "Cluj-Napoca", karma: 60 },
+    { name: "d", email: "d@gmail.com", password: "d", role: "Untrusted", country: "RO", city: "Cluj-Napoca", karma: 110 },
+    { name: "admin", email: "admin@edgeup.com", password: "admin", role: "Admin", country: "RO", city: "București", karma: 1000 },
   ];
 
   for (const u of demoUsers) {
@@ -116,18 +112,14 @@ async function seed() {
       const id = uuid();
       const hashed = await bcrypt.hash(u.password, 10);
       await run(
-        `INSERT INTO users (id, name, email, password, role, tara, oras)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [id, u.name, u.email, hashed, u.role, u.tara, u.oras]
+        `INSERT INTO users (id, name, email, password, role, country, city, karma)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [id, u.name, u.email, hashed, u.role, u.country, u.city, u.karma]
       );
       console.log(`[seed] created user ${u.email} (${u.role})`);
-    } else {
-      console.log(`[seed] user ${u.email} already exists`);
     }
   }
 
-  // --- Map-uri pentru ID-uri ---
-  // (Folosite de produsele, recenziile și comenzile de mai jos)
   const sellers = await all(
     `SELECT id, email, role FROM users WHERE email IN (?, ?)`,
     ["a@yahoo.com", "b@gmail.com"]
@@ -185,8 +177,8 @@ async function seed() {
     const pid = uuid();
     await run(
       `INSERT INTO products (id, title, description, price, seller, category, imageUrl)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`, // Adăugat imageUrl
-      [pid, p.title, p.description ?? "", p.price, seller.id, p.category, p.imageUrl ?? null] // Adăugat p.imageUrl
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [pid, p.title, p.description ?? "", p.price, seller.id, p.category, p.imageUrl ?? null]
     );
     console.log(`[seed] created product '${p.title}' pentru seller ${p.sellerEmail}`);
   }
@@ -214,7 +206,7 @@ async function seed() {
 
     for (const n of demoNotifications){
       const user = byEmail[n.userEmail];
-      if(!user || !user.id){ // Verificare actualizată
+      if(!user || !user.id){
         console.warn(`[seed] nu găsesc user pentru notificare: ${n.userEmail}`);
         continue;
       }
@@ -237,11 +229,9 @@ async function seed() {
       console.log(`[seed] created notification for ${n.userEmail}`);
     }
 
-  // --- Demo Reviews (Mutat din main) ---
+  // --- Demo Reviews ---
   const products = await all(`SELECT id, title FROM products`);
   const byTitle = Object.fromEntries(products.map((p) => [p.title, p.id]));
-  // Reutilizăm 'byEmail' de mai sus
-
   const demoReviews = [
     {
       productTitle: "Carte JS pentru Începători",
@@ -271,15 +261,15 @@ async function seed() {
 
   for (const r of demoReviews) {
     const produsId = byTitle[r.productTitle];
-    const user = byEmail[r.userEmail]; // Folosim map-ul 'byEmail'
-    if (!produsId || !user) { // Verificăm dacă user există
+    const user = byEmail[r.userEmail];
+    if (!produsId || !user) {
       console.warn(`[seed] nu pot crea review pt '${r.productTitle}' / ${r.userEmail}`);
       continue;
     }
 
     const exists = await get(
       `SELECT 1 AS ok FROM reviews WHERE produs = ? AND user = ?`,
-      [produsId, user.id] // Folosim user.id
+      [produsId, user.id]
     );
     if (exists) {
       console.log(`[seed] review deja există pentru ${r.userEmail} -> ${r.productTitle}`);
@@ -290,31 +280,30 @@ async function seed() {
     await run(
       `INSERT INTO reviews (id, produs, user, rating, comment)
        VALUES (?, ?, ?, ?, ?)`,
-      [rid, produsId, user.id, r.rating, r.comment] // Folosim user.id
+      [rid, produsId, user.id, r.rating, r.comment]
     );
     console.log(
       `[seed] created review '${r.comment.slice(0, 30)}...' pentru ${r.productTitle}`
     );
   }
 
-  // --- Demo Orders (Mutat din main) ---
+  // --- Demo Orders ---
   const demoOrders = [
     { buyerEmail: "b@gmail.com", price: 120, status: "pending" },
     { buyerEmail: "b@gmail.com", price: 60, status: "paid" },
     { buyerEmail: "a@yahoo.com", price: 45, status: "shipped" },
   ];
 
-  // Reutilizăm 'byEmail' de mai sus (în loc de 'byUser')
   for (const o of demoOrders) {
-    const buyer = byEmail[o.buyerEmail]; // Folosim map-ul 'byEmail'
-    if (!buyer) { // Verificăm dacă buyer există
+    const buyer = byEmail[o.buyerEmail];
+    if (!buyer) {
       console.warn(`[seed] nu pot crea order pentru ${o.buyerEmail}`);
       continue;
     }
 
     const exists = await get(
       `SELECT 1 AS ok FROM orders WHERE buyer = ? AND price = ? AND status = ?`,
-      [buyer.id, o.price, o.status] // Folosim buyer.id
+      [buyer.id, o.price, o.status]
     );
     if (exists) {
       console.log(
@@ -326,7 +315,7 @@ async function seed() {
     const oid = uuid();
     await run(
       `INSERT INTO orders (id, buyer, price, status) VALUES (?, ?, ?, ?)`,
-      [oid, buyer.id, o.price, o.status] // Folosim buyer.id
+      [oid, buyer.id, o.price, o.status]
     );
     console.log(`[seed] created order for ${o.buyerEmail} (${o.status})`);
   } 
@@ -348,15 +337,15 @@ const getResponseGPT = async (system, text, expectJson = false) => {
     try {
       return JSON.parse(raw);
     } catch {
-      return { links: [] }; // fallback
+      return { links: [] };
     }
   }
-  return { message: raw }; // text simplu
+  return { message: raw };
 };
 
 app.get("/users", async (_req, res, next) => {
   try {
-    const rows = await all("SELECT id, name, email, role, tara, oras FROM users ORDER BY name");
+    const rows = await all("SELECT id, name, email, role, country, city FROM users ORDER BY name");
     res.json(rows);
   } catch (e) {
     next(e);
@@ -391,8 +380,9 @@ app.post("/login", async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        tara: user.tara,
-        oras: user.oras,
+        country: user.country,
+        city: user.city,
+        karma: user.karma
       },
     });
   } catch (e) {
@@ -402,12 +392,12 @@ app.post("/login", async (req, res, next) => {
 
 app.post("/register", async (req, res, next) => {
   try {
-    const { name, email, password, role = Roles.Untrusted, tara, oras } = req.body;
+    const { name, email, password, role = Roles.Untrusted, country, city } = req.body;
 
     assert(name && email && password, "name, email, password sunt obligatorii");
-    assert(Object.values(Roles).includes(role), "role invalid");
-    assert(Countries.includes(tara), "tara invalida");
-    assert(Cities[tara]?.includes(oras), "oras invalid pentru tara");
+    assert(Object.values(Roles).includes(role), "invalid role");
+    assert(Countries.includes(country), "invalid country");
+    assert(Cities[country]?.includes(city), "invalid city for country");
 
     const exists = await get(`SELECT 1 AS ok FROM users WHERE email = ?`, [email]);
     assert(!exists, "email deja folosit", 409);
@@ -416,9 +406,9 @@ app.post("/register", async (req, res, next) => {
 
     const id = uuid();
     await run(
-      `INSERT INTO users (id, name, email, password, role, tara, oras)
+      `INSERT INTO users (id, name, email, password, role, country, city)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [id, name, email, hashed, role, tara, oras]
+      [id, name, email, hashed, role, country, city]
     );
 
     const token = jwt.sign(
@@ -429,7 +419,7 @@ app.post("/register", async (req, res, next) => {
 
     return res.status(201).json({
       token,
-      user: { id, name, email, role, tara, oras },
+      user: { id, name, email, role, country, city },
     });
   } catch (e) {
     next(e);
@@ -452,7 +442,7 @@ app.get("/me", async (req, res, next) => {
       return res.status(401).json({ error: "Invalid or expired token" });
     }
 
-    const user = await get(`SELECT id, name, email, role, tara, oras FROM users WHERE id = ?`, [
+    const user = await get(`SELECT id, name, email, role, country, city FROM users WHERE id = ?`, [
       payload.sub,
     ]);
 
@@ -482,8 +472,8 @@ app.get("/products", async (req, res, next) => {
                    u.name  AS seller_name,
                    u.email AS seller_email,
                    u.role  AS seller_role,
-                   u.tara  AS seller_country,
-                   u.oras  AS seller_city
+                   u.country  AS seller_country,
+                   u.city  AS seller_city
             FROM products p
                      INNER JOIN users u ON p.seller = u.id
         `;
@@ -553,8 +543,8 @@ app.get("/product/:id", async (req, res, next) => {
           u.name AS seller_name,
           u.email AS seller_email,
           u.role AS seller_role,
-          u.tara AS seller_country,
-          u.oras AS seller_city
+          u.country AS seller_country,
+          u.city AS seller_city
         FROM products p
         INNER JOIN users u ON p.seller = u.id
         WHERE p.id = ?
@@ -758,7 +748,7 @@ app.post("/product", authenticate, requireTrusted, upload.single("image"), async
           SELECT 
             p.id, p.title, p.description, p.price, p.category, p.imageUrl,
             u.id AS seller_id, u.name AS seller_name, u.email AS seller_email,
-            u.role AS seller_role, u.tara AS seller_country, u.oras AS seller_city
+            u.role AS seller_role, u.country AS seller_country, u.city AS seller_city
           FROM products p
           INNER JOIN users u ON p.seller = u.id
           WHERE p.id = ?
@@ -792,6 +782,8 @@ app.post("/review", async (req, res, next) => {
             `INSERT INTO reviews (id, produs, user, rating, comment) VALUES (?, ?, ?, ?, ?)`,
             [uuid(), review.productTitle, review.user, parseInt(review.rating), review.comment],
         );
+        await run(`UPDATE users SET karma = karma + 10 WHERE id = ?`, [review.user]);
+
         res.json(added);
     } catch (e) {
         next(e);
@@ -957,6 +949,93 @@ app.put("/conversations/:cid/messages/:mid",authenticate, async (req,res,next) =
     }
 })
 
+app.get("/my-trusted-request", authenticate, async (req, res, next) => {
+    try {
+        const userId = req.user.sub;
+        const request = await get(`
+            SELECT id, status, created_at, pitch
+            FROM trusted_requests 
+            WHERE user_id = ? 
+            ORDER BY created_at DESC 
+            LIMIT 1
+        `, [userId]);
+        
+        if (!request) {
+            return res.status(200).json({});
+        }
+
+        res.json(request);
+    } catch (e) {
+        next(e);
+    }
+});
+
+app.post("/request-trusted", authenticate, async (req, res, next) => {
+  try {
+    const { pitch } = req.body;
+    const userId = req.user.sub;
+
+    if (req.user.role === 'Trusted' || req.user.role === 'Admin') {
+        return res.status(400).json({ error: "You are already a verified seller." });
+    }
+
+    const existing = await get(`SELECT 1 FROM trusted_requests WHERE user_id = ? AND status = 'pending'`, [userId]);
+    if (existing) {
+        return res.status(400).json({ error: "You already have a pending application." });
+    }
+
+    const id = uuid();
+    await run(
+      `INSERT INTO trusted_requests (id, user_id, pitch, status, created_at)
+       VALUES (?, ?, ?, 'pending', datetime('now'))`,
+      [id, userId, pitch]
+    );
+
+    res.status(201).json({ message: "Application submitted successfully" });
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.get("/admin/requests", authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const requests = await all(`
+      SELECT tr.id, tr.pitch, tr.created_at, u.name, u.email, u.id as user_id, u.karma
+      FROM trusted_requests tr
+      JOIN users u ON tr.user_id = u.id
+      WHERE tr.status = 'pending'
+      ORDER BY tr.created_at ASC
+    `);
+    res.json(requests);
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.post("/admin/request/:id/:action", authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const { id, action } = req.params;
+    if (!['approve', 'reject'].includes(action)) {
+        return res.status(400).json({ error: "Invalid action" });
+    }
+
+    const request = await get(`SELECT user_id FROM trusted_requests WHERE id = ?`, [id]);
+    if (!request) return res.status(404).json({ error: "Request not found" });
+
+    const status = action === 'approve' ? 'approved' : 'rejected';
+    
+    await run(`UPDATE trusted_requests SET status = ? WHERE id = ?`, [status, id]);
+
+    if (action === 'approve') {
+        await run(`UPDATE users SET role = 'Trusted' WHERE id = ?`, [request.user_id]);
+    }
+
+    res.json({ message: `Request ${status}` });
+  } catch (e) {
+    next(e);
+  }
+});
+
 function prepareUpdateStatement(updatedData, table, allowedColumns) {
     const allowedKeys = Object.keys(updatedData).filter(key => allowedColumns.includes(key));
     const validKeys = allowedKeys.filter(key => {
@@ -1092,13 +1171,13 @@ app.post("/msg", async (req, res, next) => {
   }
 });
 
-// handler erori
 app.use((err, _req, res, _next) => {
   res.status(err.status || 500).json({ error: err.message || "Internal error" });
 });
 
-// --- startup ordonat ---
 const PORT = process.env.PORT || 3000;
+
+
 
 async function main() {
   await migrate();
@@ -1106,7 +1185,6 @@ async function main() {
   //DB population - uncomment at first run
   await seed();
 
-  // start 
   app.listen(PORT, () => console.log(`Listening on http://localhost:${PORT}`));
 
   process.on("SIGINT", () => db.close(() => process.exit(0)));

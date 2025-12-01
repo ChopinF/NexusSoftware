@@ -1,0 +1,200 @@
+.container {
+  width: 100%;
+  background-color: #1F2937;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #374151;
+  overflow: hidden;
+}
+
+.header {
+  padding: 1rem 1.5rem;
+  background-color: #111827;
+  border-bottom: 1px solid #374151;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #F3F4F6;
+}
+
+.badge {
+  background-color: #312E81;
+  color: #C7D2FE;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  padding: 1.5rem;
+  border-bottom: 1px solid #374151;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.item:hover {
+  background-color: #374151;
+}
+
+.itemContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .itemContent {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+/* User Info Section */
+.userInfo {
+  width: 100%;
+  min-width: 200px;
+}
+
+@media (min-width: 768px) {
+  .userInfo {
+    width: 25%;
+  }
+}
+
+.userHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.avatar {
+  height: 2.5rem;
+  width: 2.5rem;
+  border-radius: 9999px;
+  background-color: #4B5563;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #F9FAFB;
+  font-weight: 700;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.userDetails {
+  overflow: hidden;
+}
+
+.userName {
+  font-weight: 700;
+  color: #E5E7EB;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userEmail {
+  font-size: 0.75rem;
+  color: #9CA3AF;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.karmaBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid;
+}
+
+.karmaLow {
+  background-color: #7F1D1D;
+  color: #FECACA;
+  border-color: #B91C1C;
+}
+
+.karmaMed {
+  background-color: #78350F;
+  color: #FDE68A;
+  border-color: #B45309;
+}
+
+.karmaHigh {
+  background-color: #064E3B;
+  color: #A7F3D0;
+  border-color: #047857;
+}
+
+.date {
+  font-size: 0.75rem;
+  color: #6B7280;
+  margin-top: 0.5rem;
+}
+
+.pitchSection {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .pitchSection {
+    width: 50%;
+  }
+}
+
+.pitchLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #9CA3AF;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.pitchText {
+  color: #D1D5DB;
+  background-color: #111827;
+  padding: 0.75rem;
+  border-radius: 0.25rem;
+  border: 1px solid #374151;
+  font-size: 0.875rem;
+  line-height: 1.625;
+  white-space: pre-wrap;
+}
+
+.actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .actions {
+    width: 25%;
+  }
+}
+
+.emptyState {
+  padding: 2rem;
+  text-align: center;
+  color: #9CA3AF;
+}

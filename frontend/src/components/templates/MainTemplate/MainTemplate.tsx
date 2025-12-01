@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../../organisms/Header/Header";
 import { Footer } from "../../organisms/Footer/Footer";
@@ -25,6 +25,14 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
 
   const toggleChat = () => setIsChatOpen((prev) => !prev);
 
+  const handleBecomeSellerClick = () => {
+    navigate("/become-seller");
+  };
+
+  const handleAdminDashboardClick = () => {
+    navigate("/admin");
+  };
+
   return (
     <div className={styles.layoutWrapper}>
       <Header
@@ -32,28 +40,23 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
           user
             ? {
                 name: user.name,
-                avatarUrl: `https://placehold.co/40x40/e2e8f0/a0aec0?text=${user.name}`,
+                avatarUrl: `https://placehold.co/40x40/e2e8f0/a0aec0?text=${user.name.charAt(0)}`,
+                role: user.role,
               }
             : undefined
         }
-        onLoginClick={() => {
-          navigate("/login");
-        }}
-        onRegisterClick={() => {
-          navigate("/register");
-        }}
+        onLoginClick={() => navigate("/login")}
+        onRegisterClick={() => navigate("/register")}
         onSignOutClick={handleSignOut}
-        onPostAdClick={() => {
-          navigate("/post-ad");
-        }}
-        onAvatarClick={() => {
-          /* navigate to /profile */
-        }}
+        onPostAdClick={() => navigate("/post-ad")}
+        onBecomeSellerClick={handleBecomeSellerClick}
+        onAdminDashboardClick={handleAdminDashboardClick}
+        onAvatarClick={() => { /* navigate to /profile */ }}
       />
 
       <main className={styles.contentArea}>{children}</main>
 
-      {/* chatbot components */}
+      {/* Chatbot components */}
       {isChatOpen && <ChatWindow onClose={toggleChat} />}
       <ChatFab onClick={toggleChat} />
 

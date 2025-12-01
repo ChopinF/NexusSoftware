@@ -9,6 +9,9 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { PostAdPage } from "./components/pages/PostAdPage/PostAdPage";
 import { CategoryProvider } from "./contexts/CategoryContext";
 import ProductPage from "./components/pages/ProductPage/ProductPage.tsx";
+import { BecomeSellerPage } from "./components/pages/BecomeSellerPage/BecomeSellerPage";
+import { AdminDashboard } from "./components/pages/AdminDashboard/AdminDashboard";
+
 
 const App: React.FC = () => {
   return (
@@ -22,6 +25,8 @@ const App: React.FC = () => {
 
         <Route element={<ProtectedRoute />}>
           <Route path="/post-ad" element={<PostAdPage />} />
+          <Route path="/become-seller" element={<BecomeSellerPage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" />} />
