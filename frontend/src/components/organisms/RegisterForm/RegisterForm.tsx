@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./RegisterForm.module.css";
 
 import { FormField } from "../../molecules/FormField/FormField";
@@ -13,11 +13,26 @@ interface RegisterFormProps {
     email: string,
     password: string,
     role: string,
-    tara: string,
-    oras: string
+    country: string,
+    city: string
   ) => Promise<void>;
   onLoginClick?: () => void;
 }
+
+// Must match server.js logic
+const CITIES_BY_COUNTRY: Record<string, string[]> = {
+  RO: ["București", "Cluj-Napoca", "Iași", "Timișoara"],
+  DE: ["Berlin", "Munich", "Hamburg"],
+  FR: ["Paris", "Lyon"],
+  UK: ["London", "Manchester"],
+};
+
+const COUNTRY_OPTIONS = [
+  { value: "RO", label: "Romania" },
+  { value: "DE", label: "Germany" },
+  { value: "FR", label: "France" },
+  { value: "UK", label: "United Kingdom" },
+];
 
 export const RegisterForm: React.FC<RegisterFormProps> = ({
   onSubmit,
@@ -27,17 +42,24 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [tara, setTara] = useState("");
-  const [oras, setOras] = useState("");
+  
+  const [country, setCountry] = useState(COUNTRY_OPTIONS[0].value); // Default to first
+  const [city, setCity] = useState(CITIES_BY_COUNTRY[COUNTRY_OPTIONS[0].value][0]); // Default to first city of first country
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Update city when country changes
+  useEffect(() => {
+    const availableCities = CITIES_BY_COUNTRY[country] || [];
+    setCity(availableCities[0] || "");
+  }, [country]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
 
-    if (!name || !email || !password || !confirmPassword) {
+    if (!name || !email || !password || !confirmPassword || !country || !city) {
       setError("Please fill in all fields.");
       return;
     }
@@ -55,7 +77,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     setIsLoading(true);
 
     try {
-      await onSubmit(name, email, password, "Untrusted", "RO", oras);
+      // Fixed: Passing state variables 'country' and 'city' instead of hardcoded strings
+      await onSubmit(name, email, password, "Untrusted", country, city);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "An unknown error occurred.";
@@ -64,6 +87,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
       setIsLoading(false);
     }
   };
+
+  const cityOptions = (CITIES_BY_COUNTRY[country] || []).map((c) => ({
+    value: c,
+    label: c,
+  }));
 
   return (
     <div className={styles.formContainer}>
@@ -128,31 +156,25 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
         <SelectInput
           label="Country"
-          name="tara"
-          value={tara}
-          onChange={(e) => setTara(e.target.value)}
-          options={[
-            { value: "RO", label: "Romania" },
-            { value: "BG", label: "Bulgaria" },
-            { value: "HU", label: "Hungary" },
-          ]}
+          name="country"
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+          options={COUNTRY_OPTIONS}
+          disabled={isLoading}
         />
 
         <SelectInput
           label="City"
-          name="oras"
-          value={oras}
-          onChange={(e) => setOras(e.target.value)}
-          options={[
-            { value: "București", label: "București" },
-            { value: "Cluj-Napoca", label: "Cluj-Napoca" },
-            { value: "Timișoara", label: "Timișoara" },
-          ]}
+          name="city"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          options={cityOptions}
+          disabled={isLoading}
         />
 
         <div className={styles.buttonWrapper}>
           <Button type="submit" variant="primary" disabled={isLoading}>
-            {isLoading ? <Spinner size="small" /> : "Create Account"}
+            {isLoading ? <Spinner size="sm" /> : "Create Account"}
           </Button>
         </div>
       </form>
