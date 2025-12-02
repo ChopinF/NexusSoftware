@@ -1,72 +1,5 @@
 .seller-atom {
     width: 100%;
-    box-sizing: border-box;
-    padding: 1rem;
-    margin-top: 1.5rem;
-
-    border: 1px solid #374151;
-    background-color: #1F2937;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    border-radius: 12px;
-}
-
-.seller-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-}
-
-.seller-title {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #9CA3AF;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.trusted-icon {
-    color: #22c55e;
-}
-
-.not-trusted-icon {
-    color: #f97316;
-}
-
-.seller-name {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #F9FAFB;
-    margin-bottom: 0.75rem;
-}
-
-.seller-detail {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-    color: #b9bec5;
-}
-
-.seller-detail+.seller-detail {
-    margin-top: 0.25rem;
-}
-
-.seller-detail-icon {
-    width: 1rem;
-    height: 1rem;
-    color: #6B7280;
-    flex-shrink: 0;
-}
-
-.seller-email {
-    font-size: 0.9rem;
-    color: #9CA3AF;
-}
-
-/* --- Original Seller Card Styles (Preserved & Extended) --- */
-.seller-atom {
-    width: 100%;
     max-width: 28rem;
     box-sizing: border-box;
     padding: 1rem;
@@ -124,8 +57,8 @@
     margin: 0 0 1.5rem 0;
 }
 
-/* --- New Action Buttons --- */
-.action-grid {
+/* --- Buttons --- */
+.seller-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
@@ -148,12 +81,12 @@
 }
 
 .btn-primary {
-    background-color: #2563eb; /* blue-600 */
+    background-color: #2563eb; 
 }
 .btn-primary:hover { background-color: #1d4ed8; }
 
 .btn-secondary {
-    background-color: #374151; /* gray-700 */
+    background-color: #374151; 
     color: #f3f4f6;
     border: 1px solid #4b5563;
 }
@@ -192,10 +125,13 @@
     border: none;
     color: #9ca3af;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .modal-close-btn:hover { color: white; }
 
-.modal-title { margin: 0 0 0.5rem 0; font-size: 1.125rem; color: white; }
+.modal-title { margin: 0 0 0.5rem 0; font-size: 1.125rem; color: white; font-weight: 600; }
 .modal-description { margin: 0 0 1.5rem 0; font-size: 0.875rem; color: #9ca3af; }
 
 .input-group {
@@ -218,7 +154,7 @@
     border: 1px solid #4b5563;
     color: white;
     border-radius: 0.5rem;
-    padding: 0.72rem 1rem 0.625rem 3.5rem;
+    padding: 0.625rem 1rem 0.625rem 3.5rem;
     font-size: 1rem;
     box-sizing: border-box;
 }
@@ -231,13 +167,14 @@
     display: flex;
     gap: 0.75rem;
 }
+.modal-actions .btn { flex: 1; }
 
 .btn-confirm {
-    background-color: #16a34a; /* green-600 */
+    background-color: #16a34a; 
 }
 .btn-confirm:hover { background-color: #15803d; }
 
-/* --- Conversation/Inbox Styles --- */
+/* --- Chat Styles --- */
 .chat-container {
     width: 100%;
     max-width: 28rem;
@@ -249,6 +186,7 @@
     flex-direction: column;
     overflow: hidden;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    margin-top: 1.5rem;
 }
 
 .chat-header {
@@ -291,20 +229,11 @@
     gap: 1rem;
 }
 
-.empty-chat {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #6b7280;
-    opacity: 0.6;
-}
-
 .msg-wrapper {
     display: flex;
     justify-content: flex-end;
 }
+.msg-wrapper.received { justify-content: flex-start; }
 
 .msg-bubble {
     max-width: 80%;
@@ -313,20 +242,28 @@
     border-top-right-radius: 0;
     background-color: #2563eb;
     color: white;
+    font-size: 0.9rem;
+}
+.received .msg-bubble {
+    border-top-right-radius: 1rem;
+    border-top-left-radius: 0;
+    background-color: #374151;
+    color: #f3f4f6;
 }
 
-.msg-bubble.auto-msg {
+.msg-bubble.offer-msg {
     background-color: rgba(22, 163, 74, 0.2);
     border: 1px solid rgba(22, 163, 74, 0.3);
     color: #dcfce7;
 }
 
-.auto-label {
+.offer-label {
     font-size: 0.7rem;
     color: #4ade80;
     font-weight: bold;
     text-transform: uppercase;
     margin-bottom: 0.25rem;
+    display: block;
 }
 
 .chat-input-area {
@@ -340,13 +277,13 @@
 .chat-input {
     flex: 1;
     background-color: #111827;
-    border: none;
+    border: 1px solid #374151;
     color: white;
     border-radius: 999px;
     padding: 0.5rem 1rem;
     outline: none;
 }
-.chat-input:focus { box-shadow: 0 0 0 2px #3b82f6; }
+.chat-input:focus { box-shadow: 0 0 0 2px #3b82f6; border-color: transparent; }
 
 .btn-send {
     padding: 0.5rem;
@@ -361,7 +298,7 @@
 }
 .btn-send:hover { background-color: #1d4ed8; }
 
-/* --- App Container & Utilities --- */
+/* --- App Utils --- */
 .app-container {
     min-height: 100vh;
     background-color: #030712;
@@ -377,21 +314,22 @@
 .nav-header {
     width: 100%;
     max-width: 28rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     display: flex;
-    justify-content: space-between;
-    color: #6b7280;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    align-items: center;
+    gap: 1rem;
 }
 
-.nav-link {
-    color: #60a5fa;
+.back-btn {
     background: none;
     border: none;
+    color: #9ca3af;
     cursor: pointer;
-    text-decoration: underline;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.875rem;
 }
+.back-btn:hover { color: white; }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

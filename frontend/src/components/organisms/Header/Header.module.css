@@ -1,18 +1,14 @@
 .headerContainer {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
+  justify-items: center;
   width: 100%;
   padding: 1rem 2rem;
 
-  /* --- MODIFICĂRI TEMĂ --- */
   background-color: #111827;
-  /* Fundal întunecat (Charcoal) */
-  border-bottom: 1px solid #374151;
-  /* Border mai întunecat */
+  border-bottom: 1px solid #111827;
   color: #F9FAFB;
-  /* Text principal alb */
-  /* --- SFÂRȘIT MODIFICĂRI --- */
 
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
   gap: 1.5rem;
@@ -22,7 +18,6 @@
   flex-shrink: 0;
 }
 
-/* Stil adăugat pentru a face logo-ul alb și vizibil */
 .headerLeft a {
   color: #F9FAFB;
   text-decoration: none;
@@ -31,11 +26,12 @@
 }
 
 .headerCenter {
-  flex: 1;
+  grid-column: 2 / 3;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 2rem;
-  min-width: 0;
+  min-width: 800px;
 }
 
 .headerNav {
@@ -48,8 +44,8 @@
 }
 
 .headerSearch {
-  flex: 1;
-  max-width: 600px;
+  max-width: 1000px;
+  width: 100%;
 }
 
 .headerRight {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./Header.module.css";
 import { Logo } from "../../atoms/Logo/Logo";
 import { Button } from "../../atoms/Button/Button";
@@ -43,10 +43,11 @@ export const Header: React.FC<HeaderProps> = ({
     return `${first}${last}`.toUpperCase();
   };
 
-  const { selectedCategory, setSelectedCategory, setSearchQuery } = useCategory();
+  const { selectedCategory, setSelectedCategory, setSearchQuery } =
+    useCategory();
   const [categories, setCategories] = useState<string[]>([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetch("http://localhost:3000/categories")
       .then((res) => res.json())
       .then((data: string[]) => {
@@ -55,7 +56,7 @@ export const Header: React.FC<HeaderProps> = ({
       .catch(console.error);
   }, []);
 
-  const isTrustedOrAdmin = user?.role === 'Trusted' || user?.role === 'Admin';
+  const isTrustedOrAdmin = user?.role === "Trusted" || user?.role === "Admin";
 
   return (
     <header className={styles.headerContainer}>
@@ -68,15 +69,23 @@ export const Header: React.FC<HeaderProps> = ({
       <div className={styles.headerCenter}>
         <nav>
           <ul className={styles.headerNav}>
-            <NavItem label="Browse" href="/browse" isActive={currentPath === "/browse"} />
-            <NavItem label="About" href="/about" isActive={currentPath === "/about"} />
+            <NavItem
+              label="Browse"
+              href="/browse"
+              isActive={currentPath === "/browse"}
+            />
+            <NavItem
+              label="About"
+              href="/about"
+              isActive={currentPath === "/about"}
+            />
           </ul>
         </nav>
 
         <div className={styles.headerSearch}>
           <SearchBar
             placeholder="Search for items..."
-            onSearch={setSearchQuery} 
+            onSearch={setSearchQuery}
             categories={categories}
             onCategoryChange={setSelectedCategory}
             selectedCategory={selectedCategory}
@@ -88,14 +97,14 @@ export const Header: React.FC<HeaderProps> = ({
         {user ? (
           <>
             {/* 1. Admin Button (First) */}
-            {user.role === 'Admin' && (
+            {user.role === "Admin" && (
               <Button onClick={onAdminDashboardClick} variant="primary">
                 Admin
               </Button>
             )}
 
             {/* 2. Become Seller (Second) - Only for Untrusted */}
-            {user.role !== 'Trusted' && user.role !== 'Admin' && (
+            {user.role !== "Trusted" && user.role !== "Admin" && (
               <Button onClick={onBecomeSellerClick} variant="primary">
                 Become Seller
               </Button>
@@ -126,10 +135,18 @@ export const Header: React.FC<HeaderProps> = ({
           </>
         ) : (
           <div className={styles.authButtons}>
-            <Button onClick={onLoginClick} variant="secondary" className={styles.loginButton}>
+            <Button
+              onClick={onLoginClick}
+              variant="secondary"
+              className={styles.loginButton}
+            >
               Login
             </Button>
-            <Button onClick={onRegisterClick} variant="secondary" className={styles.registerButton}>
+            <Button
+              onClick={onRegisterClick}
+              variant="secondary"
+              className={styles.registerButton}
+            >
               Register
             </Button>
           </div>
