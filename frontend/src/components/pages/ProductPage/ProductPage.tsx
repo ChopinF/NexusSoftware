@@ -1,18 +1,20 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import './ProductPage.css';
-import {MainTemplate} from "../../templates/MainTemplate/MainTemplate.tsx";
-import {useParams} from "react-router-dom";
-import {Spinner} from "../../atoms/Spinner/Spinner.tsx";
+import { MainTemplate } from "../../templates/MainTemplate/MainTemplate.tsx";
+import { useParams } from "react-router-dom";
+import { Spinner } from "../../atoms/Spinner/Spinner.tsx";
 import ReviewsList from "../../molecules/ReviewList/ReviewList.tsx";
-import type {Product} from "../../../types/Product.ts";
+import type { Product } from "../../../types/Product.ts";
 import ProductContent from "../../organisms/ProductContent/ProductContent.tsx";
-import type {Review} from "../../../types/Review.ts";
+import type { Review } from "../../../types/Review.ts";
+import AlertModal from './AddReviewAlertModal.tsx';
 
 const ProductPage: React.FC = () => {
-    const {id} = useParams<{ id: string }>();
+    const { id } = useParams<{ id: string }>();
     const [loading, setLoading] = useState(true);
     const [product, setProduct] = useState<Product | null>(null);
     const [reviews, setReviews] = useState<Review[] | null>(null);
+    const [alertOpen, setAlertOpen] = useState(false); // ADD STATE
 
     useEffect(() => {
         fetch("http://localhost:3000/product/" + id)
@@ -26,7 +28,7 @@ const ProductPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        if(!id)return;
+        if (!id) return;
         fetch("http://localhost:3000/product/" + id + "/reviews")
             .then((res) => res.json())
             .then((data) => {
@@ -39,6 +41,7 @@ const ProductPage: React.FC = () => {
     return (
         <MainTemplate>
             <div className="product-page">
+
                 {loading || !product ? (
                     <div
                         style={{
@@ -48,14 +51,33 @@ const ProductPage: React.FC = () => {
                             minHeight: "40vh",
                         }}
                     >
-                        <Spinner size="lg"/>
+                        <Spinner size="lg" />
                     </div>
                 ) : (
-                    <ProductContent product={product}/>
+                    <ProductContent product={product} />
                 )}
                 {reviews && (
                     <ReviewsList reviews={reviews} />
+
                 )}
+                <button className='add-review-btn'
+                    style={{ margin: "20px", padding: "10px 20px" }}
+                    onClick={() => setAlertOpen(true)}
+                >
+                    Write a Review
+                </button>
+                <AlertModal
+                    open={alertOpen}
+                    product={product!}
+                    onClose={() => {
+                        setAlertOpen(false)
+                        window.location.reload();
+                    }
+                    }
+
+                >
+
+                </AlertModal>
             </div>
         </MainTemplate>
     );

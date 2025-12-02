@@ -11,3 +11,19 @@
         padding: 2rem 1rem;
     }
 }
+
+.add-review-btn {
+    background-color: #6D28D9;
+    color: #ffffff;
+    border-color: #6D28D9;
+    padding: 10px 30px;
+
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    font-size: 14px;
+}
+
+button:hover {
+    opacity: 0.9;
+}
