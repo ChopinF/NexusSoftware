@@ -9,6 +9,9 @@ import cors from "cors";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+// Web Scraper Dependencies
+import axios from "axios";
+import * as cheerio from "cheerio";
 
 dotenv.config();
 
@@ -789,6 +792,92 @@ app.post("/review", async (req, res, next) => {
         next(e);
     }
 })
+
+/**
+ * Fetches product prices from a site by scraping the HTML content
+ * @param {string} searchTerm Product title to search for
+ * @returns {Promise<Array<{ source: string, title: string, price: number, link: string }>>}
+ */
+async function scrapePrices(searchTerm) {
+    const results = [];
+    const searchUrl = `https://www.emag.ro/search/${encodeURIComponent(searchTerm)}`;
+    
+    try {
+        const { data } = await axios.get(searchUrl, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+        });
+
+        const $ = cheerio.load(data); 
+
+        const PRODUCT_CARD_SELECTOR = '.card-item'; 
+
+        $(PRODUCT_CARD_SELECTOR).slice(0, 15).each((index, element) => {
+            
+            const title = $(element).attr('data-name');
+            const link = $(element).attr('data-url');
+
+            const priceText = $(element).find('.product-new-price').text().trim();
+            
+            const cleanedPriceText = priceText
+                .replace('Lei', '') 
+                .replace(/\./g, '')  
+                .replace(/,/g, '.')  
+                .trim();
+                
+            const price = parseFloat(cleanedPriceText); 
+            
+            if (title && price && link && !isNaN(price) && link.startsWith('http')) {
+                results.push({
+                    source: 'eMAG', 
+                    title: title,
+                    price: price,
+                    link: link, 
+                });
+            }
+        });
+        
+    } catch (error) {
+        console.error(`Scraping error for ${searchTerm}:`, error.message);
+    }
+
+    return results;
+}
+
+app.get("/product/:id/price-comparison", async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        
+        const product = await get(`SELECT title FROM products WHERE id = ?`, [id]);
+        
+        if (!product) {
+            return res.status(404).json({ error: "Produsul nu a fost gasit pentru comparatie." });
+        }
+
+        const searchTerm = product.title;
+        
+        const comparisonData = await scrapePrices(searchTerm);
+        
+        const validPrices = comparisonData
+            .filter(item => typeof item.price === 'number' && item.price > 0)
+            .map(item => item.price);
+            
+        const averagePrice = validPrices.length > 0 
+            ? validPrices.reduce((a, b) => a + b, 0) / validPrices.length 
+            : null;
+
+        res.json({
+            searchTerm: searchTerm,
+            averageMarketPrice: averagePrice,
+            comparisons: comparisonData,
+        });
+
+    } catch (e) {
+        console.error("Eroare la Price Comparison:", e);
+        next(e);
+    }
+});
 
 app.get("/my-notifications", authenticate,async (req,res,next) =>{
   try{
