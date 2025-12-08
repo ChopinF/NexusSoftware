@@ -38,7 +38,10 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname));
+    cb(
+      null,
+      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname)
+    );
   },
 });
 
@@ -65,7 +68,7 @@ const authenticate = (req, res, next) => {
     return res.status(401).json({ error: "Missing or invalid token" });
   }
   const token = authHeader.split(" ")[1];
-  
+
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     req.user = payload;
@@ -77,7 +80,9 @@ const authenticate = (req, res, next) => {
 
 const requireTrusted = (req, res, next) => {
   if (req.user.role !== "Trusted" && req.user.role !== "Admin") {
-    return res.status(403).json({ error: "Forbidden: Only Trusted sellers can post products." });
+    return res
+      .status(403)
+      .json({ error: "Forbidden: Only Trusted sellers can post products." });
   }
   next();
 };
@@ -102,15 +107,57 @@ const Cities = Object.freeze({
 async function seed() {
   // --- Demo Users ---
   const demoUsers = [
-    { name: "a", email: "a@yahoo.com", password: "a", role: "Trusted", country: "RO", city: "București", karma: 50 },
-    { name: "b", email: "b@gmail.com", password: "b", role: "Untrusted", country: "RO", city: "Cluj-Napoca", karma: 10 },
-    { name: "c", email: "c@gmail.com", password: "c", role: "Untrusted", country: "RO", city: "Cluj-Napoca", karma: 60 },
-    { name: "d", email: "d@gmail.com", password: "d", role: "Untrusted", country: "RO", city: "Cluj-Napoca", karma: 110 },
-    { name: "admin", email: "admin@edgeup.com", password: "admin", role: "Admin", country: "RO", city: "București", karma: 1000 },
+    {
+      name: "a",
+      email: "a@yahoo.com",
+      password: "a",
+      role: "Trusted",
+      country: "RO",
+      city: "București",
+      karma: 50,
+    },
+    {
+      name: "b",
+      email: "b@gmail.com",
+      password: "b",
+      role: "Untrusted",
+      country: "RO",
+      city: "Cluj-Napoca",
+      karma: 10,
+    },
+    {
+      name: "c",
+      email: "c@gmail.com",
+      password: "c",
+      role: "Untrusted",
+      country: "RO",
+      city: "Cluj-Napoca",
+      karma: 60,
+    },
+    {
+      name: "d",
+      email: "d@gmail.com",
+      password: "d",
+      role: "Untrusted",
+      country: "RO",
+      city: "Cluj-Napoca",
+      karma: 110,
+    },
+    {
+      name: "admin",
+      email: "admin@edgeup.com",
+      password: "admin",
+      role: "Admin",
+      country: "RO",
+      city: "București",
+      karma: 1000,
+    },
   ];
 
   for (const u of demoUsers) {
-    const exists = await get(`SELECT 1 as ok FROM users WHERE email = ?`, [u.email]);
+    const exists = await get(`SELECT 1 as ok FROM users WHERE email = ?`, [
+      u.email,
+    ]);
     if (!exists) {
       const id = uuid();
       const hashed = await bcrypt.hash(u.password, 10);
@@ -137,7 +184,7 @@ async function seed() {
       price: 120,
       sellerEmail: "a@yahoo.com",
       category: "Books",
-      imageUrl: "/uploads/js-book.jpg"
+      imageUrl: "/uploads/js-book.jpg",
     },
     {
       title: "Mouse Office",
@@ -145,7 +192,7 @@ async function seed() {
       price: 60,
       sellerEmail: "a@yahoo.com",
       category: "Electronics",
-      imageUrl: "/uploads/office-mouse.jpg"
+      imageUrl: "/uploads/office-mouse.jpg",
     },
     {
       title: "Pernă decorativă",
@@ -153,18 +200,22 @@ async function seed() {
       price: 45,
       sellerEmail: "a@yahoo.com",
       category: "Home",
-      imageUrl: "/uploads/decorative-pillow.png"
+      imageUrl: "/uploads/decorative-pillow.png",
     },
   ];
 
   for (const p of demoProducts) {
     const seller = byEmail[p.sellerEmail];
     if (!seller) {
-      console.warn(`[seed] nu găsesc seller pentru ${p.title} (${p.sellerEmail})`);
+      console.warn(
+        `[seed] nu găsesc seller pentru ${p.title} (${p.sellerEmail})`
+      );
       continue;
     }
     if (seller.role !== "Trusted") {
-      console.warn(`[seed] seller ${p.sellerEmail} nu este Trusted, sar produsul ${p.title}`);
+      console.warn(
+        `[seed] seller ${p.sellerEmail} nu este Trusted, sar produsul ${p.title}`
+      );
       continue;
     }
 
@@ -173,7 +224,9 @@ async function seed() {
       [p.title, seller.id]
     );
     if (exists) {
-      console.log(`[seed] product '${p.title}' deja există pentru seller ${p.sellerEmail}`);
+      console.log(
+        `[seed] product '${p.title}' deja există pentru seller ${p.sellerEmail}`
+      );
       continue;
     }
 
@@ -181,9 +234,19 @@ async function seed() {
     await run(
       `INSERT INTO products (id, title, description, price, seller, category, imageUrl)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [pid, p.title, p.description ?? "", p.price, seller.id, p.category, p.imageUrl ?? null]
+      [
+        pid,
+        p.title,
+        p.description ?? "",
+        p.price,
+        seller.id,
+        p.category,
+        p.imageUrl ?? null,
+      ]
     );
-    console.log(`[seed] created product '${p.title}' pentru seller ${p.sellerEmail}`);
+    console.log(
+      `[seed] created product '${p.title}' pentru seller ${p.sellerEmail}`
+    );
   }
 
   // --- Demo Notifications ---
@@ -192,45 +255,48 @@ async function seed() {
       userEmail: "a@yahoo.com",
       message: "Ai primit un review nou de 4 stele pentru 'Mouse Office'!",
       type: "review",
-      is_read: 0
+      is_read: 0,
     },
     {
-      userEmail:"b@gmail.com",
-      message: "Comanda ta (#1002) pentru 'Carte JS pentru Începători' a fost expediată.",
+      userEmail: "b@gmail.com",
+      message:
+        "Comanda ta (#1002) pentru 'Carte JS pentru Începători' a fost expediată.",
       type: "order",
-      is_read: 0
+      is_read: 0,
     },
     {
-      userEmail:"a@yahoo.com",
-      message: "Comanda nouă (#1001) plasată de b@gmail.com pentru 'Pernă decorativă'.",
+      userEmail: "a@yahoo.com",
+      message:
+        "Comanda nouă (#1001) plasată de b@gmail.com pentru 'Pernă decorativă'.",
       type: "order",
-      is_read: 1
-    }];
+      is_read: 1,
+    },
+  ];
 
-    for (const n of demoNotifications){
-      const user = byEmail[n.userEmail];
-      if(!user || !user.id){
-        console.warn(`[seed] nu găsesc user pentru notificare: ${n.userEmail}`);
-        continue;
-      }
-
-      const exists = await get(
-        `SELECT 1 AS ok FROM notifications WHERE id_user = ? AND message = ?`,
-        [user.id,n.message]
-      );
-      if(exists){
-        console.log(`[seed] notificare deja există pentru ${n.userEmail}`);
-        continue;
-      }
-
-      const nid = uuid();
-      await run(
-      `INSERT INTO notifications (id, id_user, message, notification_type, is_read, created_at) 
-      VALUES (?, ?, ?, ?, ?, datetime('now'))`, 
-      [nid, user.id, n.message, n.type, n.is_read]
-      );
-      console.log(`[seed] created notification for ${n.userEmail}`);
+  for (const n of demoNotifications) {
+    const user = byEmail[n.userEmail];
+    if (!user || !user.id) {
+      console.warn(`[seed] nu găsesc user pentru notificare: ${n.userEmail}`);
+      continue;
     }
+
+    const exists = await get(
+      `SELECT 1 AS ok FROM notifications WHERE id_user = ? AND message = ?`,
+      [user.id, n.message]
+    );
+    if (exists) {
+      console.log(`[seed] notificare deja există pentru ${n.userEmail}`);
+      continue;
+    }
+
+    const nid = uuid();
+    await run(
+      `INSERT INTO notifications (id, id_user, message, notification_type, is_read, created_at) 
+      VALUES (?, ?, ?, ?, ?, datetime('now'))`,
+      [nid, user.id, n.message, n.type, n.is_read]
+    );
+    console.log(`[seed] created notification for ${n.userEmail}`);
+  }
 
   // --- Demo Reviews ---
   const products = await all(`SELECT id, title FROM products`);
@@ -266,7 +332,9 @@ async function seed() {
     const produsId = byTitle[r.productTitle];
     const user = byEmail[r.userEmail];
     if (!produsId || !user) {
-      console.warn(`[seed] nu pot crea review pt '${r.productTitle}' / ${r.userEmail}`);
+      console.warn(
+        `[seed] nu pot crea review pt '${r.productTitle}' / ${r.userEmail}`
+      );
       continue;
     }
 
@@ -275,7 +343,9 @@ async function seed() {
       [produsId, user.id]
     );
     if (exists) {
-      console.log(`[seed] review deja există pentru ${r.userEmail} -> ${r.productTitle}`);
+      console.log(
+        `[seed] review deja există pentru ${r.userEmail} -> ${r.productTitle}`
+      );
       continue;
     }
 
@@ -286,7 +356,9 @@ async function seed() {
       [rid, produsId, user.id, r.rating, r.comment]
     );
     console.log(
-      `[seed] created review '${r.comment.slice(0, 30)}...' pentru ${r.productTitle}`
+      `[seed] created review '${r.comment.slice(0, 30)}...' pentru ${
+        r.productTitle
+      }`
     );
   }
 
@@ -321,7 +393,7 @@ async function seed() {
       [oid, buyer.id, o.price, o.status]
     );
     console.log(`[seed] created order for ${o.buyerEmail} (${o.status})`);
-  } 
+  }
 }
 
 const getResponseGPT = async (system, text, expectJson = false) => {
@@ -348,7 +420,9 @@ const getResponseGPT = async (system, text, expectJson = false) => {
 
 app.get("/users", async (_req, res, next) => {
   try {
-    const rows = await all("SELECT id, name, email, role, country, city FROM users ORDER BY name");
+    const rows = await all(
+      "SELECT id, name, email, role, country, city FROM users ORDER BY name"
+    );
     res.json(rows);
   } catch (e) {
     next(e);
@@ -385,7 +459,7 @@ app.post("/login", async (req, res, next) => {
         role: user.role,
         country: user.country,
         city: user.city,
-        karma: user.karma
+        karma: user.karma,
       },
     });
   } catch (e) {
@@ -395,14 +469,23 @@ app.post("/login", async (req, res, next) => {
 
 app.post("/register", async (req, res, next) => {
   try {
-    const { name, email, password, role = Roles.Untrusted, country, city } = req.body;
+    const {
+      name,
+      email,
+      password,
+      role = Roles.Untrusted,
+      country,
+      city,
+    } = req.body;
 
     assert(name && email && password, "name, email, password sunt obligatorii");
     assert(Object.values(Roles).includes(role), "invalid role");
     assert(Countries.includes(country), "invalid country");
     assert(Cities[country]?.includes(city), "invalid city for country");
 
-    const exists = await get(`SELECT 1 AS ok FROM users WHERE email = ?`, [email]);
+    const exists = await get(`SELECT 1 AS ok FROM users WHERE email = ?`, [
+      email,
+    ]);
     assert(!exists, "email deja folosit", 409);
 
     const hashed = await bcrypt.hash(password, 10);
@@ -414,11 +497,9 @@ app.post("/register", async (req, res, next) => {
       [id, name, email, hashed, role, country, city]
     );
 
-    const token = jwt.sign(
-      { sub: id, role },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES || "1h" }
-    );
+    const token = jwt.sign({ sub: id, role }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES || "1h",
+    });
 
     return res.status(201).json({
       token,
@@ -445,9 +526,10 @@ app.get("/me", async (req, res, next) => {
       return res.status(401).json({ error: "Invalid or expired token" });
     }
 
-    const user = await get(`SELECT id, name, email, role, country, city FROM users WHERE id = ?`, [
-      payload.sub,
-    ]);
+    const user = await get(
+      `SELECT id, name, email, role, country, city FROM users WHERE id = ?`,
+      [payload.sub]
+    );
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -459,12 +541,11 @@ app.get("/me", async (req, res, next) => {
   }
 });
 
-
 app.get("/products", async (req, res, next) => {
-    try {
-        const { category, search } = req.query;
+  try {
+    const { category, search } = req.query;
 
-        let sql = `
+    let sql = `
             SELECT p.id,
                    p.title,
                    p.description,
@@ -481,53 +562,51 @@ app.get("/products", async (req, res, next) => {
                      INNER JOIN users u ON p.seller = u.id
         `;
 
-        const conditions = [];
-        const params = [];
+    const conditions = [];
+    const params = [];
 
-        if (category) {
-            conditions.push("LOWER(p.category) = LOWER(?)");
-            params.push(category);
-        }
-
-        if (search) {
-            conditions.push(
-                "(LOWER(p.title) LIKE LOWER(?) OR LOWER(p.description) LIKE LOWER(?))"
-            );
-            params.push(`%${search}%`, `%${search}%`);
-        }
-
-        if (conditions.length > 0) {
-            sql += " WHERE " + conditions.join(" AND ");
-        }
-
-        sql += " ORDER BY p.title";
-
-        const rows = await all(sql, params);
-
-        res.json(rows);
-    } catch (e) {
-        next(e);
+    if (category) {
+      conditions.push("LOWER(p.category) = LOWER(?)");
+      params.push(category);
     }
+
+    if (search) {
+      conditions.push(
+        "(LOWER(p.title) LIKE LOWER(?) OR LOWER(p.description) LIKE LOWER(?))"
+      );
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
+    if (conditions.length > 0) {
+      sql += " WHERE " + conditions.join(" AND ");
+    }
+
+    sql += " ORDER BY p.title";
+
+    const rows = await all(sql, params);
+
+    res.json(rows);
+  } catch (e) {
+    next(e);
+  }
 });
 
-
 app.get("/categories", async (_req, res, next) => {
-    try {
-        const rows = await all(`
+  try {
+    const rows = await all(`
             SELECT DISTINCT p.category
             FROM products p
             WHERE p.category IS NOT NULL AND p.category <> ''
             ORDER BY p.category COLLATE NOCASE
         `);
 
-        const categories = rows.map((r) => r.category);
+    const categories = rows.map((r) => r.category);
 
-        res.json(categories);
-    } catch (e) {
-        next(e);
-    }
+    res.json(categories);
+  } catch (e) {
+    next(e);
+  }
 });
-
 
 // Get single product by ID
 app.get("/product/:id", async (req, res, next) => {
@@ -581,7 +660,9 @@ app.get("/product/:id/reviews", async (req, res, next) => {
     const { id } = req.params;
 
     // First verify the product exists
-    const product = await get(`SELECT id, title FROM products WHERE id = ?`, [id]);
+    const product = await get(`SELECT id, title FROM products WHERE id = ?`, [
+      id,
+    ]);
     if (!product) {
       return res.status(404).json({ error: "Product not found" });
     }
@@ -628,126 +709,155 @@ app.get("/orders", async (_req, res, next) => {
 
 // returneaza intreaga conversatie dupa id-ul unui user (buyer sau seller)
 app.get("/conversations/user/:userId", authenticate, async (req, res, next) => {
-    try{
-        const userId = req.params.userId;
-        const conversations = await all(
-            `SELECT c.id as conversation_id, c.seller_id, c.buyer_id, m.id as id, m.created_at, m.message, m.is_read, m.from_user, m.to_user
-                    FROM conversations c INNER JOIN messages m ON m.conversation_id = c.id
+  try {
+    const userId = req.params.userId;
+    const conversations = await all(
+      `SELECT c.id as conversation_id, c.seller_id, c.buyer_id, 
+                    m.id as id, m.created_at, m.message, m.is_read, m.from_user, m.to_user,
+                    seller.name as seller_name, buyer.name as buyer_name
+                    FROM conversations c 
+                    INNER JOIN messages m ON m.conversation_id = c.id
+                    LEFT JOIN users seller ON c.seller_id = seller.id
+                    LEFT JOIN users buyer ON c.buyer_id = buyer.id
                     WHERE c.seller_id = ? OR c.buyer_id = ? ORDER BY m.created_at DESC`,
-            [userId, userId]
-        );
-        res.json(conversations);
-    } catch(e){
-        next(e);
-    }
-})
+      [userId, userId]
+    );
+    res.json(conversations);
+  } catch (e) {
+    next(e);
+  }
+});
 
 // returneaza intreaga conversatie dupa id
-app.get("/conversations/:id/user/:userId", authenticate, async (req, res, next) => {
-    try{
-        const userId = req.params.userId;
-        const conversationId = req.params.id;
-        const conversationMessages = await all(
-            `SELECT c.id as conversation_id, c.seller_id, c.buyer_id, m.id as id, m.created_at, m.message, m.is_read, m.from_user, m.to_user
+app.get(
+  "/conversations/:id/user/:userId",
+  authenticate,
+  async (req, res, next) => {
+    try {
+      const userId = req.params.userId;
+      const conversationId = req.params.id;
+      const conversationMessages = await all(
+        `SELECT c.id as conversation_id, c.seller_id, c.buyer_id, m.id as id, m.created_at, m.message, m.is_read, m.from_user, m.to_user
                     FROM conversations c INNER JOIN messages m ON m.conversation_id = c.id
                     WHERE (c.seller_id = ? OR c.buyer_id = ?) AND c.id = ? ORDER BY m.created_at ASC`,
-            [userId, userId, conversationId]
-        );
-        if (!conversationMessages || conversationMessages.length === 0) return res.json([]); //conversatia exista dar nu are mesaje
+        [userId, userId, conversationId]
+      );
+      if (!conversationMessages || conversationMessages.length === 0)
+        return res.json([]); //conversatia exista dar nu are mesaje
 
-        res.json(conversationMessages);
-    } catch(e){
-        next(e);
+      res.json(conversationMessages);
+    } catch (e) {
+      next(e);
     }
-})
+  }
+);
 
-app.get("/conversations/:cid/messages/:mid", authenticate, async (req, res, next) => {
-    try{
-        const conversationId = req.params.cid;
-        const messageId = req.params.mid;
-        const message = await get(
-            `SELECT m.id, m.created_at, m.message, m.is_read, m.from_user, m.to_user
+app.get(
+  "/conversations/:cid/messages/:mid",
+  authenticate,
+  async (req, res, next) => {
+    try {
+      const conversationId = req.params.cid;
+      const messageId = req.params.mid;
+      const message = await get(
+        `SELECT m.id, m.created_at, m.message, m.is_read, m.from_user, m.to_user
                     FROM messages m WHERE m.conversation_id = ? AND m.id = ?`,
-            [conversationId, messageId]
-        );
-        if(!message) return res.status(404).json({error: "Message not found"});
-        res.json(message);
-    } catch(e){
-        next(e);
+        [conversationId, messageId]
+      );
+      if (!message) return res.status(404).json({ error: "Message not found" });
+      res.json(message);
+    } catch (e) {
+      next(e);
     }
-})
+  }
+);
 
-function validateInteger(price){
-    return !isNaN(parseInt(price)) && parseInt(price) > 0;
+function validateInteger(price) {
+  return !isNaN(parseInt(price)) && parseInt(price) > 0;
 }
 
 function validateEmail(email) {
-    if(!email || typeof email !== 'string'){
-      return false;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email.trim());
+  if (!email || typeof email !== "string") {
+    return false;
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email.trim());
 }
 
 function validateProduct(product) {
-    const {title, description, price, category} = product; 
-    let errors = [];
-    if(!title) errors.push("Invalid title");
-    if(!description) errors.push("Invalid description");
-    if(!validateInteger(price)) errors.push("Invalid price");
-    if(!category) errors.push("Invalid category");
-    if(errors.length > 0) throw new Error(errors.join("; "));
+  const { title, description, price, category } = product;
+  let errors = [];
+  if (!title) errors.push("Invalid title");
+  if (!description) errors.push("Invalid description");
+  if (!validateInteger(price)) errors.push("Invalid price");
+  if (!category) errors.push("Invalid category");
+  if (errors.length > 0) throw new Error(errors.join("; "));
 }
 
 function validateOrder(order) {
-    const {buyerEmail, price, status} = order;
-    let errors = [];
-    if(!buyerEmail) errors.push("Invalid buyer");
-    if(!validateInteger(price)) errors.push("Invalid price");
-    if(!status) errors.push("Invalid status");
-    if(errors.length > 0) throw new Error(errors.join("; "));
+  const { buyerEmail, price, status } = order;
+  let errors = [];
+  if (!buyerEmail) errors.push("Invalid buyer");
+  if (!validateInteger(price)) errors.push("Invalid price");
+  if (!status) errors.push("Invalid status");
+  if (errors.length > 0) throw new Error(errors.join("; "));
 }
 
 function validateReview(review) {
-    const {productTitle,user,rating,comment} = review;
-    let errors = [];
-    if(!productTitle) errors.push("Invalid product title");
-    if(!user) errors.push("Invalid user");
-    if(!validateInteger(rating)) errors.push("Invalid rating");
-    if(!comment) errors.push("Invalid comment");
-    if(errors.length > 0) throw new Error(errors.join("; "));
+  const { productTitle, user, rating, comment } = review;
+  let errors = [];
+  if (!productTitle) errors.push("Invalid product title");
+  if (!user) errors.push("Invalid user");
+  if (!validateInteger(rating)) errors.push("Invalid rating");
+  if (!comment) errors.push("Invalid comment");
+  if (errors.length > 0) throw new Error(errors.join("; "));
 }
 
-function validateNotification(notification) { //TODO: validations to be determined
-    const {user, message, type, is_read, created_at} = notification;
-    let errors = [];
-    if(!user) errors.push("Invalid user id");
-    if(!message) errors.push("Invalid message");
-    if(!type) errors.push("Invalid type");
-    if(!created_at) errors.push("Invalid creation date");
-    if(errors.length > 0) throw new Error(errors.join("; "));
+function validateNotification(notification) {
+  //TODO: validations to be determined
+  const { user, message, type, is_read, created_at } = notification;
+  let errors = [];
+  if (!user) errors.push("Invalid user id");
+  if (!message) errors.push("Invalid message");
+  if (!type) errors.push("Invalid type");
+  if (!created_at) errors.push("Invalid creation date");
+  if (errors.length > 0) throw new Error(errors.join("; "));
 }
 
-app.post("/product", authenticate, requireTrusted, upload.single("image"), async (req, res, next) => {
-    try{
-        const product = req.body;
-        const imageFile = req.file;
-        const sellerId = req.user.sub;
-        validateProduct(product);
-        const newProductId = uuid();
-        
-        let imageUrl = null;
-        if (imageFile) {
-          imageUrl = `/uploads/${imageFile.filename}`;
-        }
-        
-        await run(
-            `INSERT INTO products (id, title, description, price, seller, category, imageUrl) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [newProductId, product.title, product.description, parseInt(product.price), sellerId, product.category, imageUrl],
-        );
+app.post(
+  "/product",
+  authenticate,
+  requireTrusted,
+  upload.single("image"),
+  async (req, res, next) => {
+    try {
+      const product = req.body;
+      const imageFile = req.file;
+      const sellerId = req.user.sub;
+      validateProduct(product);
+      const newProductId = uuid();
 
-        //const newProduct = await get(`SELECT * FROM products WHERE id = ?`, [newProductId]);
-        const newProduct = await get(`
+      let imageUrl = null;
+      if (imageFile) {
+        imageUrl = `/uploads/${imageFile.filename}`;
+      }
+
+      await run(
+        `INSERT INTO products (id, title, description, price, seller, category, imageUrl) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          newProductId,
+          product.title,
+          product.description,
+          parseInt(product.price),
+          sellerId,
+          product.category,
+          imageUrl,
+        ]
+      );
+
+      //const newProduct = await get(`SELECT * FROM products WHERE id = ?`, [newProductId]);
+      const newProduct = await get(
+        `
           SELECT 
             p.id, p.title, p.description, p.price, p.category, p.imageUrl,
             u.id AS seller_id, u.name AS seller_name, u.email AS seller_email,
@@ -755,43 +865,53 @@ app.post("/product", authenticate, requireTrusted, upload.single("image"), async
           FROM products p
           INNER JOIN users u ON p.seller = u.id
           WHERE p.id = ?
-        `, [newProductId]);
-        res.status(201).json(newProduct);
-
+        `,
+        [newProductId]
+      );
+      res.status(201).json(newProduct);
     } catch (e) {
-        next(e);
+      next(e);
     }
-})
+  }
+);
 
 app.post("/order", async (req, res, next) => {
-    try{
-        const order = req.body;
-        validateOrder(order);
-        const added = await run(
-            `INSERT INTO orders (id, buyer, price, status) VALUES (?,?,?,?)`,
-            [uuid(), order.buyerEmail, parseInt(order.price), order.status],
-        );
-        res.json(added);
-    } catch (e) {
-        next(e);
-    }
-})
+  try {
+    const order = req.body;
+    validateOrder(order);
+    const added = await run(
+      `INSERT INTO orders (id, buyer, price, status) VALUES (?,?,?,?)`,
+      [uuid(), order.buyerEmail, parseInt(order.price), order.status]
+    );
+    res.json(added);
+  } catch (e) {
+    next(e);
+  }
+});
 
 app.post("/review", async (req, res, next) => {
-    try{
-        const review = req.body;
-        validateReview(review);
-        const added = await run(
-            `INSERT INTO reviews (id, produs, user, rating, comment) VALUES (?, ?, ?, ?, ?)`,
-            [uuid(), review.productTitle, review.user, parseInt(review.rating), review.comment],
-        );
-        await run(`UPDATE users SET karma = karma + 10 WHERE id = ?`, [review.user]);
+  try {
+    const review = req.body;
+    validateReview(review);
+    const added = await run(
+      `INSERT INTO reviews (id, produs, user, rating, comment) VALUES (?, ?, ?, ?, ?)`,
+      [
+        uuid(),
+        review.productTitle,
+        review.user,
+        parseInt(review.rating),
+        review.comment,
+      ]
+    );
+    await run(`UPDATE users SET karma = karma + 10 WHERE id = ?`, [
+      review.user,
+    ]);
 
-        res.json(added);
-    } catch (e) {
-        next(e);
-    }
-})
+    res.json(added);
+  } catch (e) {
+    next(e);
+  }
+});
 
 /**
  * Fetches product prices from a site by scraping the HTML content
@@ -799,88 +919,99 @@ app.post("/review", async (req, res, next) => {
  * @returns {Promise<Array<{ source: string, title: string, price: number, link: string }>>}
  */
 async function scrapePrices(searchTerm) {
-    const results = [];
-    const searchUrl = `https://www.emag.ro/search/${encodeURIComponent(searchTerm)}`;
-    
-    try {
-        const { data } = await axios.get(searchUrl, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            }
-        });
+  const results = [];
+  const searchUrl = `https://www.emag.ro/search/${encodeURIComponent(
+    searchTerm
+  )}`;
 
-        const $ = cheerio.load(data); 
+  try {
+    const { data } = await axios.get(searchUrl, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+      },
+    });
 
-        const PRODUCT_CARD_SELECTOR = '.card-item'; 
+    const $ = cheerio.load(data);
 
-        $(PRODUCT_CARD_SELECTOR).slice(0, 15).each((index, element) => {
-            
-            const title = $(element).attr('data-name');
-            const link = $(element).attr('data-url');
+    const PRODUCT_CARD_SELECTOR = ".card-item";
 
-            const priceText = $(element).find('.product-new-price').text().trim();
-            
-            const cleanedPriceText = priceText
-                .replace('Lei', '') 
-                .replace(/\./g, '')  
-                .replace(/,/g, '.')  
-                .trim();
-                
-            const price = parseFloat(cleanedPriceText); 
-            
-            if (title && price && link && !isNaN(price) && link.startsWith('http')) {
-                results.push({
-                    source: 'eMAG', 
-                    title: title,
-                    price: price,
-                    link: link, 
-                });
-            }
-        });
-        
-    } catch (error) {
-        console.error(`Scraping error for ${searchTerm}:`, error.message);
-    }
+    $(PRODUCT_CARD_SELECTOR)
+      .slice(0, 15)
+      .each((index, element) => {
+        const title = $(element).attr("data-name");
+        const link = $(element).attr("data-url");
 
-    return results;
+        const priceText = $(element).find(".product-new-price").text().trim();
+
+        const cleanedPriceText = priceText
+          .replace("Lei", "")
+          .replace(/\./g, "")
+          .replace(/,/g, ".")
+          .trim();
+
+        const price = parseFloat(cleanedPriceText);
+
+        if (
+          title &&
+          price &&
+          link &&
+          !isNaN(price) &&
+          link.startsWith("http")
+        ) {
+          results.push({
+            source: "eMAG",
+            title: title,
+            price: price,
+            link: link,
+          });
+        }
+      });
+  } catch (error) {
+    console.error(`Scraping error for ${searchTerm}:`, error.message);
+  }
+
+  return results;
 }
 
 app.get("/product/:id/price-comparison", async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        
-        const product = await get(`SELECT title FROM products WHERE id = ?`, [id]);
-        
-        if (!product) {
-            return res.status(404).json({ error: "Produsul nu a fost gasit pentru comparatie." });
-        }
+  try {
+    const { id } = req.params;
 
-        const searchTerm = product.title;
-        
-        const comparisonData = await scrapePrices(searchTerm);
-        
-        const validPrices = comparisonData
-            .filter(item => typeof item.price === 'number' && item.price > 0)
-            .map(item => item.price);
-            
-        const averagePrice = validPrices.length > 0 
-            ? validPrices.reduce((a, b) => a + b, 0) / validPrices.length 
-            : null;
+    const product = await get(`SELECT title FROM products WHERE id = ?`, [id]);
 
-        res.json({
-            searchTerm: searchTerm,
-            averageMarketPrice: averagePrice,
-            comparisons: comparisonData,
-        });
-
-    } catch (e) {
-        console.error("Eroare la Price Comparison:", e);
-        next(e);
+    if (!product) {
+      return res
+        .status(404)
+        .json({ error: "Produsul nu a fost gasit pentru comparatie." });
     }
+
+    const searchTerm = product.title;
+
+    const comparisonData = await scrapePrices(searchTerm);
+
+    const validPrices = comparisonData
+      .filter((item) => typeof item.price === "number" && item.price > 0)
+      .map((item) => item.price);
+
+    const averagePrice =
+      validPrices.length > 0
+        ? validPrices.reduce((a, b) => a + b, 0) / validPrices.length
+        : null;
+
+    res.json({
+      searchTerm: searchTerm,
+      averageMarketPrice: averagePrice,
+      comparisons: comparisonData,
+    });
+  } catch (e) {
+    console.error("Eroare la Price Comparison:", e);
+    next(e);
+  }
 });
 
-app.get("/my-notifications", authenticate,async (req,res,next) =>{
-  try{
+app.get("/my-notifications", authenticate, async (req, res, next) => {
+  try {
     const userId = req.user.sub;
 
     const notifications = await all(
@@ -891,14 +1022,13 @@ app.get("/my-notifications", authenticate,async (req,res,next) =>{
       [userId]
     );
     res.json(notifications);
-  }
-  catch(e){
+  } catch (e) {
     next(e);
   }
 });
 
-app.put("/notification/:id/read",authenticate,async (req,res,next) =>{
-  try{
+app.put("/notification/:id/read", authenticate, async (req, res, next) => {
+  try {
     const notificationId = req.params.id;
     const userId = req.user.sub;
 
@@ -906,22 +1036,26 @@ app.put("/notification/:id/read",authenticate,async (req,res,next) =>{
       `UPDATE notifications
       SET is_read = 1
       WHERE id = ? AND id_user = ?`,
-      [notificationId,userId]
+      [notificationId, userId]
     );
 
-    if(updated.changes === 0){
-      return res.status(404).json({error: "Notification not found or you do not have permission to update it."});
+    if (updated.changes === 0) {
+      return res
+        .status(404)
+        .json({
+          error:
+            "Notification not found or you do not have permission to update it.",
+        });
     }
 
-    res.status(200).json({message: "Notification marked as read"});
-  }
-  catch(e){
+    res.status(200).json({ message: "Notification marked as read" });
+  } catch (e) {
     next(e);
   }
 });
 
-app.put("/my-notifications/read-all",authenticate, async(req,res,next) => {
-  try{
+app.put("/my-notifications/read-all", authenticate, async (req, res, next) => {
+  try {
     const userId = req.user.sub;
 
     const updated = await run(
@@ -933,130 +1067,170 @@ app.put("/my-notifications/read-all",authenticate, async(req,res,next) => {
 
     res.status(200).json({
       message: "All unread notifications marked as read.",
-      count: updated.changes
+      count: updated.changes,
     });
-  }
-  catch(e){
+  } catch (e) {
     next(e);
   }
 });
 
 app.post("/notification", async (req, res, next) => {
-    try{
-        const notification = req.body;
-        notification.is_read = false;
-        validateNotification(notification);
-        const added = await run(
-            `INSERT INTO notifications (id, id_user, message, notification_type, is_read, created_at) VALUES (?,?,?,?,?,?)`,
-            [uuid(), notification.user, notification.message, notification.type, notification.is_read, notification.created_at],
-        );
-        res.json(added);
-    } catch (e) {
-        next(e);
-    }
-})
+  try {
+    const notification = req.body;
+    notification.is_read = false;
+    validateNotification(notification);
+    const added = await run(
+      `INSERT INTO notifications (id, id_user, message, notification_type, is_read, created_at) VALUES (?,?,?,?,?,?)`,
+      [
+        uuid(),
+        notification.user,
+        notification.message,
+        notification.type,
+        notification.is_read,
+        notification.created_at,
+      ]
+    );
+    res.json(added);
+  } catch (e) {
+    next(e);
+  }
+});
 
-app.delete("/notification/:id",authenticate, async (req,res,next) =>{
-  try{
+app.delete("/notification/:id", authenticate, async (req, res, next) => {
+  try {
     const notificationId = req.params.id;
     const userId = req.user.sub;
 
     const deleted = await run(
       `DELETE FROM notifications
       WHERE id=? and id_user= ?`,
-      [notificationId,userId]
+      [notificationId, userId]
     );
 
-    if(deleted.changes === 0){
-      return res.status(404).json({error: "Notification not found or you do not have permission to delete it."});
+    if (deleted.changes === 0) {
+      return res
+        .status(404)
+        .json({
+          error:
+            "Notification not found or you do not have permission to delete it.",
+        });
     }
 
-    return res.status(200).json({message: "Notification deleted successfully"});
-  }
-  catch(e){
+    return res
+      .status(200)
+      .json({ message: "Notification deleted successfully" });
+  } catch (e) {
     next(e);
   }
 });
 
-app.post("/conversations",authenticate, async (req,res,next) =>{
+app.post("/conversations", authenticate, async (req, res, next) => {
+  try {
+    const { buyer_id, seller_id } = req.body;
+    const conversationId = uuid();
+    await run(
+      `INSERT INTO conversations (id, seller_id, buyer_id) VALUES (?,?,?)`,
+      [conversationId, seller_id, buyer_id]
+    );
+    const newConversation = {
+      id: conversationId,
+      seller_id,
+      buyer_id,
+    };
+    res.status(201).json(newConversation);
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.post(
+  "/conversations/:id/messages",
+  authenticate,
+  async (req, res, next) => {
     try {
-        const {buyer_id, seller_id} = req.body;
-        const conversationId = uuid();
-        await run(
-            `INSERT INTO conversations (id, seller_id, buyer_id) VALUES (?,?,?)`,
-            [conversationId, seller_id, buyer_id]
-        );
-        const newConversation = {
-            id: conversationId,
-            seller_id,
-            buyer_id
-        };
-        res.status(201).json(newConversation);
+      const { message, from_user, created_at, is_read, to_user } = req.body;
+      const conversation_id = req.params.id;
+      const messageId = uuid();
+      await run(
+        `INSERT INTO messages (id, conversation_id, message, created_at, is_read, from_user, to_user) VALUES (?,?,?,?,?,?,?)`,
+        [
+          messageId,
+          conversation_id,
+          message,
+          created_at,
+          parseInt(is_read),
+          from_user,
+          to_user,
+        ]
+      );
+      const newMessage = {
+        id: messageId,
+        conversation_id,
+        message,
+        created_at,
+        is_read: parseInt(is_read),
+        from_user,
+        to_user,
+      };
+      res.status(201).json(newMessage);
     } catch (e) {
-        next(e);
+      next(e);
     }
-})
+  }
+);
 
-app.post("/conversations/:id/messages",authenticate, async (req,res,next) =>{
+app.put(
+  "/conversations/:cid/messages/:mid",
+  authenticate,
+  async (req, res, next) => {
     try {
-        const {message, from_user, created_at, is_read, to_user} = req.body;
-        const conversation_id = req.params.id;
-        const messageId = uuid();
-        await run(
-            `INSERT INTO messages (id, conversation_id, message, created_at, is_read, from_user, to_user) VALUES (?,?,?,?,?,?,?)`,
-            [messageId, conversation_id, message, created_at, parseInt(is_read), from_user, to_user]
-        );
-        const newMessage = {
-            id: messageId,
-            conversation_id,
-            message,
-            created_at,
-            is_read: parseInt(is_read),
-            from_user,
-            to_user
-        };
-        res.status(201).json(newMessage);
-    } catch (e) {
-        next(e);
-    }
-})
+      const numericColumns = ["is_read"];
+      const processedBody = processBody(req.body, numericColumns);
+      const MESSAGE_UPDATABLE_COLUMNS = ["message", "is_read", "created_at"];
+      const { statement, values } = prepareUpdateStatement(
+        processedBody,
+        "messages",
+        MESSAGE_UPDATABLE_COLUMNS
+      );
+      const finalValues = [...values, req.params.mid];
 
-app.put("/conversations/:cid/messages/:mid",authenticate, async (req,res,next) =>{
-    try{
-        const numericColumns = ['is_read'];
-        const processedBody = processBody(req.body, numericColumns);
-        const MESSAGE_UPDATABLE_COLUMNS = ['message', 'is_read', 'created_at'];
-        const { statement, values } = prepareUpdateStatement(processedBody, 'messages', MESSAGE_UPDATABLE_COLUMNS);
-        const finalValues = [...values, req.params.mid];
-
-        await run(statement, finalValues);
-        const updated = await get(`SELECT * FROM messages WHERE id = ?`, [req.params.mid]);
-        if (!updated) return res.status(404).json({ error: "Message not found after update" });
-        res.json(updated);
+      await run(statement, finalValues);
+      const updated = await get(`SELECT * FROM messages WHERE id = ?`, [
+        req.params.mid,
+      ]);
+      if (!updated)
+        return res
+          .status(404)
+          .json({ error: "Message not found after update" });
+      res.json(updated);
     } catch (e) {
-        next(e);
+      next(e);
     }
-})
+  }
+);
 
 app.get("/my-trusted-request", authenticate, async (req, res, next) => {
-    try {
-        const userId = req.user.sub;
-        const request = await get(`
+  try {
+    const userId = req.user.sub;
+    const request = await get(
+      `
             SELECT id, status, created_at, pitch
             FROM trusted_requests 
             WHERE user_id = ? 
             ORDER BY created_at DESC 
             LIMIT 1
-        `, [userId]);
-        
-        if (!request) {
-            return res.status(200).json({});
-        }
+        `,
+      [userId]
+    );
 
-        res.json(request);
-    } catch (e) {
-        next(e);
+    if (!request) {
+      return res.status(200).json({});
     }
+
+    res.json(request);
+  } catch (e) {
+    next(e);
+  }
 });
 
 app.post("/request-trusted", authenticate, async (req, res, next) => {
@@ -1064,13 +1238,20 @@ app.post("/request-trusted", authenticate, async (req, res, next) => {
     const { pitch } = req.body;
     const userId = req.user.sub;
 
-    if (req.user.role === 'Trusted' || req.user.role === 'Admin') {
-        return res.status(400).json({ error: "You are already a verified seller." });
+    if (req.user.role === "Trusted" || req.user.role === "Admin") {
+      return res
+        .status(400)
+        .json({ error: "You are already a verified seller." });
     }
 
-    const existing = await get(`SELECT 1 FROM trusted_requests WHERE user_id = ? AND status = 'pending'`, [userId]);
+    const existing = await get(
+      `SELECT 1 FROM trusted_requests WHERE user_id = ? AND status = 'pending'`,
+      [userId]
+    );
     if (existing) {
-        return res.status(400).json({ error: "You already have a pending application." });
+      return res
+        .status(400)
+        .json({ error: "You already have a pending application." });
     }
 
     const id = uuid();
@@ -1086,120 +1267,159 @@ app.post("/request-trusted", authenticate, async (req, res, next) => {
   }
 });
 
-app.get("/admin/requests", authenticate, requireAdmin, async (req, res, next) => {
-  try {
-    const requests = await all(`
+app.get(
+  "/admin/requests",
+  authenticate,
+  requireAdmin,
+  async (req, res, next) => {
+    try {
+      const requests = await all(`
       SELECT tr.id, tr.pitch, tr.created_at, u.name, u.email, u.id as user_id, u.karma
       FROM trusted_requests tr
       JOIN users u ON tr.user_id = u.id
       WHERE tr.status = 'pending'
       ORDER BY tr.created_at ASC
     `);
-    res.json(requests);
-  } catch (e) {
-    next(e);
+      res.json(requests);
+    } catch (e) {
+      next(e);
+    }
   }
-});
+);
 
-app.post("/admin/request/:id/:action", authenticate, requireAdmin, async (req, res, next) => {
-  try {
-    const { id, action } = req.params;
-    if (!['approve', 'reject'].includes(action)) {
+app.post(
+  "/admin/request/:id/:action",
+  authenticate,
+  requireAdmin,
+  async (req, res, next) => {
+    try {
+      const { id, action } = req.params;
+      if (!["approve", "reject"].includes(action)) {
         return res.status(400).json({ error: "Invalid action" });
+      }
+
+      const request = await get(
+        `SELECT user_id FROM trusted_requests WHERE id = ?`,
+        [id]
+      );
+      if (!request) return res.status(404).json({ error: "Request not found" });
+
+      const status = action === "approve" ? "approved" : "rejected";
+
+      await run(`UPDATE trusted_requests SET status = ? WHERE id = ?`, [
+        status,
+        id,
+      ]);
+
+      if (action === "approve") {
+        await run(`UPDATE users SET role = 'Trusted' WHERE id = ?`, [
+          request.user_id,
+        ]);
+      }
+
+      res.json({ message: `Request ${status}` });
+    } catch (e) {
+      next(e);
     }
-
-    const request = await get(`SELECT user_id FROM trusted_requests WHERE id = ?`, [id]);
-    if (!request) return res.status(404).json({ error: "Request not found" });
-
-    const status = action === 'approve' ? 'approved' : 'rejected';
-    
-    await run(`UPDATE trusted_requests SET status = ? WHERE id = ?`, [status, id]);
-
-    if (action === 'approve') {
-        await run(`UPDATE users SET role = 'Trusted' WHERE id = ?`, [request.user_id]);
-    }
-
-    res.json({ message: `Request ${status}` });
-  } catch (e) {
-    next(e);
   }
-});
+);
 
 function prepareUpdateStatement(updatedData, table, allowedColumns) {
-    const allowedKeys = Object.keys(updatedData).filter(key => allowedColumns.includes(key));
-    const validKeys = allowedKeys.filter(key => {
-        const value = updatedData[key];
-        return value !== null && value !== undefined && value !== '';
-    });
-    if (validKeys.length === 0) throw new Error("No valid fields provided for update.");
+  const allowedKeys = Object.keys(updatedData).filter((key) =>
+    allowedColumns.includes(key)
+  );
+  const validKeys = allowedKeys.filter((key) => {
+    const value = updatedData[key];
+    return value !== null && value !== undefined && value !== "";
+  });
+  if (validKeys.length === 0)
+    throw new Error("No valid fields provided for update.");
 
-    const setClause = validKeys.map(key => `\`${key}\` = ?`).join(", ");
-    const values = validKeys.map(key => updatedData[key]);
-    const statement = `UPDATE \`${table}\` SET ${setClause} WHERE id = ?`;
-    return { statement, values };
+  const setClause = validKeys.map((key) => `\`${key}\` = ?`).join(", ");
+  const values = validKeys.map((key) => updatedData[key]);
+  const statement = `UPDATE \`${table}\` SET ${setClause} WHERE id = ?`;
+  return { statement, values };
 }
 
 function processBody(body, numericColumns) {
-    let processedBody = {...body};
-    for (const key of Object.keys(processedBody)) {
-        if (numericColumns.includes(key)) {
-            const value = processedBody[key];
-            if (value !== null && value !== undefined && value !== '') processedBody[key] = parseInt(value, 10);
-        }
+  let processedBody = { ...body };
+  for (const key of Object.keys(processedBody)) {
+    if (numericColumns.includes(key)) {
+      const value = processedBody[key];
+      if (value !== null && value !== undefined && value !== "")
+        processedBody[key] = parseInt(value, 10);
     }
-    return processedBody;
+  }
+  return processedBody;
 }
 
 app.put("/product/:id", async (req, res, next) => {
-    try {
-        // here the request body is considered to not contain a product id
-        const { id } = req.params;
-        const numericColumns = ['price'];
-        const processedBody = processBody(req.body, numericColumns);
-        const PRODUCT_UPDATABLE_COLUMNS = ['title', 'description', 'price', 'category'];
-        const { statement, values } = prepareUpdateStatement(processedBody, 'products', PRODUCT_UPDATABLE_COLUMNS);
-        const finalValues = [...values, id];
+  try {
+    // here the request body is considered to not contain a product id
+    const { id } = req.params;
+    const numericColumns = ["price"];
+    const processedBody = processBody(req.body, numericColumns);
+    const PRODUCT_UPDATABLE_COLUMNS = [
+      "title",
+      "description",
+      "price",
+      "category",
+    ];
+    const { statement, values } = prepareUpdateStatement(
+      processedBody,
+      "products",
+      PRODUCT_UPDATABLE_COLUMNS
+    );
+    const finalValues = [...values, id];
 
-        const updated = await run(statement, finalValues);
-        res.json(updated);
-    } catch (e) {
-        next(e);
-    }
-})
+    const updated = await run(statement, finalValues);
+    res.json(updated);
+  } catch (e) {
+    next(e);
+  }
+});
 
 app.put("/order/:id", async (req, res, next) => {
-    try{
-        // here the request body is considered to not contain an order id;
-        const { id } = req.params;
-        const numericColumns = ['price'];
-        const processedBody = processBody(req.body, numericColumns);
-        const ORDER_UPDATABLE_COLUMNS = ['buyer', 'price', 'status'];
-        const { statement, values } = prepareUpdateStatement(processedBody, `orders`, ORDER_UPDATABLE_COLUMNS);
-        const finalValues = [...values, id];
+  try {
+    // here the request body is considered to not contain an order id;
+    const { id } = req.params;
+    const numericColumns = ["price"];
+    const processedBody = processBody(req.body, numericColumns);
+    const ORDER_UPDATABLE_COLUMNS = ["buyer", "price", "status"];
+    const { statement, values } = prepareUpdateStatement(
+      processedBody,
+      `orders`,
+      ORDER_UPDATABLE_COLUMNS
+    );
+    const finalValues = [...values, id];
 
-        const updated = await run(statement, finalValues);
-        res.json(updated);
-    } catch (e) {
-        next(e);
-    }
-})
+    const updated = await run(statement, finalValues);
+    res.json(updated);
+  } catch (e) {
+    next(e);
+  }
+});
 
 app.put("/review/:id", async (req, res, next) => {
-    try{
-        // here the request body is considered to not contain a review id;
-        const { id } = req.params;
-        const numericColumns = ['rating'];
-        const processedBody = processBody(req.body, numericColumns);
-        const REVIEW_UPDATABLE_COLUMNS = ['rating', 'comment'];
-        const { statement, values } = prepareUpdateStatement(processedBody, `reviews`, REVIEW_UPDATABLE_COLUMNS);
-        const finalValues = [...values, id];
+  try {
+    // here the request body is considered to not contain a review id;
+    const { id } = req.params;
+    const numericColumns = ["rating"];
+    const processedBody = processBody(req.body, numericColumns);
+    const REVIEW_UPDATABLE_COLUMNS = ["rating", "comment"];
+    const { statement, values } = prepareUpdateStatement(
+      processedBody,
+      `reviews`,
+      REVIEW_UPDATABLE_COLUMNS
+    );
+    const finalValues = [...values, id];
 
-        const updated = await run(statement, finalValues);
-        res.json(updated);
-    } catch (e) {
-        next(e);
-    }
-})
+    const updated = await run(statement, finalValues);
+    res.json(updated);
+  } catch (e) {
+    next(e);
+  }
+});
 
 app.post("/crawler", async (req, res, next) => {
   const { text } = req.body;
@@ -1261,12 +1481,12 @@ app.post("/msg", async (req, res, next) => {
 });
 
 app.use((err, _req, res, _next) => {
-  res.status(err.status || 500).json({ error: err.message || "Internal error" });
+  res
+    .status(err.status || 500)
+    .json({ error: err.message || "Internal error" });
 });
 
 const PORT = process.env.PORT || 3000;
-
-
 
 async function main() {
   await migrate();
