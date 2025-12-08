@@ -1,16 +1,15 @@
-import { ArrowLeft, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import "./ChatView.css";
 
 const ChatView = ({
   sellerName,
   initialOffer,
-  onBack,
   remoteMessages,
   onSend,
 }: {
   sellerName: string;
   initialOffer?: string;
-  onBack: () => void;
   remoteMessages?: {
     id: number;
     text: string;
@@ -74,9 +73,6 @@ const ChatView = ({
   return (
     <div className="chat-container">
       <div className="chat-header">
-        <button onClick={onBack} className="back-btn">
-          <ArrowLeft size={16} />
-        </button>
         <div className="avatar">{sellerName.substring(0, 2).toUpperCase()}</div>
         <div>
           <div style={{ fontWeight: 600, color: "white" }}>{sellerName}</div>

@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import { useState } from "react";
 
-import "./OfferModal.module.css";
+import "./OfferModal.css";
 
 const OfferModal = ({
   isOpen,

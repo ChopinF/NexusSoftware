@@ -272,8 +272,8 @@ const ProductContent: React.FC<{ product: Product }> = ({ product }) => {
         {isChatOpen && conversationId && (
           <ConversationModal
             conversationId={conversationId}
-            sellerId={product.seller_id}
-            sellerName={product.seller_name}
+            otherUserId={product.seller_id}
+            otherUserName={product.seller_name}
             onClose={() => setIsChatOpen(false)}
             initialOffer={chatInitialOffer}
           />

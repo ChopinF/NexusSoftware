@@ -22,6 +22,7 @@ interface HeaderProps {
   onAvatarClick: () => void;
   onBecomeSellerClick: () => void;
   onAdminDashboardClick: () => void;
+  onMessagesClick: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -33,6 +34,7 @@ export const Header: React.FC<HeaderProps> = ({
   onAvatarClick,
   onBecomeSellerClick,
   onAdminDashboardClick,
+  onMessagesClick,
 }) => {
   const currentPath = window.location.pathname;
 
@@ -117,7 +119,12 @@ export const Header: React.FC<HeaderProps> = ({
               </Button>
             )}
 
-            {/* 4. Sign Out and Avatar (Last) */}
+            {/* 4. Messages Button */}
+            <Button onClick={onMessagesClick} variant="primary">
+              Messages
+            </Button>
+
+            {/* 5. Sign Out and Avatar (Last) */}
             <Button
               onClick={onSignOutClick}
               variant="primary"

@@ -40,7 +40,9 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
           user
             ? {
                 name: user.name,
-                avatarUrl: `https://placehold.co/40x40/e2e8f0/a0aec0?text=${user.name.charAt(0)}`,
+                avatarUrl: `https://placehold.co/40x40/e2e8f0/a0aec0?text=${user.name.charAt(
+                  0
+                )}`,
                 role: user.role,
               }
             : undefined
@@ -51,7 +53,10 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
         onPostAdClick={() => navigate("/post-ad")}
         onBecomeSellerClick={handleBecomeSellerClick}
         onAdminDashboardClick={handleAdminDashboardClick}
-        onAvatarClick={() => { /* navigate to /profile */ }}
+        onMessagesClick={() => navigate("/messages")}
+        onAvatarClick={() => {
+          /* navigate to /profile */
+        }}
       />
 
       <main className={styles.contentArea}>{children}</main>

@@ -117,6 +117,11 @@
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
+.modal-box-wide {
+    max-width: 42rem;
+    padding: 0;
+}
+
 .modal-close-btn {
     position: absolute;
     top: 1rem;
