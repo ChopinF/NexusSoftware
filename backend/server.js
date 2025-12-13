@@ -1642,7 +1642,7 @@ async function main() {
   //DB population - uncomment at first run
   await seed();
 
-  app.listen(PORT, () => console.log(`Listening on http://localhost:${PORT}`));
+  httpServer.listen(PORT, () => console.log(`Listening on http://localhost:${PORT}`));
 
   process.on("SIGINT", () => db.close(() => process.exit(0)));
 }
