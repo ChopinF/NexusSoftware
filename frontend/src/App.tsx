@@ -12,26 +12,31 @@ import ProductPage from "./components/pages/ProductPage/ProductPage.tsx";
 import { BecomeSellerPage } from "./components/pages/BecomeSellerPage/BecomeSellerPage";
 import { AdminDashboard } from "./components/pages/AdminDashboard/AdminDashboard";
 import { MessagesPage } from "./components/pages/MessagesPage/MessagesPage";
+import NotificationsPage from "./components/pages/NotificationsPage/NotificationsPage.tsx";
+import { NotificationProvider } from "./contexts/NotificationContext.tsx";
 
 const App: React.FC = () => {
   return (
     <UserProvider>
       <CategoryProvider>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/product/:id" element={<ProductPage />} />
+        <NotificationProvider>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/product/:id" element={<ProductPage />} />
 
-          <Route element={<ProtectedRoute />}>
-            <Route path="/post-ad" element={<PostAdPage />} />
-            <Route path="/become-seller" element={<BecomeSellerPage />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/messages" element={<MessagesPage />} />
-          </Route>
+            <Route element={<ProtectedRoute />}>
+              <Route path="/post-ad" element={<PostAdPage />} />
+              <Route path="/become-seller" element={<BecomeSellerPage />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/messages" element={<MessagesPage />} />
+              <Route path="/my-notifications" element={<NotificationsPage />} />
+            </Route>
 
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </NotificationProvider> 
       </CategoryProvider>
     </UserProvider>
   );

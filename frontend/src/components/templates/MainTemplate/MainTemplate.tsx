@@ -54,6 +54,7 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
         onBecomeSellerClick={handleBecomeSellerClick}
         onAdminDashboardClick={handleAdminDashboardClick}
         onMessagesClick={() => navigate("/messages")}
+        onNotificationsClick={() => navigate("/my-notifications")}
         onAvatarClick={() => {
           /* navigate to /profile */
         }}
