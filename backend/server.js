@@ -12,6 +12,8 @@ import fs from "fs";
 // Web Scraper Dependencies
 import axios from "axios";
 import * as cheerio from "cheerio";
+import { createServer } from "http";
+import { Server } from "socket.io";
 
 dotenv.config();
 
@@ -31,6 +33,37 @@ const uploadDir = "uploads";
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
+
+//socket.io config
+const httpServer = createServer(app);
+const io = new Server(httpServer,{
+  cors:{
+    origin: "http://localhost:5173",
+    methods: ["GET","POST"]
+  }
+})
+
+io.use((socket,next) =>{
+  const token = socket.handshake.auth.token;
+  if(!token) return next(new Error("Authentication error"));
+
+  try{
+    const decoded = jwt.verify(token,process.env.JWT_SECRET);
+    socket.user = decoded;
+    next();
+  }
+  catch(err){
+    next(new Error("Authentication Error"));
+  }
+});
+
+io.on("connection",(socket) => {
+  console.log(`User connected via WebSocket: ${socket.user.sub}`);
+  socket.join(socket.user.sub);
+  socket.on("disconnect", () =>{
+    console.log("User disconnected");
+  })
+});
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -879,10 +912,30 @@ app.post("/order", async (req, res, next) => {
   try {
     const order = req.body;
     validateOrder(order);
+
+    // 1. Create the Order
     const added = await run(
       `INSERT INTO orders (id, buyer, price, status) VALUES (?,?,?,?)`,
       [uuid(), order.buyerEmail, parseInt(order.price), order.status]
     );
+
+    // 2. Notify the Seller
+    if (order.productId) {
+      const product = await get(`SELECT seller, title FROM products WHERE id = ?`, [
+        order.productId
+      ]);
+
+      if (product && product.seller) {
+        await sendNotification(
+          product.seller,
+          `Great news! Someone just ordered your product "${product.title}"`,
+          "order"
+        );
+      }
+    } else {
+      console.warn("Cannot notify seller: productId missing in order request");
+    }
+
     res.json(added);
   } catch (e) {
     next(e);
@@ -893,19 +946,42 @@ app.post("/review", async (req, res, next) => {
   try {
     const review = req.body;
     validateReview(review);
+
+    // 1. Insert Review
     const added = await run(
       `INSERT INTO reviews (id, produs, user, rating, comment) VALUES (?, ?, ?, ?, ?)`,
       [
         uuid(),
         review.productTitle,
-        review.user,
+        review.user,         
         parseInt(review.rating),
         review.comment,
       ]
     );
+
+    // 2. Give Karma
     await run(`UPDATE users SET karma = karma + 10 WHERE id = ?`, [
       review.user,
     ]);
+
+    // 3. Fetch Notification Details
+    const product = await get(`SELECT seller, title FROM products WHERE id = ?`, [
+      review.productTitle
+    ]);
+
+    const reviewerIdentity = await get(`SELECT name FROM users WHERE id = ?`, [
+      review.user
+    ]);
+    const reviewerName = reviewerIdentity ? reviewerIdentity.name : "A user";
+
+    // 4. Send Notification
+    if (product && product.seller) {
+      await sendNotification(
+        product.seller,
+        `${reviewerName} left a ${review.rating}-star review on your product "${product.title}"`,
+        "review"
+      );
+    }
 
     res.json(added);
   } catch (e) {
@@ -1009,6 +1085,38 @@ app.get("/product/:id/price-comparison", async (req, res, next) => {
     next(e);
   }
 });
+
+
+async function sendNotification(userId,message,type){
+  const notificationId = uuid();
+  const createdAt = new Date().toISOString();
+
+  try{
+    await run(
+    `INSERT INTO notifications (id,id_user,message,notification_type,is_read,created_at) values (?,?,?,?,?,?)`,
+    [notificationId,userId,message,type,false,createdAt]
+    );
+
+    try{
+        io.to(userId).emit("new_notification",{
+        id: notificationId,
+        id_user: userId,
+        message,
+        notification_type: type,
+        is_read: false,
+        created_at: createdAt
+      });
+    }
+    catch(socketError){
+      console.log("Could not send notication",socketErorr);
+    }
+
+    return notificationId;
+  }
+  catch(error){
+    throw error;
+  }
+}
 
 app.get("/my-notifications", authenticate, async (req, res, next) => {
   try {
@@ -1238,12 +1346,14 @@ app.post("/request-trusted", authenticate, async (req, res, next) => {
     const { pitch } = req.body;
     const userId = req.user.sub;
 
+    // 1. Check existing role
     if (req.user.role === "Trusted" || req.user.role === "Admin") {
       return res
         .status(400)
         .json({ error: "You are already a verified seller." });
     }
 
+    // 2. Check for duplicate pending requests
     const existing = await get(
       `SELECT 1 FROM trusted_requests WHERE user_id = ? AND status = 'pending'`,
       [userId]
@@ -1254,12 +1364,32 @@ app.post("/request-trusted", authenticate, async (req, res, next) => {
         .json({ error: "You already have a pending application." });
     }
 
-    const id = uuid();
+    // 3. Create the Request
+    const requestId = uuid();
     await run(
       `INSERT INTO trusted_requests (id, user_id, pitch, status, created_at)
        VALUES (?, ?, ?, 'pending', datetime('now'))`,
-      [id, userId, pitch]
+      [requestId, userId, pitch]
     );
+
+    // A. Find all Admin IDs
+    const admins = await all(`SELECT id FROM users WHERE role = 'Admin'`);
+
+    // B. Get User Name (Optional, for a better message)
+    const user = await get(`SELECT name FROM users WHERE id = ?`, [userId]);
+    const userName = user ? user.name : "A user";
+
+    // C. Send notification to ALL Admins
+    if (admins.length > 0) {
+      const notificationPromises = admins.map((admin) => 
+        sendNotification(
+          admin.id, 
+          `${userName} has requested to become a Trusted Seller.`, 
+          "system"
+        )
+      );
+      await Promise.all(notificationPromises);
+    }
 
     res.status(201).json({ message: "Application submitted successfully" });
   } catch (e) {
@@ -1298,6 +1428,7 @@ app.post(
         return res.status(400).json({ error: "Invalid action" });
       }
 
+      // 1. Fetch request to find the user
       const request = await get(
         `SELECT user_id FROM trusted_requests WHERE id = ?`,
         [id]
@@ -1306,15 +1437,32 @@ app.post(
 
       const status = action === "approve" ? "approved" : "rejected";
 
+      // 2. Update the Request Status
       await run(`UPDATE trusted_requests SET status = ? WHERE id = ?`, [
         status,
         id,
       ]);
 
+      // 3. Handle Approval & Notification
       if (action === "approve") {
+        // Update Role
         await run(`UPDATE users SET role = 'Trusted' WHERE id = ?`, [
           request.user_id,
         ]);
+
+        // Notify User: Approved
+        await sendNotification(
+          request.user_id,
+          "Congratulations! Your request for Trusted status has been approved.",
+          "system"
+        );
+      } else {
+        // Notify User: Rejected
+        await sendNotification(
+          request.user_id,
+          "Your request for Trusted status has been rejected.",
+          "system"
+        );
       }
 
       res.json({ message: `Request ${status}` });
@@ -1494,7 +1642,7 @@ async function main() {
   //DB population - uncomment at first run
   await seed();
 
-  app.listen(PORT, () => console.log(`Listening on http://localhost:${PORT}`));
+  httpServer.listen(PORT, () => console.log(`Listening on http://localhost:${PORT}`));
 
   process.on("SIGINT", () => db.close(() => process.exit(0)));
 }

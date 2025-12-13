@@ -6,6 +6,8 @@ import { Avatar } from "../../atoms/Avatar/Avatar";
 import { NavItem } from "../../molecules/NavItem/NavItem";
 import { SearchBar } from "../../molecules/SearchBar/SearchBar";
 import { useCategory } from "../../../contexts/CategoryContext";
+import { useNotifications } from "../../../contexts/NotificationContext";
+import { Bell } from "lucide-react";
 
 interface User {
   name: string;
@@ -23,6 +25,7 @@ interface HeaderProps {
   onBecomeSellerClick: () => void;
   onAdminDashboardClick: () => void;
   onMessagesClick: () => void;
+  onNotificationsClick: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -35,8 +38,11 @@ export const Header: React.FC<HeaderProps> = ({
   onBecomeSellerClick,
   onAdminDashboardClick,
   onMessagesClick,
+  onNotificationsClick,
 }) => {
   const currentPath = window.location.pathname;
+
+  const { unreadCount } = useNotifications();
 
   const getInitials = (name: string) => {
     const names = name.split(" ");
@@ -98,21 +104,21 @@ export const Header: React.FC<HeaderProps> = ({
       <div className={styles.headerRight}>
         {user ? (
           <>
-            {/* 1. Admin Button (First) */}
+            {/* 1. Admin Button */}
             {user.role === "Admin" && (
               <Button onClick={onAdminDashboardClick} variant="primary">
                 Admin
               </Button>
             )}
 
-            {/* 2. Become Seller (Second) - Only for Untrusted */}
+            {/* 2. Become Seller */}
             {user.role !== "Trusted" && user.role !== "Admin" && (
               <Button onClick={onBecomeSellerClick} variant="primary">
                 Become Seller
               </Button>
             )}
 
-            {/* 3. Post Ad (Third) - Only for Trusted/Admin */}
+            {/* 3. Post Ad */}
             {isTrustedOrAdmin && (
               <Button onClick={onPostAdClick} variant="primary">
                 Post Ad
@@ -124,7 +130,45 @@ export const Header: React.FC<HeaderProps> = ({
               Messages
             </Button>
 
-            {/* 5. Sign Out and Avatar (Last) */}
+            {/* 5. Notifications button (MODIFICAT) */}
+            <Button
+              onClick={onNotificationsClick}
+              variant="primary"
+              aria-label="Notifications"
+            >
+              {/* Wrapper pentru poziționare relativă */}
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <Bell size={24} />
+                
+                {/* Badge-ul roșu */}
+                {unreadCount > 0 && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: -6,
+                      right: -6,
+                      backgroundColor: "#EF4444",
+                      color: "white",
+                      borderRadius: "50%",
+                      minWidth: "18px",
+                      height: "18px",
+                      padding: "0 4px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "10px",
+                      fontWeight: "bold",
+                      border: "2px solid #111827",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </div>
+            </Button>
+
+            {/* 6. Sign Out and Avatar */}
             <Button
               onClick={onSignOutClick}
               variant="primary"
