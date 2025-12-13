@@ -26,3 +26,4 @@ EdgeUp is an AI Enhanced Marketplace platform designed to connect buyers and sel
 9) (TODO) view favorite posts
 10) login/register user
 11) filter&search products
+12) user notifications
