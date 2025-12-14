@@ -28,12 +28,12 @@ export const PostAdForm: React.FC = () => {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("");
-    const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (user?.role !== "Trusted") {
+  if (user?.role !== "Trusted" && user?.role !== "Admin") {
     return (
       <AlertMessage
         type="error"
