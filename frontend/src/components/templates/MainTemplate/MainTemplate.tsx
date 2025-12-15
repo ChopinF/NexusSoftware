@@ -25,12 +25,32 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
 
   const toggleChat = () => setIsChatOpen((prev) => !prev);
 
+  const handleLogin = () => {
+    navigate("/login");
+  };
+  
+  const handleRegister = () => {
+    navigate("/register");
+  };
+
+  const handlePostAdClick = () => {
+    navigate("/post-ad");
+  };
+
   const handleBecomeSellerClick = () => {
     navigate("/become-seller");
   };
 
   const handleAdminDashboardClick = () => {
     navigate("/admin");
+  };
+
+  const handleMessagesClick = () => {
+    navigate("/messages");
+  };
+
+  const handleNotificationsClick = () => {
+    navigate("/my-notifications");
   };
 
   return (
@@ -47,14 +67,14 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
               }
             : undefined
         }
-        onLoginClick={() => navigate("/login")}
-        onRegisterClick={() => navigate("/register")}
+        onLoginClick={handleLogin}
+        onRegisterClick={handleRegister}
         onSignOutClick={handleSignOut}
-        onPostAdClick={() => navigate("/post-ad")}
+        onPostAdClick={handlePostAdClick}
         onBecomeSellerClick={handleBecomeSellerClick}
         onAdminDashboardClick={handleAdminDashboardClick}
-        onMessagesClick={() => navigate("/messages")}
-        onNotificationsClick={() => navigate("/my-notifications")}
+        onMessagesClick={handleMessagesClick}
+        onNotificationsClick={handleNotificationsClick}
         onAvatarClick={() => {
           /* navigate to /profile */
         }}

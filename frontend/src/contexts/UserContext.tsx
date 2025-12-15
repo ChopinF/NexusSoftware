@@ -5,8 +5,9 @@ export interface User {
   name: string;
   email: string;
   role: string;
-  tara?: string;
-  oras?: string;
+  country?: string;
+  city?: string;
+  karma?: number;
 }
 
 interface UserContextType {

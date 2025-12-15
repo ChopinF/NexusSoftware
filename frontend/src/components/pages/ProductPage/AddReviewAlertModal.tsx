@@ -7,34 +7,52 @@ import type { Product } from "../../../types/Product";
 interface AlertModalProps {
   open: boolean;
   onClose: () => void;
-  product: Product
+  product: Product;
+  onSuccess?: () => void; // New prop to trigger parent refresh
 }
 
-const AlertModal: React.FC<AlertModalProps> = ({ open, onClose, product }) => {
+const AlertModal: React.FC<AlertModalProps> = ({ open, onClose, product, onSuccess }) => {
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [comment, setComment] = useState("");
-  const { token, user } = useUser();
-  const isDisabled = rating === 0 || comment.trim() === "";
+  const { token, user, setUser } = useUser(); // Destructure setUser
+  const [loading, setLoading] = useState(false);
+
+  const isDisabled = rating === 0 || comment.trim() === "" || loading;
+
   const getStarColor = (rating: number) => {
     if (rating <= 2) return "#f62a2a";
     if (rating === 3) return "#ff7410";
     return "#fbbf24";
   };
+
   if (!open) return null;
+
   const handlePost = async () => {
+    setLoading(true);
+    const result = await addReview(product.id, user!.id, rating, comment);
+    setLoading(false);
 
-
-    await addReview(product.id, user!.id, rating, comment);
-    onClose();
+    if (result) {
+        // 1. Update Global User State (Karma) immediately
+        if (result.newKarma !== undefined && user) {
+            setUser({ ...user, karma: result.newKarma });
+        }
+        
+        // 2. Trigger parent refresh logic
+        if (onSuccess) onSuccess();
+        
+        onClose();
+    }
   };
+
   async function addReview(productId: string, userId: string, rating: number, comment: string) {
     try {
       const res = await fetch("http://localhost:3000/review", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Bearer": `${token}`
+          "Authorization": `Bearer ${token}` // Changed "Bearer" key to "Authorization" standard header
         },
         body: JSON.stringify({
           productTitle: productId,
@@ -47,11 +65,10 @@ const AlertModal: React.FC<AlertModalProps> = ({ open, onClose, product }) => {
       if (!res.ok) {
         const err = await res.json();
         console.error("Error adding review:", err);
-
+        return null;
       }
 
       const data = await res.json();
-      console.log("Review added:", data);
       return data;
 
     } catch (err) {
@@ -94,23 +111,21 @@ const AlertModal: React.FC<AlertModalProps> = ({ open, onClose, product }) => {
           <textarea
             className="review-comment"
             onChange={(e) => setComment(e.target.value)}
-
             placeholder="Comment your experience with this product"
+            disabled={loading}
           />
         </div>
 
         <div className="alert-actions">
-          <button className="cancel-btn" onClick={onClose}>
+          <button className="cancel-btn" onClick={onClose} disabled={loading}>
             Cancel
           </button>
           <button
             className="post-btn"
             disabled={isDisabled}
-            onClick={() => {
-              handlePost();
-            }}
+            onClick={handlePost}
           >
-            Post
+            {loading ? "Posting..." : "Post"}
           </button>
         </div>
       </div>

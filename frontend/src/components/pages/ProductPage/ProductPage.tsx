@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import './ProductPage.css';
 import { MainTemplate } from "../../templates/MainTemplate/MainTemplate.tsx";
 import { useParams } from "react-router-dom";
@@ -14,34 +14,36 @@ const ProductPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [product, setProduct] = useState<Product | null>(null);
     const [reviews, setReviews] = useState<Review[] | null>(null);
-    const [alertOpen, setAlertOpen] = useState(false); // ADD STATE
+    const [alertOpen, setAlertOpen] = useState(false);
 
-    useEffect(() => {
+    const fetchProduct = () => {
         fetch("http://localhost:3000/product/" + id)
             .then((res) => res.json())
             .then((data) => {
                 setProduct(data);
-                console.log("Fetched products:", data);
             })
             .catch((err) => console.error(err))
             .finally(() => setLoading(false));
-    }, []);
+    };
 
-    useEffect(() => {
+    const fetchReviews = useCallback(() => {
         if (!id) return;
         fetch("http://localhost:3000/product/" + id + "/reviews")
             .then((res) => res.json())
             .then((data) => {
                 setReviews(data.reviews);
-                console.log("Fetched reviews:", data.reviews);
             })
             .catch((err) => console.error(err));
-    }, []);
+    }, [id]);
+
+    useEffect(() => {
+        fetchProduct();
+        fetchReviews();
+    }, [id, fetchReviews]);
 
     return (
         <MainTemplate>
             <div className="product-page">
-
                 {loading || !product ? (
                     <div
                         style={{
@@ -56,28 +58,25 @@ const ProductPage: React.FC = () => {
                 ) : (
                     <ProductContent product={product} />
                 )}
-                {reviews && (
-                    <ReviewsList reviews={reviews} />
+                
+                {reviews && <ReviewsList reviews={reviews} />}
 
-                )}
                 <button className='add-review-btn'
                     style={{ margin: "20px", padding: "10px 20px" }}
                     onClick={() => setAlertOpen(true)}
                 >
                     Write a Review
                 </button>
+
                 <AlertModal
                     open={alertOpen}
                     product={product!}
-                    onClose={() => {
-                        setAlertOpen(false)
-                        window.location.reload();
-                    }
-                    }
-
-                >
-
-                </AlertModal>
+                    onClose={() => setAlertOpen(false)}
+                    onSuccess={() => {
+                        // Refresh reviews list without reloading page
+                        fetchReviews();
+                    }}
+                />
             </div>
         </MainTemplate>
     );

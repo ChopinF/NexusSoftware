@@ -7,7 +7,7 @@ import { NavItem } from "../../molecules/NavItem/NavItem";
 import { SearchBar } from "../../molecules/SearchBar/SearchBar";
 import { useCategory } from "../../../contexts/CategoryContext";
 import { useNotifications } from "../../../contexts/NotificationContext";
-import { Bell } from "lucide-react";
+import { Bell, LogOut, MessageCircle } from "lucide-react";
 
 interface User {
   name: string;
@@ -41,8 +41,9 @@ export const Header: React.FC<HeaderProps> = ({
   onNotificationsClick,
 }) => {
   const currentPath = window.location.pathname;
-
   const { unreadCount } = useNotifications();
+  const { selectedCategory, setSelectedCategory, setSearchQuery } = useCategory();
+  const [categories, setCategories] = useState<string[]>([]);
 
   const getInitials = (name: string) => {
     const names = name.split(" ");
@@ -51,16 +52,10 @@ export const Header: React.FC<HeaderProps> = ({
     return `${first}${last}`.toUpperCase();
   };
 
-  const { selectedCategory, setSelectedCategory, setSearchQuery } =
-    useCategory();
-  const [categories, setCategories] = useState<string[]>([]);
-
   useEffect(() => {
     fetch("http://localhost:3000/categories")
       .then((res) => res.json())
-      .then((data: string[]) => {
-        setCategories(data);
-      })
+      .then((data: string[]) => setCategories(data))
       .catch(console.error);
   }, []);
 
@@ -77,16 +72,8 @@ export const Header: React.FC<HeaderProps> = ({
       <div className={styles.headerCenter}>
         <nav>
           <ul className={styles.headerNav}>
-            <NavItem
-              label="Browse"
-              href="/browse"
-              isActive={currentPath === "/browse"}
-            />
-            <NavItem
-              label="About"
-              href="/about"
-              isActive={currentPath === "/about"}
-            />
+            <NavItem label="Browse" href="/browse" isActive={currentPath === "/browse"} />
+            <NavItem label="About" href="/about" isActive={currentPath === "/about"} />
           </ul>
         </nav>
 
@@ -104,78 +91,43 @@ export const Header: React.FC<HeaderProps> = ({
       <div className={styles.headerRight}>
         {user ? (
           <>
-            {/* 1. Admin Button */}
+            {/* Admin Button */}
             {user.role === "Admin" && (
               <Button onClick={onAdminDashboardClick} variant="primary">
                 Admin
               </Button>
             )}
 
-            {/* 2. Become Seller */}
+            {/* Become Seller */}
             {user.role !== "Trusted" && user.role !== "Admin" && (
               <Button onClick={onBecomeSellerClick} variant="primary">
                 Become Seller
               </Button>
             )}
 
-            {/* 3. Post Ad */}
+            {/* Post Ad */}
             {isTrustedOrAdmin && (
               <Button onClick={onPostAdClick} variant="primary">
                 Post Ad
               </Button>
             )}
 
-            {/* 4. Messages Button */}
+            {/* Messages */}
             <Button onClick={onMessagesClick} variant="primary">
-              Messages
+              <MessageCircle size={20} />
             </Button>
 
-            {/* 5. Notifications button (MODIFICAT) */}
-            <Button
-              onClick={onNotificationsClick}
-              variant="primary"
-              aria-label="Notifications"
-            >
-              {/* Wrapper pentru poziționare relativă */}
-              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-                <Bell size={24} />
-                
-                {/* Badge-ul roșu */}
-                {unreadCount > 0 && (
-                  <span
-                    style={{
-                      position: "absolute",
-                      top: -6,
-                      right: -6,
-                      backgroundColor: "#EF4444",
-                      color: "white",
-                      borderRadius: "50%",
-                      minWidth: "18px",
-                      height: "18px",
-                      padding: "0 4px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "10px",
-                      fontWeight: "bold",
-                      border: "2px solid #111827",
-                      pointerEvents: "none",
-                    }}
-                  >
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
-              </div>
+            {/* Notifications */}
+            <Button onClick={onNotificationsClick} variant="primary">
+              <Bell size={20} />
             </Button>
 
-            {/* 6. Sign Out and Avatar */}
-            <Button
-              onClick={onSignOutClick}
-              variant="primary"
-              className={styles.userNameButton}
-            >
-              Sign Out
+            {/* Sign Out */}
+            <Button onClick={onSignOutClick} variant="primary">
+              <LogOut size={20} />
             </Button>
+
+            {/* Avatar */}
             <button
               onClick={onAvatarClick}
               className="rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -186,18 +138,10 @@ export const Header: React.FC<HeaderProps> = ({
           </>
         ) : (
           <div className={styles.authButtons}>
-            <Button
-              onClick={onLoginClick}
-              variant="secondary"
-              className={styles.loginButton}
-            >
+            <Button onClick={onLoginClick} variant="secondary" className={styles.loginButton}>
               Login
             </Button>
-            <Button
-              onClick={onRegisterClick}
-              variant="secondary"
-              className={styles.registerButton}
-            >
+            <Button onClick={onRegisterClick} variant="secondary" className={styles.registerButton}>
               Register
             </Button>
           </div>

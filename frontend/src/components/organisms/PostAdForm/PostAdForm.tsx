@@ -37,7 +37,7 @@ export const PostAdForm: React.FC = () => {
     return (
       <AlertMessage
         type="error"
-        message="Doar vânzătorii de încredere (Trusted) pot posta anunțuri. Contactează suportul."
+        message="Only trusted users can post ads. You can submit for trusted account in 'Become Seller'."
       />
     );
   }
@@ -55,13 +55,13 @@ export const PostAdForm: React.FC = () => {
     setError(null);
 
     if (!title || !description || !price || !category) {
-      setError("Te rog completează toate câmpurile.");
+      setError("All fields required.");
       return;
     }
 
     // picture is optional
     // if (!imageFile) {
-    //   setError("Te rog adaugă o imagine.");
+    //   setError("Add an image of the product.");
     //   return;
     // }
 
@@ -88,7 +88,7 @@ export const PostAdForm: React.FC = () => {
 
       if (!res.ok) {
         const errData = await res.json();
-        throw new Error(errData.error || "A eșuat postarea anunțului.");
+        throw new Error(errData.error || "Post ad failed.");
       }
 
       await res.json();
@@ -102,7 +102,7 @@ export const PostAdForm: React.FC = () => {
       
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "A apărut o eroare necunoscută.";
+        err instanceof Error ? err.message : "Error.";
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -111,7 +111,7 @@ export const PostAdForm: React.FC = () => {
 
   return (
     <div className={styles.formContainer}>
-      <h2 className={styles.formTitle}>Postează un Anunț Nou</h2>
+      <h2 className={styles.formTitle}>Post a new ad</h2>
 
       {error && (
         <AlertMessage
@@ -122,7 +122,7 @@ export const PostAdForm: React.FC = () => {
       )}
 
       <form onSubmit={handleSubmit} className={styles.form}>
-        <FormField label="Titlu Anunț" htmlFor="ad-title">
+        <FormField label="Title" htmlFor="ad-title">
           <Input
             type="text"
             id="ad-title"
@@ -133,7 +133,7 @@ export const PostAdForm: React.FC = () => {
           />
         </FormField>
 
-        <FormField label="Descriere" htmlFor="ad-description">
+        <FormField label="Description" htmlFor="ad-description">
           <Textarea
             id="ad-description"
             value={description}
@@ -144,7 +144,7 @@ export const PostAdForm: React.FC = () => {
           />
         </FormField>
 
-        <FormField label="Preț (RON)" htmlFor="ad-price">
+        <FormField label="Price (RON)" htmlFor="ad-price">
           <Input
             type="number"
             id="ad-price"
@@ -156,7 +156,7 @@ export const PostAdForm: React.FC = () => {
           />
         </FormField>
 
-        <FormField label="Imagine Produs (Opțional)" htmlFor="ad-image">
+        <FormField label="Product image (optional)" htmlFor="ad-image">
           <Input
             type="file"
             id="ad-image"
@@ -167,18 +167,18 @@ export const PostAdForm: React.FC = () => {
         </FormField>
 
         <SelectInput
-          label="Categorie"
+          label="Category"
           name="category"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           options={categories}
           disabled={isLoading}
-          defaultOptionLabel="Alege o categorie..."
+          defaultOptionLabel="Choose a category..."
         />
 
         <div className={styles.buttonWrapper}>
           <Button type="submit" variant="primary" disabled={isLoading}>
-            {isLoading ? <Spinner size="sm" /> : "Postează Anunțul"}
+            {isLoading ? <Spinner size="sm" /> : "Post ad"}
           </Button>
         </div>
       </form>
