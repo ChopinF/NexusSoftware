@@ -3,6 +3,7 @@ import { Button } from '../../atoms/Button/Button';
 import { useUser } from '../../../contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
 import styles from './AdminRequestList.module.css';
+import { API_URL } from "../../../config";
 
 interface Request {
   id: string;
@@ -22,7 +23,7 @@ export const AdminRequestList: React.FC = () => {
 
   const fetchRequests = async () => {
     try {
-      const res = await fetch('http://localhost:3000/admin/requests', {
+      const res = await fetch(`${API_URL}/admin/requests`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -48,13 +49,12 @@ export const AdminRequestList: React.FC = () => {
     if (!confirm(`Are you sure you want to ${action} this request?`)) return;
     
     try {
-      const res = await fetch(`http://localhost:3000/admin/request/${id}/${action}`, {
+      const res = await fetch(`${API_URL}/admin/request/${id}/${action}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
       if (res.ok) {
-        // Remove processed request from list
         setRequests(prev => prev.filter(r => r.id !== id));
       } else {
         alert('Action failed');
@@ -90,7 +90,6 @@ export const AdminRequestList: React.FC = () => {
             <div key={req.id} className={styles.item}>
               <div className={styles.itemContent}>
                 
-                {/* User Info Column */}
                 <div className={styles.userInfo}>
                   <div className={styles.userHeader}>
                     <div className={styles.avatar}>
@@ -111,7 +110,6 @@ export const AdminRequestList: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Pitch Column */}
                 <div className={styles.pitchSection}>
                   <h4 className={styles.pitchLabel}>Pitch</h4>
                   <p className={styles.pitchText}>
@@ -119,7 +117,6 @@ export const AdminRequestList: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Actions Column */}
                 <div className={styles.actions}>
                   <Button 
                     onClick={() => handleAction(req.id, 'approve')} 

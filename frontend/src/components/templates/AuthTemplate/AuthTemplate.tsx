@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styles from "./AuthTemplate.module.css";
 import { useNavigate } from "react-router-dom";
 
+import { API_URL } from "../../../config";
 import { LoginForm } from "../../organisms/LoginForm/LoginForm";
 import { RegisterForm } from "../../organisms/RegisterForm/RegisterForm";
 import { Logo } from "../../atoms/Logo/Logo";
@@ -12,8 +13,6 @@ type AuthView = "login" | "register";
 interface AuthTemplateProps {
   initialView?: AuthView;
 }
-
-const API_URL = "http://localhost:3000";
 
 export const AuthTemplate: React.FC<AuthTemplateProps> = ({
   initialView = "login",

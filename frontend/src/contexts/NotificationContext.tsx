@@ -1,10 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { io, Socket } from "socket.io-client";
 import { useUser } from "./UserContext";
-// Asigură-te că calea către tipuri este corectă
 import { type Notification } from '../types/Notification'; 
-
-const API_URL = "http://localhost:3000";
+import { API_URL } from "../config";
 
 interface NotificationContextType {
   notifications: Notification[];

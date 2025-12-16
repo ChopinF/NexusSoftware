@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import styles from "./ProductCard.module.css";
 import type {Product} from "../../../types/Product.ts";
-
-const API_URL = "http://localhost:3000";
+import { API_URL } from "../../../config";
 
 const HeartIcon = () => (
   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">

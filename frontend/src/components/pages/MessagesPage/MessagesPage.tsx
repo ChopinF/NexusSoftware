@@ -5,8 +5,7 @@ import { MainTemplate } from "../../templates/MainTemplate/MainTemplate";
 import ConversationModal from "../../molecules/ConversationModal/ConversationModal";
 import styles from "./MessagesPage.module.css";
 import { MessageCircle } from "lucide-react";
-
-const API_URL = "http://localhost:3000";
+import { API_URL } from "../../../config";
 
 interface Conversation {
   conversation_id: string;
@@ -41,7 +40,6 @@ export const MessagesPage = () => {
 
       const data = await res.json();
 
-      // Group messages by conversation_id and get the latest message for each
       const conversationMap = new Map<string, Conversation>();
 
       data.forEach((msg: any) => {
@@ -59,7 +57,6 @@ export const MessagesPage = () => {
           });
         } else {
           const existing = conversationMap.get(convId)!;
-          // Update if this message is newer
           if (
             new Date(msg.created_at) >
             new Date(existing.last_message_time || "")
@@ -67,7 +64,6 @@ export const MessagesPage = () => {
             existing.last_message = msg.message;
             existing.last_message_time = msg.created_at;
           }
-          // Count unread
           if (msg.is_read === 0 && msg.to_user === user.id) {
             existing.unread_count = (existing.unread_count || 0) + 1;
           }
@@ -75,7 +71,6 @@ export const MessagesPage = () => {
       });
 
       const conversationsList = Array.from(conversationMap.values());
-      // Sort by last message time, most recent first
       conversationsList.sort(
         (a, b) =>
           new Date(b.last_message_time || "").getTime() -
@@ -187,7 +182,6 @@ export const MessagesPage = () => {
             otherUserName={getOtherPersonName(selectedConversation)}
             onClose={() => {
               setSelectedConversation(null);
-              // Refresh conversations list to update unread counts
               fetchConversations();
             }}
           />

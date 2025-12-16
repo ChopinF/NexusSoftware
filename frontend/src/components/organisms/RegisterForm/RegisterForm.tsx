@@ -19,7 +19,6 @@ interface RegisterFormProps {
   onLoginClick?: () => void;
 }
 
-// Must match server.js logic
 const CITIES_BY_COUNTRY: Record<string, string[]> = {
   RO: ["București", "Cluj-Napoca", "Iași", "Timișoara"],
   DE: ["Berlin", "Munich", "Hamburg"],
@@ -43,13 +42,12 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   
-  const [country, setCountry] = useState(COUNTRY_OPTIONS[0].value); // Default to first
-  const [city, setCity] = useState(CITIES_BY_COUNTRY[COUNTRY_OPTIONS[0].value][0]); // Default to first city of first country
+  const [country, setCountry] = useState(COUNTRY_OPTIONS[0].value);
+  const [city, setCity] = useState(CITIES_BY_COUNTRY[COUNTRY_OPTIONS[0].value][0]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Update city when country changes
   useEffect(() => {
     const availableCities = CITIES_BY_COUNTRY[country] || [];
     setCity(availableCities[0] || "");

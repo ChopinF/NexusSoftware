@@ -1,9 +1,10 @@
-// db.js
 import sqlite3 from 'sqlite3'
+import path from 'path';
 
 sqlite3.verbose()
 
-export const db = new sqlite3.Database('./app.db')
+const dbPath = process.env.DB_PATH || path.resolve('./data/app.db');
+export const db = new sqlite3.Database(dbPath)
 
 export const run = (sql, params = []) =>
   new Promise((res, rej) => {
@@ -124,7 +125,6 @@ export async function migrate() {
     );
   `);
 
-  // indexuri
   await run(`CREATE INDEX IF NOT EXISTS idx_products_seller ON products(seller);`);
   await run(`CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);`);
   await run(`CREATE INDEX IF NOT EXISTS idx_users_country_city ON users(country, city);`);

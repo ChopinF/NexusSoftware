@@ -8,6 +8,7 @@ import { Spinner } from "../../atoms/Spinner/Spinner";
 import { FormField } from "../../molecules/FormField/FormField";
 import { AlertMessage } from "../../molecules/AlertMessage/AlertMessage";
 import styles from "./BecomeSellerForm.module.css";
+import { API_URL } from "../../../config";
 
 interface TrustedRequest {
   id: string;
@@ -37,7 +38,7 @@ export const BecomeSellerForm: React.FC = () => {
       }
 
       try {
-        const res = await fetch('http://localhost:3000/my-trusted-request', {
+        const res = await fetch(`${API_URL}/my-trusted-request`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -81,7 +82,7 @@ export const BecomeSellerForm: React.FC = () => {
     setError(null);
 
     try {
-      const res = await fetch('http://localhost:3000/request-trusted', {
+      const res = await fetch(`${API_URL}/request-trusted`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

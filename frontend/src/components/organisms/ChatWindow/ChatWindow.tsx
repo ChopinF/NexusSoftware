@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { v4 as uuid } from "uuid";
 import styles from "./ChatWindow.module.css";
+import { API_URL } from "../../../config";
 
-// Asigură-te că aceste căi sunt corecte conform structurii folderului tău
 import { Input } from "../../atoms/Input/Input";
 import { Button } from "../../atoms/Button/Button";
 import { Spinner } from "../../atoms/Spinner/Spinner";
@@ -57,12 +57,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const messageListRef = useRef<HTMLDivElement>(null);
 
-  // save session chat
   useEffect(() => {
     sessionStorage.setItem("chatMessages", JSON.stringify(messages));
   }, [messages]);
 
-  // automated scrolling to most recent message
   useEffect(() => {
     if (messageListRef.current) {
       messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
@@ -80,8 +78,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
     setIsLoading(true);
 
     try {
-      // calling endpoint /msg from server.js
-      const res = await fetch("http://localhost:3000/msg", {
+      const res = await fetch(`${API_URL}/msg`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
@@ -91,7 +88,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
         throw new Error("Răspunsul de la server nu a fost OK");
       }
 
-      const data = await res.json(); // waiting { message: "..." }
+      const data = await res.json();
       const botMessage: Message = {
         id: uuid(),
         text: data.message || "Scuze, nu am putut procesa cererea.",

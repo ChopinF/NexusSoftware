@@ -3,19 +3,20 @@ import "./AddReviewAlertModal.css";
 import { Star } from "lucide-react";
 import { useUser } from "../../../contexts/UserContext";
 import type { Product } from "../../../types/Product";
+import { API_URL } from "../../../config";
 
 interface AlertModalProps {
   open: boolean;
   onClose: () => void;
   product: Product;
-  onSuccess?: () => void; // New prop to trigger parent refresh
+  onSuccess?: () => void;
 }
 
 const AlertModal: React.FC<AlertModalProps> = ({ open, onClose, product, onSuccess }) => {
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [comment, setComment] = useState("");
-  const { token, user, setUser } = useUser(); // Destructure setUser
+  const { token, user, setUser } = useUser();
   const [loading, setLoading] = useState(false);
 
   const isDisabled = rating === 0 || comment.trim() === "" || loading;
@@ -34,12 +35,10 @@ const AlertModal: React.FC<AlertModalProps> = ({ open, onClose, product, onSucce
     setLoading(false);
 
     if (result) {
-        // 1. Update Global User State (Karma) immediately
         if (result.newKarma !== undefined && user) {
             setUser({ ...user, karma: result.newKarma });
         }
         
-        // 2. Trigger parent refresh logic
         if (onSuccess) onSuccess();
         
         onClose();
@@ -48,11 +47,11 @@ const AlertModal: React.FC<AlertModalProps> = ({ open, onClose, product, onSucce
 
   async function addReview(productId: string, userId: string, rating: number, comment: string) {
     try {
-      const res = await fetch("http://localhost:3000/review", {
+      const res = await fetch(`${API_URL}/review`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}` // Changed "Bearer" key to "Authorization" standard header
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
           productTitle: productId,

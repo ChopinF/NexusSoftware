@@ -8,6 +8,7 @@ import type { Product } from "../../../types/Product.ts";
 import ProductContent from "../../organisms/ProductContent/ProductContent.tsx";
 import type { Review } from "../../../types/Review.ts";
 import AlertModal from './AddReviewAlertModal.tsx';
+import { API_URL } from "../../../config";
 
 const ProductPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -17,7 +18,7 @@ const ProductPage: React.FC = () => {
     const [alertOpen, setAlertOpen] = useState(false);
 
     const fetchProduct = () => {
-        fetch("http://localhost:3000/product/" + id)
+        fetch(`${API_URL}/product/` + id)
             .then((res) => res.json())
             .then((data) => {
                 setProduct(data);
@@ -28,7 +29,7 @@ const ProductPage: React.FC = () => {
 
     const fetchReviews = useCallback(() => {
         if (!id) return;
-        fetch("http://localhost:3000/product/" + id + "/reviews")
+        fetch(`${API_URL}/product/` + id + "/reviews")
             .then((res) => res.json())
             .then((data) => {
                 setReviews(data.reviews);
@@ -73,7 +74,6 @@ const ProductPage: React.FC = () => {
                     product={product!}
                     onClose={() => setAlertOpen(false)}
                     onSuccess={() => {
-                        // Refresh reviews list without reloading page
                         fetchReviews();
                     }}
                 />

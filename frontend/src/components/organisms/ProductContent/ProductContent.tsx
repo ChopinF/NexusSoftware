@@ -7,8 +7,7 @@ import SellerCard from "../../molecules/SellerCard/SellerCard.tsx";
 import "./ProductContent.css";
 import OfferModal from "../../molecules/OfferModal/OfferModal";
 import ConversationModal from "../../molecules/ConversationModal/ConversationModal";
-
-const API_URL = "http://localhost:3000";
+import { API_URL } from "../../../config";
 
 const ProductHeader: React.FC<{
   title: string;
@@ -57,7 +56,6 @@ const ProductContent: React.FC<{ product: Product }> = ({ product }) => {
         return;
       }
 
-      // find existing conversation or create one
       const findRes = await fetch(`${API_URL}/conversations/user/${user.id}`, {
         headers: { Authorization: token ? `Bearer ${token}` : "" },
       });
@@ -66,7 +64,6 @@ const ProductContent: React.FC<{ product: Product }> = ({ product }) => {
       if (findRes.ok) {
         const rows = await findRes.json();
         console.log("DM: conversations rows:", rows);
-        // rows may contain many messages; find conversation with this seller
         const row = rows.find(
           (r: any) =>
             r.seller_id === product.seller_id ||
@@ -169,7 +166,6 @@ const ProductContent: React.FC<{ product: Product }> = ({ product }) => {
           onMakeOffer={!isOwner ? handleMakeOfferClick : undefined}
         />
 
-        {/* Offer modal */}
         <OfferModal
           isOpen={isOfferOpen}
           onClose={() => setIsOfferOpen(false)}
@@ -181,7 +177,6 @@ const ProductContent: React.FC<{ product: Product }> = ({ product }) => {
               return alert(
                 "Te rugăm să te autentifici pentru a trimite o ofertă."
               );
-            // ensure conversation exists
             let foundId: string | null = null;
             const findRes = await fetch(
               `${API_URL}/conversations/user/${user.id}`,
@@ -225,7 +220,6 @@ const ProductContent: React.FC<{ product: Product }> = ({ product }) => {
               }
             }
 
-            // Post the offer as a message to the conversation so it is persisted
             try {
               const offerPayload = {
                 message: `Doresc să ofer ${amount} RON pentru produsul "${
@@ -261,14 +255,12 @@ const ProductContent: React.FC<{ product: Product }> = ({ product }) => {
               alert("Offer failed to send. See console for details.");
             }
 
-            // open chat (server now contains the offer message)
             setConversationId(foundId);
             setChatInitialOffer(undefined);
             setIsChatOpen(true);
           }}
         />
 
-        {/* Conversation modal (chat backed by server) */}
         {isChatOpen && conversationId && (
           <ConversationModal
             conversationId={conversationId}

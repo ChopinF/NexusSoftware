@@ -8,6 +8,7 @@ import { SearchBar } from "../../molecules/SearchBar/SearchBar";
 import { useCategory } from "../../../contexts/CategoryContext";
 import { useNotifications } from "../../../contexts/NotificationContext";
 import { Bell, LogOut, MessageCircle } from "lucide-react";
+import { API_URL } from "../../../config";
 
 interface User {
   name: string;
@@ -53,7 +54,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   useEffect(() => {
-    fetch("http://localhost:3000/categories")
+    fetch(`${API_URL}/categories`)
       .then((res) => res.json())
       .then((data: string[]) => setCategories(data))
       .catch(console.error);
@@ -91,43 +92,36 @@ export const Header: React.FC<HeaderProps> = ({
       <div className={styles.headerRight}>
         {user ? (
           <>
-            {/* Admin Button */}
             {user.role === "Admin" && (
               <Button onClick={onAdminDashboardClick} variant="primary">
                 Admin
               </Button>
             )}
 
-            {/* Become Seller */}
             {user.role !== "Trusted" && user.role !== "Admin" && (
               <Button onClick={onBecomeSellerClick} variant="primary">
                 Become Seller
               </Button>
             )}
 
-            {/* Post Ad */}
             {isTrustedOrAdmin && (
               <Button onClick={onPostAdClick} variant="primary">
                 Post Ad
               </Button>
             )}
 
-            {/* Messages */}
             <Button onClick={onMessagesClick} variant="primary">
               <MessageCircle size={20} />
             </Button>
 
-            {/* Notifications */}
             <Button onClick={onNotificationsClick} variant="primary">
               <Bell size={20} />
             </Button>
 
-            {/* Sign Out */}
             <Button onClick={onSignOutClick} variant="primary">
               <LogOut size={20} />
             </Button>
 
-            {/* Avatar */}
             <button
               onClick={onAvatarClick}
               className="rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"

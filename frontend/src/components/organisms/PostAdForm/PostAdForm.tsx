@@ -9,8 +9,8 @@ import { Button } from "../../atoms/Button/Button";
 import { Spinner } from "../../atoms/Spinner/Spinner";
 import { FormField } from "../../molecules/FormField/FormField";
 import { AlertMessage } from "../../molecules/AlertMessage/AlertMessage";
-//import styles from "../RegisterForm/RegisterForm.module.css";
 import styles from "./PostAdForm.module.css";
+import { API_URL } from "../../../config";
 
 const categories = [
   { value: "Electronics", label: "Electronics" },
@@ -78,7 +78,7 @@ export const PostAdForm: React.FC = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:3000/product", {
+      const res = await fetch(`${API_URL}/product`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

@@ -4,6 +4,7 @@ import { ProductCard } from "../../organisms/ProductCard/ProductCard";
 import { Spinner } from "../../atoms/Spinner/Spinner";
 import type { Product } from "../../../types/Product";
 import { useCategory } from "../../../contexts/CategoryContext";
+import { API_URL } from "../../../config";
 
 export const HomePage: React.FC = () => {
   const { selectedCategory, searchQuery } = useCategory();
@@ -18,7 +19,7 @@ export const HomePage: React.FC = () => {
       if (selectedCategory) params.append("category", selectedCategory);
       if (searchQuery) params.append("search", searchQuery);
 
-      const res = await fetch(`http://localhost:3000/products?${params.toString()}`);
+      const res = await fetch(`${API_URL}/products?${params.toString()}`);
       const data = await res.json();
       setProducts(data);
     } catch (err) {

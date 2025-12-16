@@ -9,7 +9,6 @@ import cors from "cors";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-// Web Scraper Dependencies
 import axios from "axios";
 import * as cheerio from "cheerio";
 import { createServer } from "http";
@@ -28,13 +27,11 @@ app.use(
 
 app.use(express.json());
 
-// uploads config
 const uploadDir = "uploads";
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
 
-//socket.io config
 const httpServer = createServer(app);
 const io = new Server(httpServer,{
   cors:{
@@ -86,7 +83,6 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// utils
 const assert = (cond, msg, code = 400) => {
   if (!cond) {
     const e = new Error(msg);
@@ -127,7 +123,6 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-// enum values
 const Roles = Object.freeze({ Trusted: "Trusted", Untrusted: "Untrusted" });
 const Countries = Object.freeze(["RO", "DE", "FR", "UK"]);
 const Cities = Object.freeze({
@@ -138,7 +133,7 @@ const Cities = Object.freeze({
 });
 
 async function seed() {
-  // --- Demo Users ---
+  // Demo Users
   const demoUsers = [
     {
       name: "a",
@@ -209,7 +204,7 @@ async function seed() {
   );
   const byEmail = Object.fromEntries(sellers.map((s) => [s.email, s]));
 
-  // --- Demo Products ---
+  // Demo Products
   const demoProducts = [
     {
       title: "Carte JS pentru Începători",
@@ -282,7 +277,7 @@ async function seed() {
     );
   }
 
-  // --- Demo Notifications ---
+  // Demo Notifications
   const demoNotifications = [
     {
       userEmail: "a@yahoo.com",
@@ -298,9 +293,9 @@ async function seed() {
       is_read: 0,
     },
     {
-      userEmail: "a@yahoo.com",
+      userEmail: "c@yahoo.com",
       message:
-        "Comanda nouă (#1001) plasată de b@gmail.com pentru 'Pernă decorativă'.",
+        "Comanda nouă (#1001) plasată de a@gmail.com pentru 'Pernă decorativă'.",
       type: "order",
       is_read: 1,
     },
@@ -331,7 +326,7 @@ async function seed() {
     console.log(`[seed] created notification for ${n.userEmail}`);
   }
 
-  // --- Demo Reviews ---
+  // Demo Reviews
   const products = await all(`SELECT id, title FROM products`);
   const byTitle = Object.fromEntries(products.map((p) => [p.title, p.id]));
   const demoReviews = [
@@ -349,13 +344,13 @@ async function seed() {
     },
     {
       productTitle: "Mouse Office",
-      userEmail: "b@gmail.com",
+      userEmail: "d@gmail.com",
       rating: 4,
       comment: "Funcționează bine, raport calitate-preț corect.",
     },
     {
       productTitle: "Pernă decorativă",
-      userEmail: "b@gmail.com",
+      userEmail: "d@gmail.com",
       rating: 5,
       comment: "Foarte moale și arată exact ca în poze.",
     },
@@ -395,7 +390,7 @@ async function seed() {
     );
   }
 
-  // --- Demo Orders ---
+  // Demo Orders
   const demoOrders = [
     { buyerEmail: "b@gmail.com", price: 120, status: "pending" },
     { buyerEmail: "b@gmail.com", price: 60, status: "paid" },
@@ -559,10 +554,9 @@ app.get("/me", async (req, res, next) => {
       return res.status(401).json({ error: "Invalid or expired token" });
     }
 
-    const user = await get(
-      `SELECT id, name, email, role, country, city FROM users WHERE id = ?`,
-      [payload.sub]
-    );
+    const user = await get(`SELECT id, name, email, role, country, city, karma FROM users WHERE id = ?`, [
+      payload.sub,
+    ]);
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -641,7 +635,6 @@ app.get("/categories", async (_req, res, next) => {
   }
 });
 
-// Get single product by ID
 app.get("/product/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -687,20 +680,16 @@ app.get("/reviews", async (_req, res, next) => {
   }
 });
 
-// Get reviews for a specific product (by product ID)
 app.get("/product/:id/reviews", async (req, res, next) => {
   try {
     const { id } = req.params;
 
     // First verify the product exists
-    const product = await get(`SELECT id, title FROM products WHERE id = ?`, [
-      id,
-    ]);
+    const product = await get(`SELECT id, title FROM products WHERE id = ?`, [id]);
     if (!product) {
       return res.status(404).json({ error: "Product not found" });
     }
 
-    // Fetch reviews linked to this product ID
     const reviews = await all(
       `
         SELECT 
@@ -740,7 +729,6 @@ app.get("/orders", async (_req, res, next) => {
   }
 });
 
-// returneaza intreaga conversatie dupa id-ul unui user (buyer sau seller)
 app.get("/conversations/user/:userId", authenticate, async (req, res, next) => {
   try {
     const userId = req.params.userId;
@@ -761,7 +749,6 @@ app.get("/conversations/user/:userId", authenticate, async (req, res, next) => {
   }
 });
 
-// returneaza intreaga conversatie dupa id
 app.get(
   "/conversations/:id/user/:userId",
   authenticate,
@@ -776,7 +763,7 @@ app.get(
         [userId, userId, conversationId]
       );
       if (!conversationMessages || conversationMessages.length === 0)
-        return res.json([]); //conversatia exista dar nu are mesaje
+        return res.json([]);
 
       res.json(conversationMessages);
     } catch (e) {
@@ -847,7 +834,6 @@ function validateReview(review) {
 }
 
 function validateNotification(notification) {
-  //TODO: validations to be determined
   const { user, message, type, is_read, created_at } = notification;
   let errors = [];
   if (!user) errors.push("Invalid user id");
@@ -888,7 +874,6 @@ app.post(
         ]
       );
 
-      //const newProduct = await get(`SELECT * FROM products WHERE id = ?`, [newProductId]);
       const newProduct = await get(
         `
           SELECT 
@@ -913,13 +898,11 @@ app.post("/order", async (req, res, next) => {
     const order = req.body;
     validateOrder(order);
 
-    // 1. Create the Order
     const added = await run(
       `INSERT INTO orders (id, buyer, price, status) VALUES (?,?,?,?)`,
       [uuid(), order.buyerEmail, parseInt(order.price), order.status]
     );
 
-    // 2. Notify the Seller
     if (order.productId) {
       const product = await get(`SELECT seller, title FROM products WHERE id = ?`, [
         order.productId
@@ -947,24 +930,23 @@ app.post("/review", async (req, res, next) => {
     const review = req.body;
     validateReview(review);
 
-    // 1. Insert Review
     const added = await run(
       `INSERT INTO reviews (id, produs, user, rating, comment) VALUES (?, ?, ?, ?, ?)`,
       [
         uuid(),
         review.productTitle,
-        review.user,         
+        review.user,
         parseInt(review.rating),
         review.comment,
       ]
     );
 
-    // 2. Give Karma
     await run(`UPDATE users SET karma = karma + 10 WHERE id = ?`, [
       review.user,
     ]);
 
-    // 3. Fetch Notification Details
+    const updatedUser = await get(`SELECT karma FROM users WHERE id = ?`, [review.user]);
+
     const product = await get(`SELECT seller, title FROM products WHERE id = ?`, [
       review.productTitle
     ]);
@@ -974,7 +956,6 @@ app.post("/review", async (req, res, next) => {
     ]);
     const reviewerName = reviewerIdentity ? reviewerIdentity.name : "A user";
 
-    // 4. Send Notification
     if (product && product.seller) {
       await sendNotification(
         product.seller,
@@ -983,17 +964,12 @@ app.post("/review", async (req, res, next) => {
       );
     }
 
-    res.json(added);
+    res.json({ ...added, newKarma: updatedUser?.karma });
   } catch (e) {
     next(e);
   }
 });
 
-/**
- * Fetches product prices from a site by scraping the HTML content
- * @param {string} searchTerm Product title to search for
- * @returns {Promise<Array<{ source: string, title: string, price: number, link: string }>>}
- */
 async function scrapePrices(searchTerm) {
   const results = [];
   const searchUrl = `https://www.emag.ro/search/${encodeURIComponent(
@@ -1346,14 +1322,12 @@ app.post("/request-trusted", authenticate, async (req, res, next) => {
     const { pitch } = req.body;
     const userId = req.user.sub;
 
-    // 1. Check existing role
     if (req.user.role === "Trusted" || req.user.role === "Admin") {
       return res
         .status(400)
         .json({ error: "You are already a verified seller." });
     }
 
-    // 2. Check for duplicate pending requests
     const existing = await get(
       `SELECT 1 FROM trusted_requests WHERE user_id = ? AND status = 'pending'`,
       [userId]
@@ -1364,7 +1338,6 @@ app.post("/request-trusted", authenticate, async (req, res, next) => {
         .json({ error: "You already have a pending application." });
     }
 
-    // 3. Create the Request
     const requestId = uuid();
     await run(
       `INSERT INTO trusted_requests (id, user_id, pitch, status, created_at)
@@ -1372,14 +1345,11 @@ app.post("/request-trusted", authenticate, async (req, res, next) => {
       [requestId, userId, pitch]
     );
 
-    // A. Find all Admin IDs
     const admins = await all(`SELECT id FROM users WHERE role = 'Admin'`);
 
-    // B. Get User Name (Optional, for a better message)
     const user = await get(`SELECT name FROM users WHERE id = ?`, [userId]);
     const userName = user ? user.name : "A user";
 
-    // C. Send notification to ALL Admins
     if (admins.length > 0) {
       const notificationPromises = admins.map((admin) => 
         sendNotification(
@@ -1428,7 +1398,6 @@ app.post(
         return res.status(400).json({ error: "Invalid action" });
       }
 
-      // 1. Fetch request to find the user
       const request = await get(
         `SELECT user_id FROM trusted_requests WHERE id = ?`,
         [id]
@@ -1437,27 +1406,22 @@ app.post(
 
       const status = action === "approve" ? "approved" : "rejected";
 
-      // 2. Update the Request Status
       await run(`UPDATE trusted_requests SET status = ? WHERE id = ?`, [
         status,
         id,
       ]);
 
-      // 3. Handle Approval & Notification
       if (action === "approve") {
-        // Update Role
         await run(`UPDATE users SET role = 'Trusted' WHERE id = ?`, [
           request.user_id,
         ]);
 
-        // Notify User: Approved
         await sendNotification(
           request.user_id,
           "Congratulations! Your request for Trusted status has been approved.",
           "system"
         );
       } else {
-        // Notify User: Rejected
         await sendNotification(
           request.user_id,
           "Your request for Trusted status has been rejected.",
@@ -1503,7 +1467,6 @@ function processBody(body, numericColumns) {
 
 app.put("/product/:id", async (req, res, next) => {
   try {
-    // here the request body is considered to not contain a product id
     const { id } = req.params;
     const numericColumns = ["price"];
     const processedBody = processBody(req.body, numericColumns);
@@ -1529,7 +1492,6 @@ app.put("/product/:id", async (req, res, next) => {
 
 app.put("/order/:id", async (req, res, next) => {
   try {
-    // here the request body is considered to not contain an order id;
     const { id } = req.params;
     const numericColumns = ["price"];
     const processedBody = processBody(req.body, numericColumns);
@@ -1550,7 +1512,6 @@ app.put("/order/:id", async (req, res, next) => {
 
 app.put("/review/:id", async (req, res, next) => {
   try {
-    // here the request body is considered to not contain a review id;
     const { id } = req.params;
     const numericColumns = ["rating"];
     const processedBody = processBody(req.body, numericColumns);

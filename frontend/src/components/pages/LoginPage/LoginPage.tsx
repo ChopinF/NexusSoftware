@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthTemplate } from "../../templates/AuthTemplate/AuthTemplate";
+import { API_URL } from "../../../config";
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -9,7 +10,7 @@ export const LoginPage: React.FC = () => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    fetch("http://localhost:3000/me", {
+    fetch(`${API_URL}/me`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
