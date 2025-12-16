@@ -115,7 +115,14 @@ export const Header: React.FC<HeaderProps> = ({
             </Button>
 
             <Button onClick={onNotificationsClick} variant="primary">
-              <Bell size={20} />
+              <div className={styles.notificationWrapper}>
+                <Bell size={20} />
+                {unreadCount > 0 && (
+                  <span className={styles.notificationBadge}>
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </div>
             </Button>
 
             <Button onClick={onSignOutClick} variant="primary">
