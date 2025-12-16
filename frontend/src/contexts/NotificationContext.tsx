@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { io, Socket } from "socket.io-client";
 import { useUser } from "./UserContext";
 import { type Notification } from '../types/Notification'; 
