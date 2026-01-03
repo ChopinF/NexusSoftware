@@ -691,6 +691,53 @@ app.get("/products", async (req, res, next) => {
   }
 });
 
+app.get("/my-products", authenticate, async (req, res, next) => {
+  try {
+    const userId = req.user.sub;
+
+    const favoriteColumnSQL = `
+        (EXISTS (
+           SELECT 1 
+           FROM favorites f 
+           WHERE f.product_id = p.id AND f.user_id = ?
+        )) AS isFavorite
+      `;
+
+    const sql = `
+            SELECT p.id,
+                   p.title,
+                   p.description,
+                   p.price,
+                   p.category,
+                   p.imageUrl,
+                   u.id    AS seller_id,
+                   u.name  AS seller_name,
+                   u.email AS seller_email,
+                   u.role  AS seller_role,
+                   u.country  AS seller_country,
+                   u.city  AS seller_city,
+                   ${favoriteColumnSQL}
+            FROM products p
+            INNER JOIN users u ON p.seller = u.id
+            WHERE p.seller = ?
+            ORDER BY p.title
+        `;
+
+    const params = [userId, userId];
+
+    const rows = await all(sql, params);
+
+    const formattedRows = rows.map((row) => ({
+      ...row,
+      isFavorite: Boolean(row.isFavorite),
+    }));
+
+    res.json(formattedRows);
+  } catch (e) {
+    next(e);
+  }
+});
+
 app.get("/categories", async (_req, res, next) => {
   try {
     const rows = await all(`
@@ -1655,27 +1702,62 @@ function processBody(body, numericColumns) {
   return processedBody;
 }
 
-app.put("/product/:id", async (req, res, next) => {
+app.put("/product/:id", authenticate, upload.single('image'), async (req, res, next) => {
   try {
     const { id } = req.params;
+    const currentUserId = req.user.sub;
+    const currentUserRole = req.user.role;
+
+    const product = await get(`SELECT seller FROM products WHERE id = ?`, [id]);
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    const isOwner = product.seller === currentUserId;
+    const isAdmin = currentUserRole === 'Admin';
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ 
+        error: "Forbidden: You are not authorized to edit this product." 
+      });
+    }
+
+    let dataToUpdate = { ...req.body };
+
+    if (req.file) {
+      dataToUpdate.imageUrl = `/uploads/${req.file.filename}`;
+    }
+
     const numericColumns = ["price"];
-    const processedBody = processBody(req.body, numericColumns);
+    const processedBody = processBody(dataToUpdate, numericColumns); 
+    
     const PRODUCT_UPDATABLE_COLUMNS = [
       "title",
       "description",
       "price",
       "category",
+      "imageUrl"
     ];
+
     const { statement, values } = prepareUpdateStatement(
       processedBody,
       "products",
       PRODUCT_UPDATABLE_COLUMNS
     );
+
+    if (values.length === 0) {
+       return res.status(400).json({ error: "No valid fields provided for update." });
+    }
+
     const finalValues = [...values, id];
 
     const updated = await run(statement, finalValues);
     res.json(updated);
   } catch (e) {
+    if (e.message === "No valid fields provided for update.") {
+        return res.status(400).json({ error: e.message });
+    }
     next(e);
   }
 });
