@@ -11,23 +11,35 @@ export const HomePage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchProducts = useCallback(async () => {
-    try {
-      setLoading(true);
+const fetchProducts = useCallback(async () => {
+  try {
+    setLoading(true);
 
-      const params = new URLSearchParams();
-      if (selectedCategory) params.append("category", selectedCategory);
-      if (searchQuery) params.append("search", searchQuery);
+    const params = new URLSearchParams();
+    if (selectedCategory) params.append("category", selectedCategory);
+    if (searchQuery) params.append("search", searchQuery);
+    
+    const token = localStorage.getItem("token");
+    const headers: HeadersInit = {
+        "Content-Type": "application/json"
+    };
+    if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+    }
 
-      const res = await fetch(`${API_URL}/products?${params.toString()}`);
-      const data = await res.json();
-      setProducts(data);
-    } catch (err) {
-      console.error("Error fetching products:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedCategory, searchQuery]);
+    const res = await fetch(`${API_URL}/products?${params.toString()}`, {
+        method: "GET",
+        headers: headers
+    });
+    
+    const data = await res.json();
+    setProducts(data);
+  } catch (err) {
+    console.error("Error fetching products:", err);
+  } finally {
+    setLoading(false);
+  }
+}, [selectedCategory, searchQuery]);
 
   useEffect(() => {
     fetchProducts();
@@ -57,7 +69,7 @@ export const HomePage: React.FC = () => {
       ) : (
         <div className="grid grid-cols-3 gap-4 p-4">
           {products.length > 0 ? (
-            products.map((product) => <ProductCard key={product.id} product={product} />)
+            products.map((product) => <ProductCard key={product.id} product={product}/>)
           ) : (
             <p className="text-center text-gray-400 col-span-3">No products found.</p>
           )}

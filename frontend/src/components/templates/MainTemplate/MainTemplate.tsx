@@ -53,6 +53,10 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
     navigate("/my-notifications");
   };
 
+  const handleFavouritesClick = () => {
+    navigate("/my-favourites");
+  }
+
   return (
     <div className={styles.layoutWrapper}>
       <Header
@@ -75,6 +79,7 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
         onAdminDashboardClick={handleAdminDashboardClick}
         onMessagesClick={handleMessagesClick}
         onNotificationsClick={handleNotificationsClick}
+        onFavouritesClick={handleFavouritesClick}
         onAvatarClick={() => {
           /* navigate to /profile */
         }}

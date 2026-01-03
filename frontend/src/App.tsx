@@ -14,6 +14,7 @@ import { AdminDashboard } from "./components/pages/AdminDashboard/AdminDashboard
 import { MessagesPage } from "./components/pages/MessagesPage/MessagesPage";
 import NotificationsPage from "./components/pages/NotificationsPage/NotificationsPage.tsx";
 import { NotificationProvider } from "./contexts/NotificationContext.tsx";
+import { FavouritesPage } from "./components/pages/FavouritesPage/FavouritesPage.tsx";
 
 const App: React.FC = () => {
   return (
@@ -32,6 +33,7 @@ const App: React.FC = () => {
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/messages" element={<MessagesPage />} />
               <Route path="/my-notifications" element={<NotificationsPage />} />
+              <Route path="/my-favourites" element={<FavouritesPage/>}/>
             </Route>
 
             <Route path="*" element={<Navigate to="/" />} />

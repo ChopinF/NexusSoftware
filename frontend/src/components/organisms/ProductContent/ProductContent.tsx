@@ -1,24 +1,28 @@
 import FavoriteButton from "../../atoms/FavoriteButton/FavoriteButton.tsx";
 import CategoryBadge from "../../atoms/CategoryBadge/CategoryBadge.tsx";
 import type { Product } from "../../../types/Product.ts";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUser } from "../../../contexts/UserContext";
 import SellerCard from "../../molecules/SellerCard/SellerCard.tsx";
 import "./ProductContent.css";
 import OfferModal from "../../molecules/OfferModal/OfferModal";
 import ConversationModal from "../../molecules/ConversationModal/ConversationModal";
 import { API_URL } from "../../../config";
+import { useFavorite } from "../../../hooks/useFavorite";
 
 const ProductHeader: React.FC<{
   title: string;
   category: string;
   isFavorite: boolean;
   onFavoriteClick: () => void;
-}> = ({ title, category, isFavorite, onFavoriteClick }) => (
+  isAuthenticated: boolean;
+}> = ({ title, category, isFavorite, onFavoriteClick, isAuthenticated }) => (
   <div className="product-header">
     <div className="header-top">
       <h1 className="product-title">{title}</h1>
-      <FavoriteButton isFavorite={isFavorite} onClick={onFavoriteClick} />
+      {isAuthenticated && (
+        <FavoriteButton isFavorite={isFavorite} onClick={onFavoriteClick} />
+      )}
     </div>
     <CategoryBadge category={category} />
   </div>
@@ -34,8 +38,14 @@ const ProductDetails: React.FC<{
   </div>
 );
 
-const ProductContent: React.FC<{ product: Product }> = ({ product }) => {
-  const [isFavorite, setIsFavorite] = useState(false);
+// 1. Modificăm definiția Props-urilor pentru a accepta onToggleFavorite
+const ProductContent: React.FC<{ 
+  product: Product; 
+  onToggleFavorite?: () => void; // Prop opțional adăugat
+}> = ({ product, onToggleFavorite }) => { // 2. Îl destructurăm aici
+  
+  const [isFavorite, setIsFavorite] = useState(product.isFavorite ?? false);
+  
   const [isOfferOpen, setIsOfferOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatInitialOffer, setChatInitialOffer] = useState<string | undefined>(
@@ -43,10 +53,40 @@ const ProductContent: React.FC<{ product: Product }> = ({ product }) => {
   );
   const [conversationId, setConversationId] = useState<string | null>(null);
   const { user, token } = useUser();
+  const { toggleFavoriteApi } = useFavorite();
+
+  useEffect(() => {
+    setIsFavorite(product.isFavorite ?? false);
+  }, [product.isFavorite]);
 
   const imageUrl = product.imageUrl ? `${API_URL}${product.imageUrl}` : null;
-
   const isOwner = user && user.id === product.seller_id;
+  const isAuthenticated = !!user;
+
+  const handleFavoriteClick = async () => {
+    if (!isAuthenticated) return;
+
+    // 3. Dacă părintele (ProductPage) ne-a dat o funcție, o folosim pe aceea și ne oprim.
+    // Astfel, părintele controlează logica (API call, update state).
+    if (onToggleFavorite) {
+        onToggleFavorite();
+        return;
+    }
+
+    // --- LOGICA DE FALLBACK (Internă) ---
+    // Se execută doar dacă ProductContent este folosit undeva fără prop-ul onToggleFavorite
+    const nextState = !isFavorite;
+    setIsFavorite(nextState);
+
+    const success = await toggleFavoriteApi(product.id, nextState);
+
+    if (success) {
+      window.dispatchEvent(new Event("products-updated-signal"));
+    } else {
+      setIsFavorite(!nextState);
+      alert("A apărut o eroare la actualizarea favoritelor.");
+    }
+  };
 
   const handleDirectMessage = async () => {
     console.log("DM click: product", product.id, "seller", product.seller_id);
@@ -63,7 +103,6 @@ const ProductContent: React.FC<{ product: Product }> = ({ product }) => {
       let foundId: string | null = null;
       if (findRes.ok) {
         const rows = await findRes.json();
-        console.log("DM: conversations rows:", rows);
         const row = rows.find(
           (r: any) =>
             r.seller_id === product.seller_id ||
@@ -93,7 +132,6 @@ const ProductContent: React.FC<{ product: Product }> = ({ product }) => {
         if (createRes.ok) {
           const data = await createRes.json();
           foundId = data.id;
-          console.log("DM: created conversation", foundId);
         } else {
           const text = await createRes.text();
           console.error(
@@ -148,7 +186,8 @@ const ProductContent: React.FC<{ product: Product }> = ({ product }) => {
           title={product.title}
           category={product.category}
           isFavorite={isFavorite}
-          onFavoriteClick={() => setIsFavorite(!isFavorite)}
+          onFavoriteClick={handleFavoriteClick}
+          isAuthenticated={isAuthenticated}
         />
 
         <ProductDetails
