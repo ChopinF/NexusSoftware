@@ -5,7 +5,7 @@ import { Button } from "../../atoms/Button/Button";
 import { MapPin, Mail, Award, Settings } from "lucide-react";
 import styles from "./ProfilePage.module.css";
 import { API_URL } from "../../../config";
-import { useUser } from "../../../contexts/UserContext"; // Importăm Contextul
+import { useUser } from "../../../contexts/UserContext";
 import { Avatar } from "../../atoms/Avatar/Avatar";
 
 export const ProfilePage: React.FC = () => {

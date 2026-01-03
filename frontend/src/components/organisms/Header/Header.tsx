@@ -6,7 +6,6 @@ import { NavItem } from "../../molecules/NavItem/NavItem";
 import { SearchBar } from "../../molecules/SearchBar/SearchBar";
 import { useCategory } from "../../../contexts/CategoryContext";
 import { useNotifications } from "../../../contexts/NotificationContext";
-// 1. IMPORT IMPORTANT: Luăm userul din Context
 import { useUser } from "../../../contexts/UserContext"; 
 import { Button } from "../../atoms/Button/Button";
 import { 
@@ -15,8 +14,6 @@ import {
 } from "lucide-react";
 import { API_URL } from "../../../config";
 
-// 2. MODIFICARE INTERFACE: Am scos 'user' din props.
-// Header-ul nu mai așteaptă user de la părinte.
 interface HeaderProps {
   onPostAdClick: () => void;
   onLoginClick: () => void;
@@ -44,7 +41,6 @@ export const Header: React.FC<HeaderProps> = ({
   onFavouritesClick,
   onMyProductsClick,
 }) => {
-  // 3. CONECTARE LA CONTEXT
   const { user } = useUser(); 
 
   const currentPath = window.location.pathname;
@@ -55,10 +51,8 @@ export const Header: React.FC<HeaderProps> = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // 4. FUNCȚIE "DEFENSIVĂ" PENTRU INIȚIALE
-  // Acum acceptă (name?: string) și verifică dacă există înainte să dea .split
   const getInitials = (name?: string) => {
-    if (!name) return "??"; // Fallback dacă numele nu s-a încărcat încă
+    if (!name) return "??";
     
     const names = name.split(" ");
     const first = names[0]?.[0] || "";
@@ -66,17 +60,12 @@ export const Header: React.FC<HeaderProps> = ({
     return `${first}${last}`.toUpperCase();
   };
 
-  // 5. CALCULAREA SURSEI IMAGINII
-  // A. Dacă avem imaginea Base64 (avatarImage) venită prin /me sau /login -> o folosim.
-  // B. Altfel, dacă avem un URL vechi (avatarUrl) -> îl combinăm cu API_URL.
-  // C. Altfel -> undefined (Avatar va afișa inițialele).
   const avatarSrc = user?.avatarImage 
     ? user.avatarImage 
     : user?.avatarUrl 
       ? `${API_URL}${user.avatarUrl}` 
       : undefined;
 
-  // Încărcare categorii (partea existentă)
   useEffect(() => {
     fetch(`${API_URL}/categories`)
       .then((res) => res.json())
@@ -84,7 +73,6 @@ export const Header: React.FC<HeaderProps> = ({
       .catch(console.error);
   }, []);
 
-  // Închidere dropdown la click în afară
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -104,14 +92,12 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className={styles.headerContainer}>
-      {/* --- PARTEA STÂNGĂ (LOGO) --- */}
       <div className={styles.headerLeft}>
         <a href="/" aria-label="Homepage">
           <Logo />
         </a>
       </div>
 
-      {/* --- PARTEA CENTRALĂ (NAV + SEARCH) --- */}
       <div className={styles.headerCenter}>
         <nav>
           <ul className={styles.headerNav}>
@@ -131,10 +117,8 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* --- PARTEA DREAPTĂ (USER SAU LOGIN) --- */}
       <div className={styles.headerRight}>
         {user ? (
-          // DACA USER E LOGAT
           <div className={styles.userMenuContainer} ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -143,8 +127,6 @@ export const Header: React.FC<HeaderProps> = ({
               aria-expanded={isDropdownOpen}
             >
               <div style={{ position: 'relative' }}>
-                {/* Folosim componenta Avatar cu datele calculate */}
-                {/* Folosim (user.name || "") ca să fim siguri că nu trimitem undefined */}
                 <Avatar 
                     src={avatarSrc} 
                     initials={getInitials(user.name || "")} 
@@ -221,7 +203,6 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </div>
         ) : (
-          // DACA USER NU E LOGAT
           <div style={{ display: 'flex', gap: '1rem' }}>
             <Button onClick={onLoginClick} variant="secondary" className={styles.loginButton}>
               Login

@@ -101,7 +101,6 @@ export const EditProductForm: React.FC = () => {
     formData.append("price", price);
     formData.append("category", category);
     
-    // Trimitem imaginea doar dacă userul a selectat una nouă
     if (imageFile) {
       formData.append("image", imageFile); 
     }

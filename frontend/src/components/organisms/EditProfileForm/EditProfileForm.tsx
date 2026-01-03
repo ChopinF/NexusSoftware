@@ -38,17 +38,14 @@ export const EditProfileForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Pre-fill data when user loads
   useEffect(() => {
     if (user) {
       setName(user.name || "");
       setEmail(user.email || "");
-      // Default to RO if user has no country set
       const userCountry = user.country && CITIES_BY_COUNTRY[user.country] ? user.country : "RO";
       setCountry(userCountry);
       
-      // We set city after country is set to ensure options exist, 
-      // but we need to match it to available cities
+
       const availableCities = CITIES_BY_COUNTRY[userCountry] || [];
       if (user.city && availableCities.includes(user.city)) {
         setCity(user.city);
@@ -56,15 +53,12 @@ export const EditProfileForm: React.FC = () => {
         setCity(availableCities[0] || "");
       }
     } else {
-        // If no user is logged in, redirect
         navigate("/login");
     }
   }, [user, navigate]);
 
-  // Update city options when country changes manually
   useEffect(() => {
     const availableCities = CITIES_BY_COUNTRY[country] || [];
-    // Only reset city if the current city isn't valid for the new country
     if (!availableCities.includes(city)) {
         setCity(availableCities[0] || "");
     }
@@ -104,7 +98,6 @@ export const EditProfileForm: React.FC = () => {
         method: "PUT",
         headers: {
             Authorization: `Bearer ${token}`,
-            // Do not set Content-Type here, let browser set multipart/form-data
         },
         body: formData,
       });

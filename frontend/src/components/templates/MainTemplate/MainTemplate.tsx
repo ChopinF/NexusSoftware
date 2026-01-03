@@ -63,14 +63,11 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
   }
 
   const handleProfileClick = () => {
-    navigate("/my-profile"); // Asigură-te că aceasta este ruta corectă definită în App.tsx
+    navigate("/my-profile");
   }
 
   return (
     <div className={styles.layoutWrapper}>
-      {/* IMPORTANT: Am șters prop-ul 'user={...}' de aici.
-         Header-ul își ia acum singur datele din UserContext.
-      */}
       <Header
         onLoginClick={handleLogin}
         onRegisterClick={handleRegister}
