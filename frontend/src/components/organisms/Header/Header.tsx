@@ -1,31 +1,28 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "./Header.module.css";
 import { Logo } from "../../atoms/Logo/Logo";
-import { Button } from "../../atoms/Button/Button";
 import { Avatar } from "../../atoms/Avatar/Avatar";
 import { NavItem } from "../../molecules/NavItem/NavItem";
 import { SearchBar } from "../../molecules/SearchBar/SearchBar";
 import { useCategory } from "../../../contexts/CategoryContext";
 import { useNotifications } from "../../../contexts/NotificationContext";
+// 1. IMPORT IMPORTANT: Luăm userul din Context
+import { useUser } from "../../../contexts/UserContext"; 
+import { Button } from "../../atoms/Button/Button";
 import { 
   Bell, Heart, LogOut, MessageCircle, Package, 
   User as UserIcon, Shield, Store, PlusCircle 
 } from "lucide-react";
 import { API_URL } from "../../../config";
 
-interface User {
-  name: string;
-  avatarUrl?: string;
-  role?: string;
-}
-
+// 2. MODIFICARE INTERFACE: Am scos 'user' din props.
+// Header-ul nu mai așteaptă user de la părinte.
 interface HeaderProps {
-  user?: User;
   onPostAdClick: () => void;
   onLoginClick: () => void;
   onRegisterClick: () => void;
   onSignOutClick: () => void;
-  onAvatarClick: () => void;
+  onProfileClick: () => void;
   onBecomeSellerClick: () => void;
   onAdminDashboardClick: () => void;
   onMessagesClick: () => void;
@@ -35,12 +32,11 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  user,
   onPostAdClick,
   onLoginClick,
   onRegisterClick,
   onSignOutClick,
-  onAvatarClick,
+  onProfileClick,
   onBecomeSellerClick,
   onAdminDashboardClick,
   onMessagesClick,
@@ -48,6 +44,9 @@ export const Header: React.FC<HeaderProps> = ({
   onFavouritesClick,
   onMyProductsClick,
 }) => {
+  // 3. CONECTARE LA CONTEXT
+  const { user } = useUser(); 
+
   const currentPath = window.location.pathname;
   const { unreadCount } = useNotifications();
   const { selectedCategory, setSelectedCategory, setSearchQuery } = useCategory();
@@ -56,13 +55,28 @@ export const Header: React.FC<HeaderProps> = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const getInitials = (name: string) => {
+  // 4. FUNCȚIE "DEFENSIVĂ" PENTRU INIȚIALE
+  // Acum acceptă (name?: string) și verifică dacă există înainte să dea .split
+  const getInitials = (name?: string) => {
+    if (!name) return "??"; // Fallback dacă numele nu s-a încărcat încă
+    
     const names = name.split(" ");
     const first = names[0]?.[0] || "";
     const last = names[names.length - 1]?.[0] || "";
     return `${first}${last}`.toUpperCase();
   };
 
+  // 5. CALCULAREA SURSEI IMAGINII
+  // A. Dacă avem imaginea Base64 (avatarImage) venită prin /me sau /login -> o folosim.
+  // B. Altfel, dacă avem un URL vechi (avatarUrl) -> îl combinăm cu API_URL.
+  // C. Altfel -> undefined (Avatar va afișa inițialele).
+  const avatarSrc = user?.avatarImage 
+    ? user.avatarImage 
+    : user?.avatarUrl 
+      ? `${API_URL}${user.avatarUrl}` 
+      : undefined;
+
+  // Încărcare categorii (partea existentă)
   useEffect(() => {
     fetch(`${API_URL}/categories`)
       .then((res) => res.json())
@@ -70,6 +84,7 @@ export const Header: React.FC<HeaderProps> = ({
       .catch(console.error);
   }, []);
 
+  // Închidere dropdown la click în afară
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -89,12 +104,14 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className={styles.headerContainer}>
+      {/* --- PARTEA STÂNGĂ (LOGO) --- */}
       <div className={styles.headerLeft}>
         <a href="/" aria-label="Homepage">
           <Logo />
         </a>
       </div>
 
+      {/* --- PARTEA CENTRALĂ (NAV + SEARCH) --- */}
       <div className={styles.headerCenter}>
         <nav>
           <ul className={styles.headerNav}>
@@ -114,8 +131,10 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
+      {/* --- PARTEA DREAPTĂ (USER SAU LOGIN) --- */}
       <div className={styles.headerRight}>
         {user ? (
+          // DACA USER E LOGAT
           <div className={styles.userMenuContainer} ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -124,7 +143,14 @@ export const Header: React.FC<HeaderProps> = ({
               aria-expanded={isDropdownOpen}
             >
               <div style={{ position: 'relative' }}>
-                <Avatar src={user.avatarUrl} initials={getInitials(user.name)} />
+                {/* Folosim componenta Avatar cu datele calculate */}
+                {/* Folosim (user.name || "") ca să fim siguri că nu trimitem undefined */}
+                <Avatar 
+                    src={avatarSrc} 
+                    initials={getInitials(user.name || "")} 
+                    size="md"
+                />
+                
                 {unreadCount > 0 && (
                   <span className={styles.notificationBadge} style={{ width: '15px', height: '15px', minWidth: '12px', right: '-2px', top: '-2px', border: '2px solid #111827' }}></span>
                 )}
@@ -179,8 +205,8 @@ export const Header: React.FC<HeaderProps> = ({
                   <Heart size={18} /> Favorites
                 </button>
 
-                <button onClick={() => handleMenuClick(onAvatarClick)} className={styles.dropdownItem}>
-                   <UserIcon size={18} /> Profile
+                <button onClick={() => handleMenuClick(onProfileClick)} className={styles.dropdownItem}>
+                    <UserIcon size={18} /> Profile
                 </button>
 
                 <div className={styles.separator} />
@@ -195,6 +221,7 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </div>
         ) : (
+          // DACA USER NU E LOGAT
           <div style={{ display: 'flex', gap: '1rem' }}>
             <Button onClick={onLoginClick} variant="secondary" className={styles.loginButton}>
               Login
