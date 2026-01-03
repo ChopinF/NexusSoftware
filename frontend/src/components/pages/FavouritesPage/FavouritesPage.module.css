@@ -1,0 +1,63 @@
+.container {
+  padding: 1rem;
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.title {
+  font-size: 1.5rem; /* ~24px */
+  font-weight: 700;
+  color: #f3f4f6; /* Gray-100 */
+  margin-bottom: 1.5rem;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 40vh;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1rem;
+}
+
+/* Responsive Breakpoints similar cu Tailwind */
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.emptyState {
+  grid-column: 1 / -1; /* Ocupă toată lățimea grilei */
+  text-align: center;
+  padding: 2.5rem 0;
+}
+
+.emptyText {
+  color: #9ca3af; /* Gray-400 */
+  font-size: 1.125rem;
+  margin-bottom: 0.5rem;
+}
+
+.browseLink {
+  color: #8b5cf6; /* Violet-500 */
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.browseLink:hover {
+  text-decoration: underline;
+  color: #7c3aed; /* Violet-600 */
+}

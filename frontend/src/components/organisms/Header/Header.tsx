@@ -7,7 +7,7 @@ import { NavItem } from "../../molecules/NavItem/NavItem";
 import { SearchBar } from "../../molecules/SearchBar/SearchBar";
 import { useCategory } from "../../../contexts/CategoryContext";
 import { useNotifications } from "../../../contexts/NotificationContext";
-import { Bell, LogOut, MessageCircle } from "lucide-react";
+import { Bell, Heart, LogOut, MessageCircle } from "lucide-react";
 import { API_URL } from "../../../config";
 
 interface User {
@@ -27,6 +27,7 @@ interface HeaderProps {
   onAdminDashboardClick: () => void;
   onMessagesClick: () => void;
   onNotificationsClick: () => void;
+  onFavouritesClick: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -40,6 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
   onAdminDashboardClick,
   onMessagesClick,
   onNotificationsClick,
+  onFavouritesClick,
 }) => {
   const currentPath = window.location.pathname;
   const { unreadCount } = useNotifications();
@@ -116,13 +118,21 @@ export const Header: React.FC<HeaderProps> = ({
 
             <Button onClick={onNotificationsClick} variant="primary">
               <div className={styles.notificationWrapper}>
-                <Bell size={20} />
+                <Bell size={25} />
                 {unreadCount > 0 && (
                   <span className={styles.notificationBadge}>
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
               </div>
+            </Button>
+
+            <Button 
+              variant="primary"
+              onClick={onFavouritesClick}
+              aria-label="Mergi la favorite"
+            >
+              <Heart size={20} />
             </Button>
 
             <Button onClick={onSignOutClick} variant="primary">

@@ -125,6 +125,18 @@ export async function migrate() {
     );
   `);
 
+  await run(`
+    CREATE TABLE IF NOT EXISTS favorites (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      product_id TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE,
+      UNIQUE(user_id, product_id)
+    );
+  `);
+
   await run(`CREATE INDEX IF NOT EXISTS idx_products_seller ON products(seller);`);
   await run(`CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);`);
   await run(`CREATE INDEX IF NOT EXISTS idx_users_country_city ON users(country, city);`);
@@ -133,5 +145,6 @@ export async function migrate() {
   await run(`CREATE INDEX IF NOT EXISTS idx_conversations_buyer ON conversations(buyer_id);`);
   await run(`CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id);`);
   await run(`CREATE INDEX IF NOT EXISTS idx_trusted_requests_status ON trusted_requests(status);`);
+  await run(`CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id);`);
 }
 
