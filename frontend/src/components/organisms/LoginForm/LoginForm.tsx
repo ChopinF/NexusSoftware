@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styles from "./LoginForm.module.css";
 
 import { FormField } from "../../molecules/FormField/FormField";
+import { Input } from "../../atoms/Input/Input"; // Imported Input atom
 import { Button } from "../../atoms/Button/Button";
 import { Spinner } from "../../atoms/Spinner/Spinner";
 import { AlertMessage } from "../../molecules/AlertMessage/AlertMessage";
@@ -57,7 +58,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
 
       <form onSubmit={handleSubmit} className={styles.form}>
         <FormField label="Email Address" htmlFor="login-email">
-          <input
+          <Input
             type="email"
             id="login-email"
             value={email}
@@ -69,7 +70,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         </FormField>
 
         <FormField label="Password" htmlFor="login-password">
-          <input
+          <Input
             type="password"
             id="login-password"
             value={password}
@@ -82,7 +83,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
 
         <div className={styles.buttonWrapper}>
           <Button type="submit" variant="primary" disabled={isLoading}>
-            {isLoading ? <Spinner size="small" /> : "Sign In"}
+            {isLoading ? <Spinner size="sm" /> : "Sign In"}
           </Button>
         </div>
       </form>
