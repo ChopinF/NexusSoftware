@@ -13,7 +13,8 @@ interface MainTemplateProps {
 
 export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
   const navigate = useNavigate();
-  const { user, setUser, setToken } = useUser();
+  // Păstrăm useUser doar pentru funcționalitatea de SignOut
+  const { setUser, setToken } = useUser();
 
   const [isChatOpen, setIsChatOpen] = useState(false);
 
@@ -61,20 +62,13 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
     navigate("/my-products");
   }
 
+  const handleProfileClick = () => {
+    navigate("/my-profile");
+  }
+
   return (
     <div className={styles.layoutWrapper}>
       <Header
-        user={
-          user
-            ? {
-                name: user.name,
-                avatarUrl: `https://placehold.co/40x40/e2e8f0/a0aec0?text=${user.name.charAt(
-                  0
-                )}`,
-                role: user.role,
-              }
-            : undefined
-        }
         onLoginClick={handleLogin}
         onRegisterClick={handleRegister}
         onSignOutClick={handleSignOut}
@@ -85,9 +79,7 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
         onNotificationsClick={handleNotificationsClick}
         onFavouritesClick={handleFavouritesClick}
         onMyProductsClick={handleMyProductsClick}
-        onAvatarClick={() => {
-          /* navigate to /profile */
-        }}
+        onProfileClick={handleProfileClick}
       />
 
       <main className={styles.contentArea}>{children}</main>

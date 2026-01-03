@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styles from "./RegisterForm.module.css";
 
 import { FormField } from "../../molecules/FormField/FormField";
+import { Input } from "../../atoms/Input/Input"; // Imported Input atom
 import { Button } from "../../atoms/Button/Button";
 import { Spinner } from "../../atoms/Spinner/Spinner";
 import { AlertMessage } from "../../molecules/AlertMessage/AlertMessage";
@@ -75,7 +76,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     setIsLoading(true);
 
     try {
-      // Fixed: Passing state variables 'country' and 'city' instead of hardcoded strings
       await onSubmit(name, email, password, "Untrusted", country, city);
     } catch (err) {
       const errorMessage =
@@ -105,7 +105,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
       <form onSubmit={handleSubmit} className={styles.form}>
         <FormField label="Full Name" htmlFor="register-name">
-          <input
+          <Input
             type="text"
             id="register-name"
             value={name}
@@ -117,7 +117,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         </FormField>
 
         <FormField label="Email Address" htmlFor="register-email">
-          <input
+          <Input
             type="email"
             id="register-email"
             value={email}
@@ -129,7 +129,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         </FormField>
 
         <FormField label="Password" htmlFor="register-password">
-          <input
+          <Input
             type="password"
             id="register-password"
             value={password}
@@ -141,7 +141,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         </FormField>
 
         <FormField label="Confirm Password" htmlFor="register-confirm-password">
-          <input
+          <Input
             type="password"
             id="register-confirm-password"
             value={confirmPassword}

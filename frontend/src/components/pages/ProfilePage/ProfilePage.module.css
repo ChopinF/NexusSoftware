@@ -1,0 +1,134 @@
+.container {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 1rem;
+  min-height: 80vh;
+}
+
+.profileCard {
+  width: 100%;
+  max-width: 500px;
+  background-color: #1F2937;
+  border-radius: 1rem;
+  border: 1px solid #374151;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2.5rem 1.5rem 1.5rem;
+  background: linear-gradient(to bottom, #111827, #1F2937);
+}
+
+.avatarWrapper {
+  /* Acesta definește mărimea dorită a avatarului mare */
+  width: 120px;
+  height: 120px;
+  /* ... restul stilurilor existente (border, radius, etc.) ... */
+  border-radius: 50%;
+  border: 4px solid #374151;
+  background-color: #111827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.profileAvatar {
+  width: 100% !important;
+  height: 100% !important;
+  font-size: 3rem !important;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.userName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #F9FAFB;
+  margin: 0;
+}
+
+.userRole {
+  font-size: 0.875rem;
+  color: #8B5CF6; /* Violet accent */
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.25rem;
+  background-color: rgba(139, 92, 246, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+}
+
+.divider {
+  height: 1px;
+  background-color: #374151;
+  width: 100%;
+}
+
+/* Details */
+.details {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.detailRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.iconBox {
+  width: 40px;
+  height: 40px;
+  border-radius: 0.5rem;
+  background-color: #374151;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9CA3AF;
+  flex-shrink: 0;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #6B7280;
+  font-weight: 600;
+}
+
+.value {
+  font-size: 1rem;
+  color: #F3F4F6;
+  font-weight: 500;
+}
+
+/* Actions */
+.actions {
+  padding: 0 1.5rem 2rem;
+}

@@ -27,10 +27,12 @@ app.use(
 
 app.use(express.json());
 
-const uploadDir = "uploads";
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
+const dirs = ["uploads", "uploads/products", "uploads/avatars"];
+dirs.forEach((dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
 
 const httpServer = createServer(app);
 const io = new Server(httpServer,{
@@ -62,20 +64,23 @@ io.on("connection",(socket) => {
   })
 });
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(
-      null,
-      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname)
-    );
-  },
-});
+const createStorage = (subfolder) => {
+  return multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, path.join("uploads", subfolder));
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      cb(
+        null,
+        file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname)
+      );
+    },
+  });
+};
 
-const upload = multer({ storage: storage });
+export const uploadProduct = multer({ storage: createStorage("products") });
+export const uploadAvatar = multer({ storage: createStorage("avatars") });
 
 app.use("/uploads", express.static("uploads"));
 
@@ -143,6 +148,7 @@ async function seed() {
       country: "RO",
       city: "București",
       karma: 50,
+      avatarUrl: '/uploads/avatars/person1.jpg',
     },
     {
       name: "b",
@@ -152,6 +158,7 @@ async function seed() {
       country: "RO",
       city: "Cluj-Napoca",
       karma: 10,
+      avatarUrl: '/uploads/avatars/person2.jpg',
     },
     {
       name: "c",
@@ -179,6 +186,7 @@ async function seed() {
       country: "RO",
       city: "București",
       karma: 1000,
+      avatarUrl: '/uploads/avatars/person1.jpg',
     },
   ];
 
@@ -189,10 +197,21 @@ async function seed() {
     if (!exists) {
       const id = uuid();
       const hashed = await bcrypt.hash(u.password, 10);
+      
       await run(
-        `INSERT INTO users (id, name, email, password, role, country, city, karma)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [id, u.name, u.email, hashed, u.role, u.country, u.city, u.karma]
+        `INSERT INTO users (id, name, email, password, role, country, city, karma, avatarUrl)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          id, 
+          u.name, 
+          u.email, 
+          hashed, 
+          u.role, 
+          u.country, 
+          u.city, 
+          u.karma, 
+          u.avatarUrl || null
+        ]
       );
       console.log(`[seed] created user ${u.email} (${u.role})`);
     }
@@ -212,7 +231,7 @@ async function seed() {
       price: 120,
       sellerEmail: "a@yahoo.com",
       category: "Books",
-      imageUrl: "/uploads/js-book.jpg",
+      imageUrl: "/uploads/products/js-book.jpg",
     },
     {
       title: "Mouse Office",
@@ -220,7 +239,7 @@ async function seed() {
       price: 60,
       sellerEmail: "a@yahoo.com",
       category: "Electronics",
-      imageUrl: "/uploads/office-mouse.jpg",
+      imageUrl: "/uploads/products/office-mouse.jpg",
     },
     {
       title: "Pernă decorativă",
@@ -228,7 +247,7 @@ async function seed() {
       price: 45,
       sellerEmail: "a@yahoo.com",
       category: "Home",
-      imageUrl: "/uploads/decorative-pillow.png",
+      imageUrl: "/uploads/products/decorative-pillow.png",
     },
   ];
 
@@ -503,6 +522,7 @@ app.post("/login", async (req, res, next) => {
     const { email, password } = req.body;
 
     assert(email && password, "email & password missing");
+    
     const user = await get(`SELECT * FROM users WHERE email = ?`, [email]);
     if (!user) {
       return res.status(401).json({ error: "invalid credentials" });
@@ -519,24 +539,29 @@ app.post("/login", async (req, res, next) => {
       { expiresIn: process.env.JWT_EXPIRES || "1h" }
     );
 
+    const userResponse = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      country: user.country,
+      city: user.city,
+      karma: user.karma,
+      avatarUrl: user.avatarUrl,
+    };
+
+    const userWithImage = attachAvatarToUser(userResponse);
+
     return res.status(200).json({
       token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        country: user.country,
-        city: user.city,
-        karma: user.karma,
-      },
+      user: userWithImage,
     });
   } catch (e) {
     next(e);
   }
 });
 
-app.post("/register", async (req, res, next) => {
+app.post("/register", uploadAvatar.single("avatar"), async (req, res, next) => {
   try {
     const {
       name,
@@ -559,11 +584,17 @@ app.post("/register", async (req, res, next) => {
 
     const hashed = await bcrypt.hash(password, 10);
 
+    let avatarUrl = null;
+    if (req.file) {
+      avatarUrl = "/" + req.file.path.replace(/\\/g, "/");
+    }
+
     const id = uuid();
+    
     await run(
-      `INSERT INTO users (id, name, email, password, role, country, city)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [id, name, email, hashed, role, country, city]
+      `INSERT INTO users (id, name, email, password, role, country, city, karma, avatarUrl)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)`,
+      [id, name, email, hashed, role, country, city, avatarUrl]
     );
 
     const token = jwt.sign({ sub: id, role }, process.env.JWT_SECRET, {
@@ -572,12 +603,81 @@ app.post("/register", async (req, res, next) => {
 
     return res.status(201).json({
       token,
-      user: { id, name, email, role, country, city },
+      user: { id, name, email, role, country, city, avatarUrl },
     });
   } catch (e) {
     next(e);
   }
 });
+
+app.put("/user/profile", authenticate, uploadAvatar.single("avatar"), async (req, res, next) => {
+  try {
+    const userId = req.user.id || req.user.sub;
+    const { name, email, country, city } = req.body;
+
+    if (!name || !email || !country || !city) {
+      return res.status(400).json({ error: "All fields are required." });
+    }
+
+    let avatarPath = null;
+    if (req.file) {
+      avatarPath = "/" + req.file.path.replace(/\\/g, "/");
+    }
+
+
+    if (avatarPath) {
+      await run(
+        `UPDATE users 
+         SET name = ?, email = ?, country = ?, city = ?, avatarUrl = ? 
+         WHERE id = ?`,
+        [name, email, country, city, avatarPath, userId]
+      );
+    } else {
+      await run(
+        `UPDATE users 
+         SET name = ?, email = ?, country = ?, city = ? 
+         WHERE id = ?`,
+        [name, email, country, city, userId]
+      );
+    }
+
+    const updatedUser = await get(
+      `SELECT id, name, email, role, country, city, karma, avatarUrl FROM users WHERE id = ?`,
+      [userId]
+    );
+
+    res.json(updatedUser);
+
+  } catch (err) {
+    if (err.message && err.message.includes("UNIQUE constraint failed")) {
+      return res.status(409).json({ error: "Email is already in use by another account." });
+    }
+    next(err);
+  }
+});
+
+const attachAvatarToUser = (user) => {
+  if (!user || !user.avatarUrl) return user;
+
+  try {
+    const relativePath = user.avatarUrl.startsWith("/") 
+      ? user.avatarUrl.slice(1) 
+      : user.avatarUrl;
+
+    const absolutePath = path.resolve(relativePath);
+    if (fs.existsSync(absolutePath)) {
+      const imageBuffer = fs.readFileSync(absolutePath);
+      
+      const base64Image = `data:image/jpeg;base64,${imageBuffer.toString("base64")}`;
+
+      return { ...user, avatarImage: base64Image };
+    }
+  } catch (err) {
+    console.error("Error processing avatar:", err);
+  }
+
+  return user;
+};
 
 app.get("/me", async (req, res, next) => {
   try {
@@ -595,19 +695,23 @@ app.get("/me", async (req, res, next) => {
       return res.status(401).json({ error: "Invalid or expired token" });
     }
 
-    const user = await get(`SELECT id, name, email, role, country, city, karma FROM users WHERE id = ?`, [
-      payload.sub,
-    ]);
+    const user = await get(
+      `SELECT id, name, email, role, country, city, karma, avatarUrl FROM users WHERE id = ?`, 
+      [payload.sub]
+    );
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    return res.status(200).json({ user });
+    const userWithImage = attachAvatarToUser(user);
+
+    return res.status(200).json({ user: userWithImage });
   } catch (e) {
     next(e);
   }
 });
+
 
 app.get("/products", async (req, res, next) => {
   try {
@@ -1084,7 +1188,7 @@ app.post(
   "/product",
   authenticate,
   requireTrusted,
-  upload.single("image"),
+  uploadProduct.single("image"),
   async (req, res, next) => {
     try {
       const product = req.body;
@@ -1095,7 +1199,7 @@ app.post(
 
       let imageUrl = null;
       if (imageFile) {
-        imageUrl = `/uploads/${imageFile.filename}`;
+        imageUrl = `/uploads/products/${imageFile.filename}`;
       }
 
       await run(
@@ -1702,7 +1806,11 @@ function processBody(body, numericColumns) {
   return processedBody;
 }
 
-app.put("/product/:id", authenticate, upload.single('image'), async (req, res, next) => {
+app.put(
+  "/product/:id", 
+  authenticate, 
+  uploadProduct.single('image'),
+  async (req, res, next) => {
   try {
     const { id } = req.params;
     const currentUserId = req.user.sub;
@@ -1726,7 +1834,7 @@ app.put("/product/:id", authenticate, upload.single('image'), async (req, res, n
     let dataToUpdate = { ...req.body };
 
     if (req.file) {
-      dataToUpdate.imageUrl = `/uploads/${req.file.filename}`;
+      dataToUpdate.imageUrl = `/uploads/products/${req.file.filename}`;
     }
 
     const numericColumns = ["price"];

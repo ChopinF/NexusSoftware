@@ -38,7 +38,8 @@ export async function migrate() {
       role TEXT NOT NULL CHECK(role IN ('Trusted','Untrusted', 'Admin')),
       country TEXT NOT NULL,
       city TEXT NOT NULL,
-      karma INTEGER DEFAULT 0
+      karma INTEGER DEFAULT 0,
+      avatarUrl TEXT
     );
   `);
 

@@ -1,31 +1,25 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "./Header.module.css";
 import { Logo } from "../../atoms/Logo/Logo";
-import { Button } from "../../atoms/Button/Button";
 import { Avatar } from "../../atoms/Avatar/Avatar";
 import { NavItem } from "../../molecules/NavItem/NavItem";
 import { SearchBar } from "../../molecules/SearchBar/SearchBar";
 import { useCategory } from "../../../contexts/CategoryContext";
 import { useNotifications } from "../../../contexts/NotificationContext";
+import { useUser } from "../../../contexts/UserContext"; 
+import { Button } from "../../atoms/Button/Button";
 import { 
   Bell, Heart, LogOut, MessageCircle, Package, 
   User as UserIcon, Shield, Store, PlusCircle 
 } from "lucide-react";
 import { API_URL } from "../../../config";
 
-interface User {
-  name: string;
-  avatarUrl?: string;
-  role?: string;
-}
-
 interface HeaderProps {
-  user?: User;
   onPostAdClick: () => void;
   onLoginClick: () => void;
   onRegisterClick: () => void;
   onSignOutClick: () => void;
-  onAvatarClick: () => void;
+  onProfileClick: () => void;
   onBecomeSellerClick: () => void;
   onAdminDashboardClick: () => void;
   onMessagesClick: () => void;
@@ -35,12 +29,11 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  user,
   onPostAdClick,
   onLoginClick,
   onRegisterClick,
   onSignOutClick,
-  onAvatarClick,
+  onProfileClick,
   onBecomeSellerClick,
   onAdminDashboardClick,
   onMessagesClick,
@@ -48,6 +41,8 @@ export const Header: React.FC<HeaderProps> = ({
   onFavouritesClick,
   onMyProductsClick,
 }) => {
+  const { user } = useUser(); 
+
   const currentPath = window.location.pathname;
   const { unreadCount } = useNotifications();
   const { selectedCategory, setSelectedCategory, setSearchQuery } = useCategory();
@@ -56,12 +51,20 @@ export const Header: React.FC<HeaderProps> = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const getInitials = (name: string) => {
+  const getInitials = (name?: string) => {
+    if (!name) return "??";
+    
     const names = name.split(" ");
     const first = names[0]?.[0] || "";
     const last = names[names.length - 1]?.[0] || "";
     return `${first}${last}`.toUpperCase();
   };
+
+  const avatarSrc = user?.avatarImage 
+    ? user.avatarImage 
+    : user?.avatarUrl 
+      ? `${API_URL}${user.avatarUrl}` 
+      : undefined;
 
   useEffect(() => {
     fetch(`${API_URL}/categories`)
@@ -124,7 +127,12 @@ export const Header: React.FC<HeaderProps> = ({
               aria-expanded={isDropdownOpen}
             >
               <div style={{ position: 'relative' }}>
-                <Avatar src={user.avatarUrl} initials={getInitials(user.name)} />
+                <Avatar 
+                    src={avatarSrc} 
+                    initials={getInitials(user.name || "")} 
+                    size="md"
+                />
+                
                 {unreadCount > 0 && (
                   <span className={styles.notificationBadge} style={{ width: '15px', height: '15px', minWidth: '12px', right: '-2px', top: '-2px', border: '2px solid #111827' }}></span>
                 )}
@@ -179,8 +187,8 @@ export const Header: React.FC<HeaderProps> = ({
                   <Heart size={18} /> Favorites
                 </button>
 
-                <button onClick={() => handleMenuClick(onAvatarClick)} className={styles.dropdownItem}>
-                   <UserIcon size={18} /> Profile
+                <button onClick={() => handleMenuClick(onProfileClick)} className={styles.dropdownItem}>
+                    <UserIcon size={18} /> Profile
                 </button>
 
                 <div className={styles.separator} />
