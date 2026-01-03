@@ -9,6 +9,9 @@ import OfferModal from "../../molecules/OfferModal/OfferModal";
 import ConversationModal from "../../molecules/ConversationModal/ConversationModal";
 import { API_URL } from "../../../config";
 import { useFavorite } from "../../../hooks/useFavorite";
+// 1. Importăm useNavigate și iconița Pencil
+import { useNavigate } from "react-router-dom"; 
+import { Pencil } from "lucide-react";
 
 const ProductHeader: React.FC<{
   title: string;
@@ -16,13 +19,43 @@ const ProductHeader: React.FC<{
   isFavorite: boolean;
   onFavoriteClick: () => void;
   isAuthenticated: boolean;
-}> = ({ title, category, isFavorite, onFavoriteClick, isAuthenticated }) => (
+  // 2. Adăugăm props pentru editare
+  isOwner: boolean;
+  onEditClick: () => void;
+}> = ({ title, category, isFavorite, onFavoriteClick, isAuthenticated, isOwner, onEditClick }) => (
   <div className="product-header">
     <div className="header-top">
       <h1 className="product-title">{title}</h1>
-      {isAuthenticated && (
-        <FavoriteButton isFavorite={isFavorite} onClick={onFavoriteClick} />
-      )}
+      
+      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        {/* 3. Butonul de editare (Pencil) */}
+        {isOwner && (
+          <button 
+            onClick={onEditClick}
+            title="Edit Product"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '8px',
+              borderRadius: '50%',
+              color: '#6b7280', 
+              transition: 'background-color 0.2s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            <Pencil size={24} />
+          </button>
+        )}
+
+        {isAuthenticated && (
+          <FavoriteButton isFavorite={isFavorite} onClick={onFavoriteClick} />
+        )}
+      </div>
     </div>
     <CategoryBadge category={category} />
   </div>
@@ -38,11 +71,10 @@ const ProductDetails: React.FC<{
   </div>
 );
 
-// 1. Modificăm definiția Props-urilor pentru a accepta onToggleFavorite
 const ProductContent: React.FC<{ 
   product: Product; 
-  onToggleFavorite?: () => void; // Prop opțional adăugat
-}> = ({ product, onToggleFavorite }) => { // 2. Îl destructurăm aici
+  onToggleFavorite?: () => void; 
+}> = ({ product, onToggleFavorite }) => { 
   
   const [isFavorite, setIsFavorite] = useState(product.isFavorite ?? false);
   
@@ -54,6 +86,9 @@ const ProductContent: React.FC<{
   const [conversationId, setConversationId] = useState<string | null>(null);
   const { user, token } = useUser();
   const { toggleFavoriteApi } = useFavorite();
+  
+  // 4. Hook pentru navigare
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIsFavorite(product.isFavorite ?? false);
@@ -63,18 +98,19 @@ const ProductContent: React.FC<{
   const isOwner = user && user.id === product.seller_id;
   const isAuthenticated = !!user;
 
+  // 5. Funcția de navigare către pagina de editare
+  const handleEditClick = () => {
+    navigate(`/edit-product/${product.id}`);
+  };
+
   const handleFavoriteClick = async () => {
     if (!isAuthenticated) return;
 
-    // 3. Dacă părintele (ProductPage) ne-a dat o funcție, o folosim pe aceea și ne oprim.
-    // Astfel, părintele controlează logica (API call, update state).
     if (onToggleFavorite) {
         onToggleFavorite();
         return;
     }
 
-    // --- LOGICA DE FALLBACK (Internă) ---
-    // Se execută doar dacă ProductContent este folosit undeva fără prop-ul onToggleFavorite
     const nextState = !isFavorite;
     setIsFavorite(nextState);
 
@@ -188,6 +224,9 @@ const ProductContent: React.FC<{
           isFavorite={isFavorite}
           onFavoriteClick={handleFavoriteClick}
           isAuthenticated={isAuthenticated}
+          // 6. Trimitem props-urile noi
+          isOwner={isOwner || false} 
+          onEditClick={handleEditClick}
         />
 
         <ProductDetails

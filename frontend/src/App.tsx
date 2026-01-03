@@ -15,6 +15,8 @@ import { MessagesPage } from "./components/pages/MessagesPage/MessagesPage";
 import NotificationsPage from "./components/pages/NotificationsPage/NotificationsPage.tsx";
 import { NotificationProvider } from "./contexts/NotificationContext.tsx";
 import { FavouritesPage } from "./components/pages/FavouritesPage/FavouritesPage.tsx";
+import { MyProductsPage } from "./components/pages/MyProductsPage/MyProductsPage.tsx";
+import { EditProductPage } from "./components/pages/EditProductPage/EditProductPage.tsx";
 
 const App: React.FC = () => {
   return (
@@ -34,6 +36,8 @@ const App: React.FC = () => {
               <Route path="/messages" element={<MessagesPage />} />
               <Route path="/my-notifications" element={<NotificationsPage />} />
               <Route path="/my-favourites" element={<FavouritesPage/>}/>
+              <Route path="/my-products" element={<MyProductsPage/>} />
+              <Route path="/edit-product/:id" element={<EditProductPage/>}/>
             </Route>
 
             <Route path="*" element={<Navigate to="/" />} />

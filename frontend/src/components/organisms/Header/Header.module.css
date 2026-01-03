@@ -86,3 +86,119 @@
   pointer-events: none;
   z-index: 10;
 }
+
+.userMenuContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Avatarul devine buton trigger */
+.avatarButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 9999px;
+  transition: ring 0.2s;
+}
+
+.avatarButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #3B82F6; /* Ring albastru la focus */
+}
+
+/* Meniul Dropdown */
+.dropdownMenu {
+  position: absolute;
+  top: 120%; /* Puțin sub header */
+  right: 0;
+  width: 260px;
+  background-color: #1F2937; /* Dark Gray (mai deschis decât header-ul #111827) */
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  padding: 0.5rem 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Header-ul din interiorul meniului (ex: Hi, User) */
+.menuHeader {
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #9CA3AF;
+  border-bottom: 1px solid #374151;
+  margin-bottom: 0.25rem;
+}
+
+.menuHeader span {
+  display: block;
+  color: #F9FAFB;
+  font-size: 1rem;
+}
+
+/* Item din meniu */
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.95rem;
+  color: #D1D5DB; /* Light Gray text */
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dropdownItem:hover {
+  background-color: #374151; /* Hover effect */
+  color: #FFFFFF;
+}
+
+/* Iconițele din meniu */
+.dropdownItem svg {
+  color: #9CA3AF;
+}
+
+.dropdownItem:hover svg {
+  color: #60A5FA; /* Albastru la hover */
+}
+
+/* Separator */
+.separator {
+  height: 1px;
+  background-color: #374151;
+  margin: 0.5rem 0;
+}
+
+/* Badge-ul de notificări în meniu */
+.menuBadge {
+  background-color: #EF4444;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  margin-left: auto;
+}
+
+/* Item specific pentru Logout (roșu) */
+.logoutItem {
+  color: #F87171;
+}
+
+.logoutItem:hover {
+  background-color: #450a0a; /* Dark Red bg */
+  color: #FCA5A5;
+}
+
+.logoutItem svg {
+  color: #F87171;
+}

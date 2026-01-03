@@ -1,6 +1,6 @@
 .formContainer {
   width: 100%;
-  max-width: 500px;
+  max-width: 500px; 
   padding: 1.5rem;
   background-color: #1F2937;
   border-radius: 0.5rem;
@@ -27,21 +27,4 @@
   margin-top: 0.5rem;
   display: flex;
   justify-content: center;
-}
-
-.footerLink {
-  margin-top: 1rem;
-  text-align: center;
-  font-size: 0.85rem;
-  color: #9CA3AF;
-}
-
-.footerLink a {
-  color: #8B5CF6;
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.footerLink a:hover {
-  text-decoration: underline;
 }

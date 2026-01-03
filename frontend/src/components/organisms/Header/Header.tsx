@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "./Header.module.css";
 import { Logo } from "../../atoms/Logo/Logo";
 import { Button } from "../../atoms/Button/Button";
@@ -7,7 +7,10 @@ import { NavItem } from "../../molecules/NavItem/NavItem";
 import { SearchBar } from "../../molecules/SearchBar/SearchBar";
 import { useCategory } from "../../../contexts/CategoryContext";
 import { useNotifications } from "../../../contexts/NotificationContext";
-import { Bell, Heart, LogOut, MessageCircle } from "lucide-react";
+import { 
+  Bell, Heart, LogOut, MessageCircle, Package, 
+  User as UserIcon, Shield, Store, PlusCircle 
+} from "lucide-react";
 import { API_URL } from "../../../config";
 
 interface User {
@@ -28,6 +31,7 @@ interface HeaderProps {
   onMessagesClick: () => void;
   onNotificationsClick: () => void;
   onFavouritesClick: () => void;
+  onMyProductsClick: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -42,11 +46,15 @@ export const Header: React.FC<HeaderProps> = ({
   onMessagesClick,
   onNotificationsClick,
   onFavouritesClick,
+  onMyProductsClick,
 }) => {
   const currentPath = window.location.pathname;
   const { unreadCount } = useNotifications();
   const { selectedCategory, setSelectedCategory, setSearchQuery } = useCategory();
   const [categories, setCategories] = useState<string[]>([]);
+  
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const getInitials = (name: string) => {
     const names = name.split(" ");
@@ -61,6 +69,21 @@ export const Header: React.FC<HeaderProps> = ({
       .then((data: string[]) => setCategories(data))
       .catch(console.error);
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleMenuClick = (action: () => void) => {
+    action();
+    setIsDropdownOpen(false);
+  };
 
   const isTrustedOrAdmin = user?.role === "Trusted" || user?.role === "Admin";
 
@@ -93,62 +116,86 @@ export const Header: React.FC<HeaderProps> = ({
 
       <div className={styles.headerRight}>
         {user ? (
-          <>
-            {user.role === "Admin" && (
-              <Button onClick={onAdminDashboardClick} variant="primary">
-                Admin
-              </Button>
-            )}
-
-            {user.role !== "Trusted" && user.role !== "Admin" && (
-              <Button onClick={onBecomeSellerClick} variant="primary">
-                Become Seller
-              </Button>
-            )}
-
-            {isTrustedOrAdmin && (
-              <Button onClick={onPostAdClick} variant="primary">
-                Post Ad
-              </Button>
-            )}
-
-            <Button onClick={onMessagesClick} variant="primary">
-              <MessageCircle size={20} />
-            </Button>
-
-            <Button onClick={onNotificationsClick} variant="primary">
-              <div className={styles.notificationWrapper}>
-                <Bell size={25} />
+          <div className={styles.userMenuContainer} ref={dropdownRef}>
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className={styles.avatarButton}
+              aria-label="User menu"
+              aria-expanded={isDropdownOpen}
+            >
+              <div style={{ position: 'relative' }}>
+                <Avatar src={user.avatarUrl} initials={getInitials(user.name)} />
                 {unreadCount > 0 && (
-                  <span className={styles.notificationBadge}>
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
+                  <span className={styles.notificationBadge} style={{ width: '15px', height: '15px', minWidth: '12px', right: '-2px', top: '-2px', border: '2px solid #111827' }}></span>
                 )}
               </div>
-            </Button>
-
-            <Button 
-              variant="primary"
-              onClick={onFavouritesClick}
-              aria-label="Mergi la favorite"
-            >
-              <Heart size={20} />
-            </Button>
-
-            <Button onClick={onSignOutClick} variant="primary">
-              <LogOut size={20} />
-            </Button>
-
-            <button
-              onClick={onAvatarClick}
-              className="rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              aria-label="User menu"
-            >
-              <Avatar src={user.avatarUrl} initials={getInitials(user.name)} />
             </button>
-          </>
+
+            {isDropdownOpen && (
+              <div className={styles.dropdownMenu}>
+                <div className={styles.menuHeader}>
+                    Signed in as <br />
+                    <span>{user.name}</span>
+                </div>
+
+                {user.role === "Admin" && (
+                  <button onClick={() => handleMenuClick(onAdminDashboardClick)} className={styles.dropdownItem}>
+                    <Shield size={18} /> Admin Dashboard
+                  </button>
+                )}
+
+                {user.role !== "Trusted" && user.role !== "Admin" && (
+                  <button onClick={() => handleMenuClick(onBecomeSellerClick)} className={styles.dropdownItem}>
+                    <Store size={18} /> Become Seller
+                  </button>
+                )}
+
+                {isTrustedOrAdmin && (
+                  <button onClick={() => handleMenuClick(onPostAdClick)} className={styles.dropdownItem}>
+                    <PlusCircle size={18} /> Post Ad
+                  </button>
+                )}
+
+                <div className={styles.separator} />
+
+                <button onClick={() => handleMenuClick(onMyProductsClick)} className={styles.dropdownItem}>
+                  <Package size={18} /> My Products
+                </button>
+
+                <button onClick={() => handleMenuClick(onMessagesClick)} className={styles.dropdownItem}>
+                  <MessageCircle size={18} /> Messages
+                </button>
+
+                <button onClick={() => handleMenuClick(onNotificationsClick)} className={styles.dropdownItem}>
+                  <Bell size={18} /> Notifications
+                  {unreadCount > 0 && (
+                    <span className={styles.menuBadge}>
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                <button onClick={() => handleMenuClick(onFavouritesClick)} className={styles.dropdownItem}>
+                  <Heart size={18} /> Favorites
+                </button>
+
+                <button onClick={() => handleMenuClick(onAvatarClick)} className={styles.dropdownItem}>
+                   <UserIcon size={18} /> Profile
+                </button>
+
+                <div className={styles.separator} />
+
+                <button 
+                  onClick={() => handleMenuClick(onSignOutClick)} 
+                  className={`${styles.dropdownItem} ${styles.logoutItem}`}
+                >
+                  <LogOut size={18} /> Sign Out
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
-          <div className={styles.authButtons}>
+          <div style={{ display: 'flex', gap: '1rem' }}>
             <Button onClick={onLoginClick} variant="secondary" className={styles.loginButton}>
               Login
             </Button>
