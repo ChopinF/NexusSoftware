@@ -422,6 +422,47 @@ async function seed() {
     );
     console.log(`[seed] created order for ${o.buyerEmail} (${o.status})`);
   }
+
+  const allUsersList = await all(`SELECT id, email FROM users`);
+  const usersMap = Object.fromEntries(allUsersList.map((u) => [u.email, u]));
+
+  const demoFavorites = [
+    { userEmail: "b@gmail.com", productTitle: "Mouse Office" },
+    { userEmail: "b@gmail.com", productTitle: "Pernă decorativă" },
+    { userEmail: "d@gmail.com", productTitle: "Carte JS pentru Începători" },
+    { userEmail: "admin@edgeup.com", productTitle: "Mouse Office" }, 
+    { userEmail: "a@yahoo.com", productTitle: "Pernă decorativă" }
+  ];
+
+  for (const f of demoFavorites) {
+    const user = usersMap[f.userEmail];
+    const productId = byTitle[f.productTitle];
+
+    if (!user) {
+      console.warn(`[seed] Userul ${f.userEmail} nu a fost găsit pentru favorite.`);
+      continue;
+    }
+    if (!productId) {
+      console.warn(`[seed] Produsul '${f.productTitle}' nu a fost găsit pentru favorite.`);
+      continue;
+    }
+    const exists = await get(
+      `SELECT 1 as ok FROM favorites WHERE user_id = ? AND product_id = ?`,
+      [user.id, productId]
+    );
+
+    if (exists) {
+      console.log(`[seed] Favorite deja existent: ${f.userEmail} -> ${f.productTitle}`);
+      continue;
+    }
+
+    const fid = uuid();
+    await run(
+      `INSERT INTO favorites (id, user_id, product_id, created_at) VALUES (?, ?, ?, datetime('now'))`,
+      [fid, user.id, productId]
+    );
+    console.log(`[seed] Adăugat la favorite: ${f.userEmail} a dat like la '${f.productTitle}'`);
+  }
 }
 
 const getResponseGPT = async (system, text, expectJson = false) => {
@@ -572,6 +613,33 @@ app.get("/products", async (req, res, next) => {
   try {
     const { category, search } = req.query;
 
+    let userId = null;
+    const authHeader = req.headers.authorization;
+
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+      try {
+        const payload = jwt.verify(token, process.env.JWT_SECRET);
+        userId = payload.sub;
+      } catch (err) {
+      }
+    }
+
+    const params = [];
+    
+    let favoriteColumnSQL = "0 AS isFavorite"; 
+    
+    if (userId) {
+      favoriteColumnSQL = `
+        (EXISTS (
+           SELECT 1 
+           FROM favorites f 
+           WHERE f.product_id = p.id AND f.user_id = ?
+        )) AS isFavorite
+      `;
+      params.push(userId);
+    }
+
     let sql = `
             SELECT p.id,
                    p.title,
@@ -584,13 +652,13 @@ app.get("/products", async (req, res, next) => {
                    u.email AS seller_email,
                    u.role  AS seller_role,
                    u.country  AS seller_country,
-                   u.city  AS seller_city
+                   u.city  AS seller_city,
+                   ${favoriteColumnSQL}
             FROM products p
-                     INNER JOIN users u ON p.seller = u.id
+            INNER JOIN users u ON p.seller = u.id
         `;
 
     const conditions = [];
-    const params = [];
 
     if (category) {
       conditions.push("LOWER(p.category) = LOWER(?)");
@@ -612,7 +680,12 @@ app.get("/products", async (req, res, next) => {
 
     const rows = await all(sql, params);
 
-    res.json(rows);
+    const formattedRows = rows.map(row => ({
+        ...row,
+        isFavorite: Boolean(row.isFavorite) 
+    }));
+
+    res.json(formattedRows);
   } catch (e) {
     next(e);
   }
@@ -638,6 +711,19 @@ app.get("/categories", async (_req, res, next) => {
 app.get("/product/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
+    let userId = null;
+    const authHeader = req.headers.authorization;
+
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+      try {
+        const payload = jwt.verify(token, process.env.JWT_SECRET);
+        userId = payload.sub; 
+      } catch (err) {
+
+      }
+    }
+
     const product = await get(
       `
         SELECT 
@@ -664,7 +750,21 @@ app.get("/product/:id", async (req, res, next) => {
       return res.status(404).json({ error: "Product not found" });
     }
 
-    res.json(product);
+    let isFavorite = false;
+
+    if (userId) {
+      const favRecord = await get(
+        `SELECT 1 FROM favorites WHERE user_id = ? AND product_id = ?`,
+        [userId, id]
+      );
+      isFavorite = !!favRecord;
+    }
+
+    res.json({
+      ...product,
+      isFavorite: isFavorite
+    });
+
   } catch (e) {
     console.error("Error fetching product:", e);
     next(e);
@@ -716,6 +816,96 @@ app.get("/product/:id/reviews", async (req, res, next) => {
     });
   } catch (e) {
     console.error("Error fetching product reviews:", e);
+    next(e);
+  }
+});
+
+app.post("/product/:id/favorite", authenticate, async (req, res, next) => {
+  try {
+    const userId = req.user.sub;
+    const productId = req.params.id;
+
+    const product = await get(`SELECT id FROM products WHERE id = ?`, [productId]);
+    if (!product) {
+      return res.status(404).json({ error: "Produsul nu a fost găsit." });
+    }
+
+    const existing = await get(
+      `SELECT id FROM favorites WHERE user_id = ? AND product_id = ?`,
+      [userId, productId]
+    );
+
+    if (existing) {
+      return res.status(409).json({ message: "Produsul este deja la favorite." });
+    }
+
+    const favoriteId = uuid();
+    const createdAt = new Date().toISOString();
+
+    await run(
+      `INSERT INTO favorites (id, user_id, product_id, created_at) VALUES (?, ?, ?, ?)`,
+      [favoriteId, userId, productId, createdAt]
+    );
+
+    res.status(201).json({ message: "Produs adăugat la favorite.", favoriteId });
+  } catch (e) {
+    console.error("Eroare la adăugare favorite:", e);
+    next(e);
+  }
+});
+
+app.delete("/product/:id/favorite", authenticate, async (req, res, next) => {
+  try {
+    const userId = req.user.sub;
+    const productId = req.params.id;
+
+    const result = await run(
+      `DELETE FROM favorites WHERE user_id = ? AND product_id = ?`,
+      [userId, productId]
+    );
+
+    if (result.changes === 0) {
+      return res.status(404).json({ message: "Produsul nu era la favorite sau nu a fost găsit." });
+    }
+
+    res.json({ message: "Produs șters de la favorite." });
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.get("/my-favorites", authenticate, async (req, res, next) => {
+  try {
+    const userId = req.user.sub;
+
+    const favorites = await all(
+      `SELECT p.*, f.created_at as favorited_at
+       FROM products p
+       JOIN favorites f ON p.id = f.product_id
+       WHERE f.user_id = ?
+       ORDER BY f.created_at DESC`,
+      [userId]
+    );
+
+    res.json(favorites);
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.get("/my-favorites/ids", authenticate, async (req, res, next) => {
+  try {
+    const userId = req.user.sub;
+
+    const rows = await all(
+      `SELECT product_id FROM favorites WHERE user_id = ?`,
+      [userId]
+    );
+
+    const ids = rows.map(row => row.product_id);
+    
+    res.json(ids);
+  } catch (e) {
     next(e);
   }
 });
