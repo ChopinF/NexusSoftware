@@ -1,107 +1,162 @@
 .searchBarContainer {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+}
+
+.searchInner {
   display: flex;
   align-items: center;
-  position: relative; /* Anchor for the dropdown menu */
-  border-radius: 6px;
-  background-color: #2f2f35;
-  border: 1px solid transparent;
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
-  z-index: 10;
+  background-color: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 12px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 2px;
+  height: 48px;
 }
 
-.searchBarContainer:focus-within {
-  box-shadow: 0 0 0 2px #6366f1;
+.searchBarContainer:focus-within .searchInner {
+  border-color: #6366f1;
+  background-color: #111827;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
-
-/* --- Category Trigger --- */
 
 .categoryTrigger {
   display: flex;
   align-items: center;
   background: transparent;
   border: none;
-  color: white;
-  padding: 0.6rem 0.75rem; /* Matches input padding roughly */
-  font-size: 0.875rem;
+  color: #f9fafb;
+  padding: 0 1.25rem;
+  height: 100%;
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  outline: none;
-  gap: 8px;
+  gap: 10px;
   white-space: nowrap;
-  border-radius: 6px; /* Smooth hover effect */
+  border-radius: 10px 0 0 10px;
 }
 
 .categoryTrigger:hover {
-  background-color: rgba(255, 255, 255, 0.05); /* Subtle hover */
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .selectedIcon {
   display: flex;
   align-items: center;
-  color: #9ca3af;
-}
-
-.categoryTrigger:hover .selectedIcon {
-  color: #6366f1;
+  color: #8b5cf6;
 }
 
 .selectedText {
   max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #f3f4f6;
 }
 
 .chevron {
   color: #9ca3af;
-  transition: transform 0.2s ease;
-}
-.chevronOpen {
-  transform: rotate(180deg);
+  transition: transform 0.3s ease;
 }
 
-/* --- Dropdown Menu --- */
+.chevronOpen {
+  transform: rotate(180deg);
+  color: #8b5cf6;
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background-color: #374151;
+  flex-shrink: 0;
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  padding: 0 1rem;
+  gap: 0.75rem;
+  height: 100%;
+}
+
+.innerSearchIcon {
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+  background: transparent;
+  color: white;
+  border: none;
+  padding: 0;
+  font-size: 0.95rem;
+  outline: none;
+  height: 100%;
+  min-width: 0;
+}
+
+.clearButton {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.clearButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f3f4f6;
+}
 
 .dropdownMenu {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 10px);
   left: 0;
-  background-color: #2f2f35;
-  border: 1px solid #3b3b42;
-  border-radius: 8px;
-  padding: 4px;
-  min-width: 200px; /* Slightly wider for better icon spacing */
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  width: 240px;
+  background: rgba(31, 41, 55, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid #374151;
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
   list-style: none;
-  z-index: 50;
+  z-index: 1000;
   margin: 0;
-  animation: fadeIn 0.1s ease-out;
+  animation: slideDown 0.2s ease-out;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .dropdownItem {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
+  gap: 12px;
+  padding: 10px 14px;
   font-size: 0.875rem;
-  color: #d1d5db;
+  color: #9ca3af;
   cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.15s;
+  border-radius: 10px;
+  transition: all 0.2s ease;
 }
 
 .dropdownItem:hover {
-  background-color: #3b3b42;
-  color: white;
+  background-color: #374151;
+  color: #f3f4f6;
 }
 
 .activeItem {
-  background-color: rgba(99, 102, 241, 0.15);
-  color: #6366f1;
+  background-color: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6 !important;
   font-weight: 600;
 }
 
@@ -109,43 +164,8 @@
   display: flex;
   align-items: center;
   color: inherit;
-  opacity: 0.8;
 }
-
-/* --- Divider --- */
-
-.divider {
-  width: 1px;
-  height: 24px;
-  background-color: #555;
-  margin: 0 4px;
-  opacity: 0.5;
-  flex-shrink: 0; /* Prevents it from disappearing on small screens */
-}
-
-/* --- Input --- */
-
-.searchInput {
-  flex: 1;
-  background: #2f2f35;
-  color: white;
-  border: none;
-  padding: 0.5rem 0.75rem;
-  outline: none;
-  min-width: 0;
-}
-
-.searchInput:focus {
-  outline: none;
-  box-shadow: inset 0 0 0 2px #6366f1; /* Kept your preference */
-}
-
-/* --- Search Button --- */
 
 .searchButton {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  border-top-right-radius: 6px;
-  border-bottom-right-radius: 6px;
-  /* Uses Button component styles */
+  display: none;
 }

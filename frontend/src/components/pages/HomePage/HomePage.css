@@ -1,0 +1,166 @@
+.home-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+
+.home-header {
+    margin-bottom: 2.5rem;
+    border-bottom: 1px solid #374151;
+    padding-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.home-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #F9FAFB;
+    margin: 0;
+}
+
+/* --- Custom Sort UI --- */
+.sort-wrapper {
+    position: relative;
+    z-index: 100;
+}
+
+.sort-button {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: #1F2937;
+    border: 1px solid #374151;
+    color: #F3F4F6;
+    padding: 0.6rem 1.25rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.sort-button:hover {
+    background-color: #374151;
+    border-color: #4B5563;
+}
+
+.sort-button strong {
+    color: #8B5CF6;
+    margin-left: 0.25rem;
+}
+
+.sort-button svg {
+    transition: transform 0.2s ease;
+    color: #9CA3AF;
+}
+
+.sort-button svg.rotate {
+    transform: rotate(180deg);
+}
+
+.sort-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 220px;
+    background-color: #1F2937;
+    border: 1px solid #374151;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    animation: slideDown 0.2s ease-out;
+}
+
+.sort-option {
+    background: transparent;
+    border: none;
+    color: #9CA3AF;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.sort-option:hover {
+    background-color: #374151;
+    color: #F3F4F6;
+}
+
+.sort-option.active {
+    background-color: rgba(139, 92, 246, 0.1);
+    color: #8B5CF6;
+    font-weight: 600;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Layout Grid --- */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.loading-trigger {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem 0;
+    min-height: 100px;
+}
+
+.end-message {
+    color: #9CA3AF;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+.no-products {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem;
+    background-color: #1F2937;
+    border-radius: 12px;
+    border: 1px dashed #4B5563;
+    width: 100%;
+}
+
+@media (max-width: 640px) {
+    .home-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .home-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .sort-wrapper, .sort-button {
+        width: 100%;
+    }
+    
+    .sort-button {
+        justify-content: space-between;
+    }
+
+    .sort-dropdown {
+        width: 100%;
+    }
+    
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
+}
