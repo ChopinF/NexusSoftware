@@ -9,7 +9,6 @@ import OfferModal from "../../molecules/OfferModal/OfferModal";
 import ConversationModal from "../../molecules/ConversationModal/ConversationModal";
 import { API_URL } from "../../../config";
 import { useFavorite } from "../../../hooks/useFavorite";
-// 1. Importăm useNavigate și iconița Pencil
 import { useNavigate } from "react-router-dom"; 
 import { Pencil } from "lucide-react";
 

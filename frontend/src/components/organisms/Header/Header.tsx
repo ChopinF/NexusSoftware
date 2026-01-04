@@ -45,8 +45,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   const currentPath = window.location.pathname;
   const { unreadCount } = useNotifications();
-  const { selectedCategory, setSelectedCategory, setSearchQuery } = useCategory();
-  const [categories, setCategories] = useState<string[]>([]);
+  const { setSearchQuery } = useCategory();
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -65,13 +64,6 @@ export const Header: React.FC<HeaderProps> = ({
     : user?.avatarUrl 
       ? `${API_URL}${user.avatarUrl}` 
       : undefined;
-
-  useEffect(() => {
-    fetch(`${API_URL}/categories`)
-      .then((res) => res.json())
-      .then((data: string[]) => setCategories(data))
-      .catch(console.error);
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -110,9 +102,6 @@ export const Header: React.FC<HeaderProps> = ({
           <SearchBar
             placeholder="Search for items..."
             onSearch={setSearchQuery}
-            categories={categories}
-            onCategoryChange={setSelectedCategory}
-            selectedCategory={selectedCategory}
           />
         </div>
       </div>

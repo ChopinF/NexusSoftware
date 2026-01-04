@@ -5,6 +5,7 @@ import {
   Bell, Check, CheckCheck, Trash2, MessageSquare, ShoppingBag, AlertCircle 
 } from "lucide-react";
 import styles from './NotificationsPage.module.css'; 
+import { Spinner } from "../../atoms/Spinner/Spinner";
 
 function timeAgo(dateString: string) {
   const date = new Date(dateString);
@@ -58,7 +59,7 @@ const NotificationsPage: React.FC = () => {
   return (
     <MainTemplate>
       <div className={styles.container}>
-        {/* HEADER */}
+        {/* HEADER - Aliniat cu MyProducts/Messages */}
         <div className={styles.header}>
           <div className={styles.titleSection}>
             <h1>Notifications</h1>
@@ -91,7 +92,9 @@ const NotificationsPage: React.FC = () => {
         {/* LIST */}
         <div className={styles.list}>
           {loading ? (
-             <div className={styles.loader}>Loading...</div>
+             <div className={styles.loader}>
+                <Spinner size="lg" />
+             </div>
           ) : filteredNotifications.length === 0 ? (
             <div className={styles.emptyState}>
               <Bell size={48} style={{margin: '0 auto', opacity: 0.5}} />
