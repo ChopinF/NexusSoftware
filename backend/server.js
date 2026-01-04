@@ -168,6 +168,7 @@ async function seed() {
       country: "RO",
       city: "Cluj-Napoca",
       karma: 60,
+      avatarUrl: '/uploads/avatars/person3.jpg',
     },
     {
       name: "d",
@@ -177,6 +178,7 @@ async function seed() {
       country: "RO",
       city: "Cluj-Napoca",
       karma: 110,
+      avatarUrl: '/uploads/avatars/person4.jpg',
     },
     {
       name: "admin",
@@ -186,7 +188,7 @@ async function seed() {
       country: "RO",
       city: "București",
       karma: 1000,
-      avatarUrl: '/uploads/avatars/person1.jpg',
+      avatarUrl: '/uploads/avatars/person5.jpg',
     },
   ];
 
@@ -225,30 +227,86 @@ async function seed() {
 
   // Demo Products
   const demoProducts = [
-    {
-      title: "Carte JS pentru Începători",
-      description: "Bazele JavaScript, capitole scurte.",
-      price: 120,
-      sellerEmail: "a@yahoo.com",
-      category: "Books",
-      imageUrl: "/uploads/products/js-book.jpg",
-    },
-    {
-      title: "Mouse Office",
-      description: "Mouse optic simplu, USB.",
-      price: 60,
-      sellerEmail: "a@yahoo.com",
-      category: "Electronics",
-      imageUrl: "/uploads/products/office-mouse.jpg",
-    },
-    {
-      title: "Pernă decorativă",
-      description: "Pernă 40x40, umplutură sintetică.",
-      price: 45,
-      sellerEmail: "a@yahoo.com",
-      category: "Home",
-      imageUrl: "/uploads/products/decorative-pillow.png",
-    },
+  {
+    title: "Carte JS pentru Începători",
+    description: "Bazele JavaScript, capitole scurte.",
+    price: 120,
+    sellerEmail: "a@yahoo.com",
+    category: "Books",
+    imageUrl: "/uploads/products/js-book.jpg",
+  },
+  {
+    title: "Mouse Office",
+    description: "Mouse optic simplu, USB.",
+    price: 60,
+    sellerEmail: "a@yahoo.com",
+    category: "Electronics",
+    imageUrl: "/uploads/products/office-mouse.jpg",
+  },
+  {
+    title: "Pernă decorativă",
+    description: "Pernă 40x40, umplutură sintetică.",
+    price: 45,
+    sellerEmail: "a@yahoo.com",
+    category: "Home",
+    imageUrl: "/uploads/products/decorative-pillow.png",
+  },
+  {
+    title: "Haina alba",
+    description: "Haina alba de iarna",
+    price: 300,
+    sellerEmail: "a@yahoo.com",
+    category: "Clothes",
+    imageUrl: "/uploads/products/image-1767526183037-168835722.jpg",
+  },
+  {
+    title: "Set vase",
+    description: "Set vase de bucatarie",
+    price: 250,
+    sellerEmail: "a@yahoo.com",
+    category: "Home",
+    imageUrl: "/uploads/products/image-1767526246113-512683878.jpg",
+  },
+  {
+    title: "Bormasina",
+    description: "Bormasina de dat gauri",
+    price: 150,
+    sellerEmail: "a@yahoo.com",
+    category: "Home",
+    imageUrl: "/uploads/products/image-1767526319227-423631283.jpg",
+  },
+  {
+    title: "Golf 4",
+    description: "Masina golf 4 2003",
+    price: 5000,
+    sellerEmail: "a@yahoo.com",
+    category: "Other",
+    imageUrl: "/uploads/products/image-1767526382630-134354687.jpg",
+  },
+  {
+    title: "Tractor",
+    description: "Tractor de semanat porumb",
+    price: 25000,
+    sellerEmail: "a@yahoo.com",
+    category: "Other",
+    imageUrl: "/uploads/products/image-1767526446540-295008304.jpg",
+  },
+  {
+    title: "Carte jocuri de craciun",
+    description: "Marea carte cu jocuri de craciun",
+    price: 40,
+    sellerEmail: "a@yahoo.com",
+    category: "Books",
+    imageUrl: "/uploads/products/image-1767526523036-271840831.png",
+  },
+  {
+    title: "Tricou gucci",
+    description: "Tricou gucci purtat odata",
+    price: 1500,
+    sellerEmail: "a@yahoo.com",
+    category: "Clothes",
+    imageUrl: "/uploads/products/image-1767526607401-48250080.jpg",
+  },
   ];
 
   for (const p of demoProducts) {
@@ -712,84 +770,76 @@ app.get("/me", async (req, res, next) => {
   }
 });
 
-
 app.get("/products", async (req, res, next) => {
   try {
-    const { category, search } = req.query;
+    let { 
+      category, 
+      search, 
+      page = 1, 
+      limit = 12, 
+      sortBy = 'title', 
+      order = 'ASC' 
+    } = req.query;
+
+    const safePage = Math.max(1, parseInt(page) || 1);
+    const safeLimit = Math.max(1, Math.min(100, parseInt(limit) || 12)); 
+    const offset = (safePage - 1) * safeLimit;
+
+    const validSortColumns = ['title', 'price', 'favorites_count'];
+    const sortColumn = validSortColumns.includes(sortBy) ? sortBy : 'title';
+    
+    const sortOrder = order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
     let userId = null;
     const authHeader = req.headers.authorization;
-
     if (authHeader && authHeader.startsWith("Bearer ")) {
       const token = authHeader.split(" ")[1];
       try {
         const payload = jwt.verify(token, process.env.JWT_SECRET);
         userId = payload.sub;
-      } catch (err) {
-      }
+      } catch (err) { }
     }
 
     const params = [];
-    
     let favoriteColumnSQL = "0 AS isFavorite"; 
     
     if (userId) {
-      favoriteColumnSQL = `
-        (EXISTS (
-           SELECT 1 
-           FROM favorites f 
-           WHERE f.product_id = p.id AND f.user_id = ?
-        )) AS isFavorite
-      `;
+      favoriteColumnSQL = `(EXISTS (SELECT 1 FROM favorites f WHERE f.product_id = p.id AND f.user_id = ?)) AS isFavorite`;
       params.push(userId);
     }
 
     let sql = `
-            SELECT p.id,
-                   p.title,
-                   p.description,
-                   p.price,
-                   p.category,
-                   p.imageUrl,
-                   u.id    AS seller_id,
-                   u.name  AS seller_name,
-                   u.email AS seller_email,
-                   u.role  AS seller_role,
-                   u.country  AS seller_country,
-                   u.city  AS seller_city,
-                   ${favoriteColumnSQL}
-            FROM products p
-            INNER JOIN users u ON p.seller = u.id
-        `;
+        SELECT p.id, p.title, p.description, p.price, p.category, p.imageUrl,
+               u.id AS seller_id, u.name AS seller_name, u.email AS seller_email,
+               ${favoriteColumnSQL},
+               (SELECT COUNT(*) FROM favorites fav WHERE fav.product_id = p.id) AS favorites_count
+        FROM products p
+        INNER JOIN users u ON p.seller = u.id
+    `;
 
     const conditions = [];
-
     if (category) {
       conditions.push("LOWER(p.category) = LOWER(?)");
       params.push(category);
     }
-
     if (search) {
-      conditions.push(
-        "(LOWER(p.title) LIKE LOWER(?) OR LOWER(p.description) LIKE LOWER(?))"
-      );
+      conditions.push("(LOWER(p.title) LIKE LOWER(?) OR LOWER(p.description) LIKE LOWER(?))");
       params.push(`%${search}%`, `%${search}%`);
     }
 
-    if (conditions.length > 0) {
-      sql += " WHERE " + conditions.join(" AND ");
-    }
+    if (conditions.length > 0) sql += " WHERE " + conditions.join(" AND ");
 
-    sql += " ORDER BY p.title";
+    sql += ` ORDER BY ${sortColumn} ${sortOrder}, p.id ASC`;
+    sql += ` LIMIT ? OFFSET ?`;
+    params.push(safeLimit, offset);
 
     const rows = await all(sql, params);
 
-    const formattedRows = rows.map(row => ({
-        ...row,
-        isFavorite: Boolean(row.isFavorite) 
-    }));
-
-    res.json(formattedRows);
+    res.json({
+        products: rows.map(row => ({ ...row, isFavorite: Boolean(row.isFavorite) })),
+        currentPage: safePage,
+        itemsPerPage: safeLimit
+    });
   } catch (e) {
     next(e);
   }
