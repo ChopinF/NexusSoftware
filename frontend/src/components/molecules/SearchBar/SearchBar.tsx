@@ -44,7 +44,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 }) => {
   const [query, setQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const isInitialMount = useRef(true); // Previne căutarea la prima încărcare a paginii
+  const isInitialMount = useRef(true);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLUListElement>(null);
@@ -58,17 +58,13 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
 
-  // --- LOGICA DE DEBOUNCE CORECTATĂ ---
   useEffect(() => {
-    // 1. Nu facem nimic la prima montare a componentei
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
     }
 
     const delayDebounceFn = setTimeout(() => {
-      // 2. Navigăm la "/" DOAR dacă utilizatorul chiar caută ceva sau schimbă categoria
-      // și nu suntem deja pe pagina de start.
       executeSearch(query);
     }, 500);
 
@@ -90,8 +86,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     setSearchQuery(searchVal);
     if (onSearch) onSearch(searchVal);
     
-    // 3. IMPORTANT: Navigăm la "/" doar dacă există un text de căutare
-    // sau dacă suntem pe o altă pagină și vrem să vedem rezultatele.
     if (location.pathname !== "/" && searchVal.trim() !== "") {
       navigate("/");
     }
@@ -101,7 +95,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     setSelectedCategory(category);
     setIsDropdownOpen(false);
     
-    // Când schimbăm categoria, vrem să mergem la Home să vedem produsele
     if (location.pathname !== "/") {
         navigate("/");
     }

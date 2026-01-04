@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { MainTemplate } from "../../templates/MainTemplate/MainTemplate";
 import { ProductCard } from "../../organisms/ProductCard/ProductCard";
 import { Spinner } from "../../atoms/Spinner/Spinner";
+import { Heart } from "lucide-react"; // Am adăugat Heart pentru empty state
 import type { Product } from "../../../types/Product";
 import { API_URL } from "../../../config";
 
@@ -36,8 +37,6 @@ export const FavouritesPage: React.FC = () => {
           isFavorite: true,
         }));
         setFavorites(formattedData);
-      } else {
-        console.error("Failed to fetch favorites");
       }
     } catch (err) {
       console.error("Error fetching favorites:", err);
@@ -61,10 +60,17 @@ export const FavouritesPage: React.FC = () => {
   return (
     <MainTemplate>
       <div className={styles.container}>
-        <h1 className={styles.title}>My Favorite Posts</h1>
+        <div className={styles.header}>
+          <div className={styles.titleSection}>
+            <h1>Favorite Posts</h1>
+            {favorites.length > 0 && (
+              <span className={styles.badgeCount}>{favorites.length}</span>
+            )}
+          </div>
+        </div>
 
         {loading ? (
-          <div className={styles.loadingContainer}>
+          <div className={styles.loader}>
             <Spinner size="lg" />
           </div>
         ) : (
@@ -79,9 +85,9 @@ export const FavouritesPage: React.FC = () => {
               ))
             ) : (
               <div className={styles.emptyState}>
-                <p className={styles.emptyText}>
-                  You haven't added any favorites yet.
-                </p>
+                <Heart size={48} style={{ opacity: 0.5 }} />
+                <h3>No favorites yet</h3>
+                <p>Explore our products and heart the ones you love!</p>
                 <a href="/" className={styles.browseLink}>
                   Browse Products
                 </a>

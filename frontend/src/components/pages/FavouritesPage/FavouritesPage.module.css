@@ -1,63 +1,93 @@
 .container {
-  padding: 1rem;
   max-width: 1280px;
   margin: 0 auto;
+  padding: 2rem 1rem;
   width: 100%;
+  box-sizing: border-box;
 }
 
-.title {
-  font-size: 1.5rem; /* ~24px */
-  font-weight: 700;
-  color: #f3f4f6; /* Gray-100 */
-  margin-bottom: 1.5rem;
-}
-
-.loadingContainer {
+.header {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  min-height: 40vh;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #374151; /* Linia gri închis */
+}
+
+.titleSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.titleSection h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #F9FAFB;
+  margin: 0;
+}
+
+.badgeCount {
+  background-color: #3B82F6;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.15rem 0.6rem;
+  border-radius: 9999px;
+  min-width: 24px;
+  text-align: center;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(1, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  row-gap: 24px;
+  width: 100%;
 }
 
-/* Responsive Breakpoints similar cu Tailwind */
-@media (min-width: 768px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+/* --- Loader & Empty State --- */
+.loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
 }
 
 .emptyState {
-  grid-column: 1 / -1; /* Ocupă toată lățimea grilei */
+  grid-column: 1 / -1;
   text-align: center;
-  padding: 2.5rem 0;
+  padding: 4rem 1rem;
+  color: #9CA3AF;
+  background-color: #1F2937;
+  border-radius: 0.75rem;
+  border: 1px dashed #374151;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
 }
 
-.emptyText {
-  color: #9ca3af; /* Gray-400 */
-  font-size: 1.125rem;
-  margin-bottom: 0.5rem;
+.emptyState h3 {
+  font-size: 1.25rem;
+  color: #F9FAFB;
+  margin: 0;
 }
 
 .browseLink {
-  color: #8b5cf6; /* Violet-500 */
+  margin-top: 0.5rem;
+  display: inline-block;
+  color: #3B82F6;
   text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s;
+  font-weight: 600;
+  padding: 0.5rem 1.5rem;
+  border: 1px solid #3B82F6;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
 }
 
 .browseLink:hover {
-  text-decoration: underline;
-  color: #7c3aed; /* Violet-600 */
+  background-color: #3B82F6;
+  color: white;
 }

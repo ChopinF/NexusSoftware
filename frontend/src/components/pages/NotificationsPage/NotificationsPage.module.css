@@ -1,6 +1,7 @@
 .container {
   max-width: 800px;
   margin: 0 auto;
+  padding: 2rem 1rem;
   width: 100%;
 }
 
@@ -8,7 +9,7 @@
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid #374151;
@@ -32,9 +33,9 @@
   color: white;
   font-size: 0.875rem;
   font-weight: 600;
-  padding: 0.1rem 0.6rem;
+  padding: 0.15rem 0.6rem;
   border-radius: 9999px;
-  min-width: 20px;
+  min-width: 24px;
   text-align: center;
 }
 
@@ -82,10 +83,9 @@
 }
 
 .activeFilter {
-  color: #3B82F6; /* Albastru activ */
+  color: #3B82F6;
 }
 
-/* Linia de sub butonul activ */
 .activeFilter::after {
   content: '';
   position: absolute;
@@ -108,7 +108,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem;
+  padding: 1.25rem;
   background-color: #1F2937;
   border-radius: 0.75rem;
   border: 1px solid transparent;
@@ -116,15 +116,15 @@
   position: relative;
   overflow: hidden;
   cursor: pointer;
+  min-height: 80px;
 }
 
 .card:hover {
   transform: translateY(-1px);
-  background-color: #252f3f; /* Ușor mai deschis la hover */
+  background-color: #252f3f;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
 }
 
-/* Stil specific pentru necitite */
 .unread {
   background-color: #1e2532;
   border-left: 4px solid #3B82F6;
@@ -153,7 +153,9 @@
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 0.25rem;
+  min-width: 0;
 }
 
 .messageText {
@@ -168,16 +170,15 @@
   color: #9CA3AF;
 }
 
-/* --- Actions (Butoanele din dreapta) --- */
+/* --- Actions --- */
 .actionsWrapper {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  opacity: 0; /* Ascunse default pentru un look curat */
+  opacity: 0;
   transition: opacity 0.2s ease;
 }
 
-/* Le arătăm când facem hover pe card sau pe mobil */
 .card:hover .actionsWrapper {
   opacity: 1;
 }
@@ -197,15 +198,22 @@
 
 .actionBtn:hover {
   background-color: #374151;
-  color: #3B82F6; /* Albastru la hover */
+  color: #3B82F6;
 }
 
 .deleteBtn:hover {
   background-color: #374151;
-  color: #EF4444; /* Roșu la hover pentru ștergere */
+  color: #EF4444;
 }
 
-/* --- Empty State --- */
+/* --- Loader & Empty State --- */
+.loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem;
+}
+
 .emptyState {
   text-align: center;
   padding: 4rem 1rem;
@@ -218,11 +226,5 @@
 .emptyState h3 {
   margin-top: 1rem;
   font-size: 1.25rem;
-  color: #9CA3AF;
-}
-
-.loader {
-  text-align: center;
-  padding: 2rem;
   color: #9CA3AF;
 }

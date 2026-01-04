@@ -1,12 +1,12 @@
-/* --- Container Principal (Stil SellerCard) --- */
 .price-comparison-container {
-  background-color: #1F2937; /* Dark Gray Background */
-  border: 1px solid #374151; /* Dark Border */
+  background-color: #1F2937;
+  border: 1px solid #374151;
   border-radius: 12px;
   padding: 1.5rem;
-  margin: 2rem 0;
+  margin: 0 0 1.5rem 0; 
+  
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  color: #F9FAFB; /* Light Text */
+  color: #F9FAFB;
   transition: box-shadow 0.2s ease;
 }
 
@@ -14,23 +14,21 @@
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-/* --- Titlu --- */
 .price-comparison-container h3 {
     margin-top: 0;
     margin-bottom: 1rem;
     font-size: 1.25rem;
     font-weight: 600;
-    color: #F9FAFB; /* Alb */
+    color: #F9FAFB;
     letter-spacing: 0.025em;
 }
 
-/* --- Loading State --- */
 .price-comparison-container.loading {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  color: #9CA3AF; /* Gray Text */
+  color: #9CA3AF;
   background-color: #1F2937;
   min-height: 120px;
 }
@@ -44,7 +42,6 @@
   to { transform: rotate(360deg); }
 }
 
-/* --- Layout Intern --- */
 .comparison-content {
     display: flex;
     flex-direction: column;
@@ -58,7 +55,7 @@
     }
     .market-summary {
         flex: 1;
-        border-right: 1px solid #374151; /* Dark Separator */
+        border-right: 1px solid #374151;
         padding-right: 1.5rem;
     }
     .competitor-list {
@@ -67,7 +64,6 @@
     }
 }
 
-/* --- Badges (Market Summary) --- */
 .market-badge span {
   display: inline-flex;
   align-items: center;
@@ -78,37 +74,35 @@
   font-size: 0.95rem;
 }
 
-/* Adaptare culori badge pentru Dark Mode */
 .badge-good {
-  background-color: rgba(22, 163, 74, 0.2); /* Green tint */
-  color: #4ade80; /* Bright Green Text */
+  background-color: rgba(22, 163, 74, 0.2);
+  color: #4ade80;
   border: 1px solid rgba(22, 163, 74, 0.3);
 }
 
 .badge-high {
-  background-color: rgba(220, 38, 38, 0.2); /* Red tint */
-  color: #f87171; /* Bright Red Text */
+  background-color: rgba(220, 38, 38, 0.2);
+  color: #f87171;
   border: 1px solid rgba(220, 38, 38, 0.3);
 }
 
 .avg-text {
     margin-top: 1rem;
     font-size: 1rem;
-    color: #9CA3AF; /* Muted Text */
+    color: #9CA3AF;
 }
 
 .avg-text strong {
-    color: #F9FAFB; /* White Text */
+    color: #F9FAFB;
     font-size: 1.1rem;
 }
 
-/* --- Competitor List --- */
 .list-title {
     display: block;
     margin-bottom: 0.75rem;
     font-size: 0.875rem;
     font-weight: 600;
-    color: #9CA3AF; /* Muted Header */
+    color: #9CA3AF;
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
@@ -119,14 +113,12 @@
     gap: 0.75rem;
 }
 
-/* --- Individual Cards (Stil Input/Inner Card) --- */
 .comp-card {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 1rem;
     
-    /* Background similar cu input-urile din modal (#111827) */
     background-color: #111827; 
     border: 1px solid #374151;
     border-radius: 8px;
@@ -137,8 +129,8 @@
 }
 
 .comp-card:hover {
-    border-color: #3b82f6; /* Blue Border on Hover */
-    background-color: #0f172a; /* Slightly darker */
+    border-color: #3b82f6;
+    background-color: #0f172a;
     transform: translateY(-1px);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
@@ -152,7 +144,7 @@
 
 .comp-title {
     font-weight: 500;
-    color: #F3F4F6; /* Light Text */
+    color: #F3F4F6;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -162,18 +154,18 @@
 
 .comp-source {
     font-size: 0.8rem;
-    color: #6B7280; /* Darker Gray */
+    color: #6B7280;
 }
 
 .comp-price-action {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #60a5fa; /* Light Blue */
+    color: #60a5fa;
     font-weight: 700;
     font-size: 1rem;
 }
 
 .comp-card:hover .comp-price-action {
-    color: #93c5fd; /* Lighter Blue on hover */
+    color: #93c5fd;
 }

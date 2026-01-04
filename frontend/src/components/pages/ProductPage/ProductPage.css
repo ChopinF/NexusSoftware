@@ -1,10 +1,10 @@
 .product-page {
     max-width: 1280px;
     margin: 0 auto;
-    padding: 3rem 1.5rem;
+    padding: 1rem 1.5rem; 
     display: flex;
     flex-direction: column;
-    gap: 3rem;
+    gap: 1.5rem; 
 }
 
 .loading-container {
@@ -18,19 +18,20 @@
 .widget-section, 
 .reviews-section {
     width: 100%;
+    margin: 0 !important;
     animation: fadeIn 0.3s ease-in-out;
 }
 
 .reviews-section {
     border-top: 1px solid #374151; 
-    padding-top: 3rem;
+    padding-top: 1.5rem;
 }
 
 .reviews-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 .reviews-header h2 {
@@ -43,12 +44,13 @@
 .no-reviews-text {
     color: #9CA3AF;
     font-style: italic;
+    padding: 1rem 0;
 }
 
 .add-review-btn {
     background-color: #6D28D9;
     color: #ffffff;
-    padding: 0.75rem 1.5rem;
+    padding: 0.6rem 1.25rem;
     border-radius: 8px;
     border: none;
     font-size: 0.875rem;
@@ -72,19 +74,24 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* --- Responsive --- */
 @media (max-width: 768px) {
     .product-page {
-        padding: 1.5rem 1rem;
-        gap: 2rem;
+        padding: 1rem;
+        gap: 1.25rem;
     }
 
     .reviews-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
+        flex-direction: row;
+        align-items: center;
     }
     
     .add-review-btn {
-        width: 100%;
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    .reviews-section {
+        padding-top: 1.25rem;
     }
 }
