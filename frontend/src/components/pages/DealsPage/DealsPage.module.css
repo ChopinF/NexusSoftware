@@ -1,0 +1,276 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  width: 100%;
+}
+
+/* --- Header --- */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #374151;
+}
+
+.titleSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.titleSection h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #F9FAFB;
+  margin: 0;
+}
+
+.badgeCount {
+  background-color: #8B5CF6; /* Mov pentru negocieri */
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.15rem 0.6rem;
+  border-radius: 9999px;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* --- Filters --- */
+.filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.filterBtn {
+  background: transparent;
+  border: none;
+  color: #9CA3AF;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.5rem 0;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.filterBtn:hover {
+  color: #D1D5DB;
+}
+
+.activeFilter {
+  color: #8B5CF6;
+}
+
+.activeFilter::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #8B5CF6;
+  border-radius: 2px;
+}
+
+/* --- List & Cards --- */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background-color: #1F2937;
+  border-radius: 0.75rem;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-1px);
+  background-color: #252f3f;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+/* Stil pentru Pending/Unread */
+.unread {
+  background-color: #1e2532;
+  border-left: 4px solid #F59E0B; /* Orange for Pending */
+}
+
+.iconWrapper {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: #111827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #374151;
+}
+
+/* --- Content --- */
+.contentWrapper {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.productTitle {
+  font-weight: 600;
+  color: #F9FAFB;
+  font-size: 1rem;
+}
+
+.timeText {
+  font-size: 0.75rem;
+  color: #6B7280;
+  white-space: nowrap;
+  margin-left: 1rem;
+}
+
+.messageText {
+  font-size: 0.95rem;
+  color: #9CA3AF;
+  margin: 0;
+}
+
+.priceHighlight {
+  color: #10B981;
+  font-weight: 700;
+}
+
+/* --- Actions Side --- */
+.actionsSide {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Status Badges */
+.statusBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.pending { color: #F59E0B; background-color: rgba(245, 158, 11, 0.1); }
+.accepted { color: #10B981; background-color: rgba(16, 185, 129, 0.1); }
+.rejected { color: #EF4444; background-color: rgba(239, 68, 68, 0.1); }
+.ordered { color: #3B82F6; background-color: rgba(59, 130, 246, 0.1); }
+
+/* Buttons Group */
+.buttonsGroup {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.acceptBtn {
+  background-color: #065F46; /* Dark Green */
+  color: #D1FAE5;
+}
+.acceptBtn:hover {
+  background-color: #047857;
+}
+
+.declineBtn {
+  background-color: #7F1D1D; /* Dark Red */
+  color: #FEE2E2;
+}
+.declineBtn:hover {
+  background-color: #991B1B;
+}
+
+.buyBtn {
+  background-color: #7C3AED; /* Violet */
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.buyBtn:hover {
+  background-color: #6D28D9;
+}
+
+/* Loader & Empty */
+.loader {
+  display: flex;
+  justify-content: center;
+  padding: 4rem;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 4rem 1rem;
+  color: #6B7280;
+  background-color: #1F2937;
+  border-radius: 0.75rem;
+  border: 1px dashed #374151;
+}
+
+.emptyState h3 {
+  margin-top: 1rem;
+  font-size: 1.25rem;
+  color: #9CA3AF;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .actionsSide {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+  }
+  
+  .iconWrapper {
+    display: none;
+  }
+}

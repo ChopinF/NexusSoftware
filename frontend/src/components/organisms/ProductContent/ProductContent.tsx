@@ -1,16 +1,25 @@
-import FavoriteButton from "../../atoms/FavoriteButton/FavoriteButton.tsx";
-import CategoryBadge from "../../atoms/CategoryBadge/CategoryBadge.tsx";
-import type { Product } from "../../../types/Product.ts";
+import FavoriteButton from "../../atoms/FavoriteButton/FavoriteButton";
+import CategoryBadge from "../../atoms/CategoryBadge/CategoryBadge";
+import type { Product } from "../../../types/Product";
 import { useState, useEffect } from "react";
 import { useUser } from "../../../contexts/UserContext";
-import SellerCard from "../../molecules/SellerCard/SellerCard.tsx";
+import SellerCard from "../../molecules/SellerCard/SellerCard";
 import "./ProductContent.css";
 import OfferModal from "../../molecules/OfferModal/OfferModal";
 import ConversationModal from "../../molecules/ConversationModal/ConversationModal";
 import { API_URL } from "../../../config";
 import { useFavorite } from "../../../hooks/useFavorite";
 import { useNavigate } from "react-router-dom"; 
-import { Pencil } from "lucide-react";
+import { Pencil, ShoppingCart, CheckCircle, Clock } from "lucide-react";
+
+// Tip pentru negociere
+interface NegotiationState {
+  negotiationId: string;
+  price: number;
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'ORDERED';
+}
+
+// --- Components ---
 
 const ProductHeader: React.FC<{
   title: string;
@@ -18,7 +27,6 @@ const ProductHeader: React.FC<{
   isFavorite: boolean;
   onFavoriteClick: () => void;
   isAuthenticated: boolean;
-  // 2. Adăugăm props pentru editare
   isOwner: boolean;
   onEditClick: () => void;
 }> = ({ title, category, isFavorite, onFavoriteClick, isAuthenticated, isOwner, onEditClick }) => (
@@ -27,25 +35,11 @@ const ProductHeader: React.FC<{
       <h1 className="product-title">{title}</h1>
       
       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-        {/* 3. Butonul de editare (Pencil) */}
         {isOwner && (
           <button 
             onClick={onEditClick}
             title="Edit Product"
-            style={{
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '8px',
-              borderRadius: '50%',
-              color: '#6b7280', 
-              transition: 'background-color 0.2s'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            className="icon-btn"
           >
             <Pencil size={24} />
           </button>
@@ -63,12 +57,57 @@ const ProductHeader: React.FC<{
 const ProductDetails: React.FC<{
   description: string;
   price: number;
-}> = ({ description, price }) => (
-  <div className="product-details">
-    <div className="price-tag">{price} RON</div>
-    <p className="product-description">{description}</p>
-  </div>
-);
+  onBuyClick: () => void;
+  isOwner: boolean;
+  negotiation: NegotiationState | null;
+}> = ({ description, price, onBuyClick, isOwner, negotiation }) => {
+  
+  // Logică de afișare a prețului
+  const isDealAccepted = negotiation?.status === 'ACCEPTED';
+  const isDealPending = negotiation?.status === 'PENDING';
+
+  return (
+    <div className="product-details">
+      
+      {/* Zona de Pret si Actiune */}
+      <div className="price-action-row">
+          
+          {/* Afișare condiționată preț */}
+          <div className="price-wrapper">
+            {isDealAccepted ? (
+              <>
+                <div className="price-tag deal-price">{negotiation!.price} RON</div>
+                <div className="old-price-tag">{price} RON</div>
+                <div className="deal-badge accepted">
+                  <CheckCircle size={14} /> Deal Accepted
+                </div>
+              </>
+            ) : isDealPending ? (
+              <>
+                <div className="price-tag">{price} RON</div>
+                <div className="deal-badge pending">
+                  <Clock size={14} /> Offer Pending: {negotiation!.price} RON
+                </div>
+              </>
+            ) : (
+              <div className="price-tag">{price} RON</div>
+            )}
+          </div>
+          
+          {!isOwner && (
+            <button className="buy-now-btn" onClick={onBuyClick}>
+              <ShoppingCart size={20} />
+              <span>
+                {isDealAccepted ? `Buy for ${negotiation!.price} RON` : 'Buy Now'}
+              </span>
+            </button>
+          )}
+      </div>
+  
+      <p className="product-description">{description}</p>
+    </div>
+  );
+};
 
 const ProductContent: React.FC<{ 
   product: Product; 
@@ -76,132 +115,145 @@ const ProductContent: React.FC<{
 }> = ({ product, onToggleFavorite }) => { 
   
   const [isFavorite, setIsFavorite] = useState(product.isFavorite ?? false);
-  
   const [isOfferOpen, setIsOfferOpen] = useState(false);
+  const [negotiation, setNegotiation] = useState<NegotiationState | null>(null);
+  
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [chatInitialOffer, setChatInitialOffer] = useState<string | undefined>(
-    undefined
-  );
-  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationId] = useState<string | null>(null);
+  
   const { user, token } = useUser();
   const { toggleFavoriteApi } = useFavorite();
-  
-  // 4. Hook pentru navigare
   const navigate = useNavigate();
-
-  useEffect(() => {
-    setIsFavorite(product.isFavorite ?? false);
-  }, [product.isFavorite]);
 
   const imageUrl = product.imageUrl ? `${API_URL}${product.imageUrl}` : null;
   const isOwner = user && user.id === product.seller_id;
   const isAuthenticated = !!user;
 
-  // 5. Funcția de navigare către pagina de editare
+  useEffect(() => {
+    setIsFavorite(product.isFavorite ?? false);
+  }, [product.isFavorite]);
+
+  // Fetch Negotiation Status
+  useEffect(() => {
+    const fetchNegotiation = async () => {
+      if (!user || !token) return;
+      try {
+        const res = await fetch(`${API_URL}/negotiation?productId=${product.id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          // Backend-ul poate returna null dacă nu există negociere
+          setNegotiation(data || null);
+        }
+      } catch (err) {
+        console.error("Failed to fetch negotiation", err);
+      }
+    };
+    fetchNegotiation();
+  }, [product.id, user, token]);
+
+  // --- Handlers ---
+
   const handleEditClick = () => {
-    navigate(`/edit-product/${product.id}`);
+    navigate(`/product/${product.id}/edit`);
+  };
+
+  const handleBuyClick = () => {
+    if (negotiation && negotiation.status === 'ACCEPTED') {
+      navigate(`/product/${product.id}/order?dealId=${negotiation.negotiationId}`);
+    } else {
+      navigate(`/product/${product.id}/order`);
+    }
   };
 
   const handleFavoriteClick = async () => {
     if (!isAuthenticated) return;
-
     if (onToggleFavorite) {
         onToggleFavorite();
         return;
     }
-
     const nextState = !isFavorite;
     setIsFavorite(nextState);
-
     const success = await toggleFavoriteApi(product.id, nextState);
-
     if (success) {
       window.dispatchEvent(new Event("products-updated-signal"));
     } else {
       setIsFavorite(!nextState);
-      alert("A apărut o eroare la actualizarea favoritelor.");
+      alert("Error updating favorites.");
     }
   };
 
   const handleDirectMessage = async () => {
-    console.log("DM click: product", product.id, "seller", product.seller_id);
-    try {
-      if (!user) {
-        alert("Please login to message sellers.");
-        return;
-      }
-
-      const findRes = await fetch(`${API_URL}/conversations/user/${user.id}`, {
-        headers: { Authorization: token ? `Bearer ${token}` : "" },
-      });
-
-      let foundId: string | null = null;
-      if (findRes.ok) {
-        const rows = await findRes.json();
-        const row = rows.find(
-          (r: any) =>
-            r.seller_id === product.seller_id ||
-            r.buyer_id === product.seller_id
-        );
-        if (row) foundId = row.conversation_id;
-      } else {
-        console.warn(
-          "DM: could not fetch conversations for user",
-          user.id,
-          findRes.status
-        );
-      }
-
-      if (!foundId) {
-        const createRes = await fetch(`${API_URL}/conversations`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token ? `Bearer ${token}` : "",
-          },
-          body: JSON.stringify({
-            buyer_id: user.id,
-            seller_id: product.seller_id,
-          }),
-        });
-        if (createRes.ok) {
-          const data = await createRes.json();
-          foundId = data.id;
-        } else {
-          const text = await createRes.text();
-          console.error(
-            "DM: create conversation failed",
-            createRes.status,
-            text
-          );
-          alert("Could not create conversation (server error)");
-        }
-      }
-
-      if (foundId) {
-        setConversationId(foundId);
-        setChatInitialOffer(undefined);
-        setIsChatOpen(true);
-      } else {
-        console.warn("DM: no conversation id found/created");
-      }
-    } catch (err) {
-      console.error("DM error", err);
-      alert(
-        "An error occurred while opening the conversation. See console for details."
-      );
-    }
+    if (!user) return alert("Please login.");
+    setIsChatOpen(true); 
   };
 
-  const handleMakeOfferClick = async () => {
-    console.log("Make Offer click");
-    if (user && user.id === product.seller_id) {
-      console.warn(
-        "User attempted to make an offer on their own product; ignoring."
-      );
-      return;
+  // 1. Deschide Modalul
+  const handleMakeOfferClick = () => {
+    if (isOwner) {
+        console.warn("Owner cannot make offer");
+        return;
     }
+    console.log("Opening offer modal...");
     setIsOfferOpen(true);
+  };
+
+  // 2. Trimite Oferta (Backend)
+  const handleSubmitOffer = async (amount: string) => {
+    console.log("Submitting offer:", amount); // Debug log
+
+    if (!user || !token) {
+        alert("Te rugăm să te autentifici pentru a trimite o ofertă.");
+        return;
+    }
+
+    // Convertim input-ul în număr
+    const priceValue = parseFloat(amount);
+    
+    // Verificăm dacă conversia a reușit
+    if (isNaN(priceValue) || priceValue <= 0) {
+        console.error("Invalid price value:", priceValue);
+        alert("Preț invalid. Te rugăm să introduci un număr valid.");
+        return;
+    }
+
+    try {
+        const payload = {
+            productId: product.id,
+            offeredPrice: priceValue
+        };
+        console.log("Sending payload:", payload);
+
+        const response = await fetch(`${API_URL}/negotiations`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert(`Ofertă de ${priceValue} RON trimisă cu succes!`);
+            setIsOfferOpen(false);
+            
+            // Actualizăm UI-ul instant
+            setNegotiation({
+              negotiationId: data.id, 
+              price: priceValue, 
+              status: 'PENDING'
+            });
+        } else {
+            console.error("Offer error from server:", data);
+            alert(data.error || "Nu s-a putut trimite oferta.");
+        }
+    } catch (err) {
+        console.error("Network error submitting offer:", err);
+        alert("Eroare de conexiune.");
+    }
   };
 
   return (
@@ -223,7 +275,6 @@ const ProductContent: React.FC<{
           isFavorite={isFavorite}
           onFavoriteClick={handleFavoriteClick}
           isAuthenticated={isAuthenticated}
-          // 6. Trimitem props-urile noi
           isOwner={isOwner || false} 
           onEditClick={handleEditClick}
         />
@@ -231,6 +282,9 @@ const ProductContent: React.FC<{
         <ProductDetails
           description={product.description}
           price={product.price}
+          onBuyClick={handleBuyClick}
+          isOwner={isOwner || false}
+          negotiation={negotiation}
         />
 
         <SellerCard
@@ -239,7 +293,8 @@ const ProductContent: React.FC<{
           role={product.seller_role}
           country={product.seller_country}
           city={product.seller_city}
-          onDirectMessage={!isOwner ? handleDirectMessage : undefined}
+          onDirectMessage={!isOwner ? handleDirectMessage : undefined} 
+          // Aici se activează butonul doar dacă NU ești proprietar
           onMakeOffer={!isOwner ? handleMakeOfferClick : undefined}
         />
 
@@ -248,94 +303,7 @@ const ProductContent: React.FC<{
           onClose={() => setIsOfferOpen(false)}
           productTitle={product.title}
           actualPrice={product.price}
-          onConfirm={async (amount: string) => {
-            setIsOfferOpen(false);
-            if (!user)
-              return alert(
-                "Te rugăm să te autentifici pentru a trimite o ofertă."
-              );
-            let foundId: string | null = null;
-            const findRes = await fetch(
-              `${API_URL}/conversations/user/${user.id}`,
-              {
-                headers: { Authorization: token ? `Bearer ${token}` : "" },
-              }
-            );
-            if (findRes.ok) {
-              const rows = await findRes.json();
-              const row = rows.find(
-                (r: any) =>
-                  r.seller_id === product.seller_id ||
-                  r.buyer_id === product.seller_id
-              );
-              if (row) foundId = row.conversation_id;
-            }
-            if (!foundId) {
-              const createRes = await fetch(`${API_URL}/conversations`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: token ? `Bearer ${token}` : "",
-                },
-                body: JSON.stringify({
-                  buyer_id: user.id,
-                  seller_id: product.seller_id,
-                }),
-              });
-              if (createRes.ok) {
-                const data = await createRes.json();
-                foundId = data.id;
-              } else {
-                const text = await createRes.text();
-                console.error(
-                  "Create conversation failed:",
-                  createRes.status,
-                  text
-                );
-                alert("Could not create conversation (server error)");
-                return;
-              }
-            }
-
-            try {
-              const offerPayload = {
-                message: `Doresc să ofer ${amount} RON pentru produsul "${
-                  product.title
-                }" (preț actual: ${product.price.toFixed(2)} RON).`,
-                from_user: user.id,
-                to_user: product.seller_id,
-                created_at: new Date().toISOString(),
-                is_read: 0,
-              };
-              const postRes = await fetch(
-                `${API_URL}/conversations/${foundId}/messages`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: token ? `Bearer ${token}` : "",
-                  },
-                  body: JSON.stringify(offerPayload),
-                }
-              );
-              if (!postRes.ok) {
-                const text = await postRes.text();
-                console.error(
-                  "Failed to post offer message:",
-                  postRes.status,
-                  text
-                );
-                alert("Offer was not sent to server. See console for details.");
-              }
-            } catch (err) {
-              console.error("Error posting offer message:", err);
-              alert("Offer failed to send. See console for details.");
-            }
-
-            setConversationId(foundId);
-            setChatInitialOffer(undefined);
-            setIsChatOpen(true);
-          }}
+          onConfirm={handleSubmitOffer}
         />
 
         {isChatOpen && conversationId && (
@@ -344,7 +312,6 @@ const ProductContent: React.FC<{
             otherUserId={product.seller_id}
             otherUserName={product.seller_name}
             onClose={() => setIsChatOpen(false)}
-            initialOffer={chatInitialOffer}
           />
         )}
       </div>

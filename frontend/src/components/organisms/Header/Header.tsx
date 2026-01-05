@@ -10,7 +10,7 @@ import { useUser } from "../../../contexts/UserContext";
 import { Button } from "../../atoms/Button/Button";
 import { 
   Bell, Heart, LogOut, MessageCircle, Package, 
-  User as UserIcon, Shield, Store, PlusCircle 
+  User as UserIcon, Shield, Store, PlusCircle, Handshake 
 } from "lucide-react";
 import { API_URL } from "../../../config";
 
@@ -26,6 +26,7 @@ interface HeaderProps {
   onNotificationsClick: () => void;
   onFavouritesClick: () => void;
   onMyProductsClick: () => void;
+  onDealsClick: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -40,6 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
   onNotificationsClick,
   onFavouritesClick,
   onMyProductsClick,
+  onDealsClick,
 }) => {
   const { user } = useUser(); 
 
@@ -141,27 +143,29 @@ export const Header: React.FC<HeaderProps> = ({
                   </button>
                 )}
 
-                {user.role !== "Trusted" && user.role !== "Admin" && (
+                {!isTrustedOrAdmin && (
                   <button onClick={() => handleMenuClick(onBecomeSellerClick)} className={styles.dropdownItem}>
                     <Store size={18} /> Become Seller
                   </button>
                 )}
 
                 {isTrustedOrAdmin && (
-                  <button onClick={() => handleMenuClick(onPostAdClick)} className={styles.dropdownItem}>
-                    <PlusCircle size={18} /> Post Ad
-                  </button>
+                  <>
+                    <button onClick={() => handleMenuClick(onPostAdClick)} className={styles.dropdownItem}>
+                      <PlusCircle size={18} /> Post Ad
+                    </button>
+
+                    <button onClick={() => handleMenuClick(onMyProductsClick)} className={styles.dropdownItem}>
+                      <Package size={18} /> My Products
+                    </button>
+                  </>
                 )}
 
+                <button onClick={() => handleMenuClick(onDealsClick)} className={styles.dropdownItem}>
+                  <Handshake size={18} /> Offers
+                </button>
+
                 <div className={styles.separator} />
-
-                <button onClick={() => handleMenuClick(onMyProductsClick)} className={styles.dropdownItem}>
-                  <Package size={18} /> My Products
-                </button>
-
-                <button onClick={() => handleMenuClick(onMessagesClick)} className={styles.dropdownItem}>
-                  <MessageCircle size={18} /> Messages
-                </button>
 
                 <button onClick={() => handleMenuClick(onNotificationsClick)} className={styles.dropdownItem}>
                   <Bell size={18} /> Notifications
@@ -170,6 +174,10 @@ export const Header: React.FC<HeaderProps> = ({
                       {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                   )}
+                </button>
+
+                <button onClick={() => handleMenuClick(onMessagesClick)} className={styles.dropdownItem}>
+                  <MessageCircle size={18} /> Messages
                 </button>
 
                 <button onClick={() => handleMenuClick(onFavouritesClick)} className={styles.dropdownItem}>

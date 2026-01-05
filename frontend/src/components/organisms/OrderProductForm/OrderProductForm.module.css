@@ -1,0 +1,72 @@
+.formContainer {
+  width: 100%;
+  max-width: 500px; 
+  padding: 1.5rem;
+  background-color: #1F2937;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 3px solid #8B5CF6; 
+  margin: 2rem auto;
+}
+
+.formTitle {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #F9FAFB;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.productSummary {
+  background-color: #111827;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #374151;
+  margin-bottom: 1rem;
+}
+
+.summaryLabel {
+  display: block;
+  font-size: 0.75rem;
+  color: #9CA3AF;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.summaryValue {
+  font-size: 1.1rem;
+  color: #F3F4F6;
+  font-weight: 600;
+}
+
+/* --- MODIFICARE AICI: Culoarea Verde --- */
+.priceValue {
+  color: #10B981; /* Verde vibrant */
+  font-size: 1.5rem;
+}
+
+.priceContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.oldPrice {
+  color: #9CA3AF;
+  text-decoration: line-through;
+  font-size: 1rem;
+}
+
+.buttonWrapper {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
