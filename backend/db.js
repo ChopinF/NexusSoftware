@@ -55,14 +55,33 @@ export async function migrate() {
       FOREIGN KEY(seller) REFERENCES users(id) ON DELETE CASCADE
     );
   `);
+  
+  await run(`
+    CREATE TABLE IF NOT EXISTS negotiations (
+      id TEXT PRIMARY KEY,
+      product_id TEXT NOT NULL,
+      buyer_id TEXT NOT NULL,
+      seller_id TEXT NOT NULL,
+      offered_price INTEGER NOT NULL CHECK(offered_price >= 0),
+      status TEXT NOT NULL CHECK(status IN ('PENDING', 'ACCEPTED', 'REJECTED', 'ORDERED')) DEFAULT 'PENDING',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE,
+      FOREIGN KEY(buyer_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+  `);
 
   await run(`
     CREATE TABLE IF NOT EXISTS orders (
       id TEXT PRIMARY KEY,
-      buyer TEXT NOT NULL,
+      buyer_id TEXT NOT NULL,
+      product_id TEXT NOT NULL, 
       price INTEGER NOT NULL CHECK(price >= 0),
-      status TEXT NOT NULL CHECK(status IN ('pending','paid','shipped','delivered')),
-      FOREIGN KEY(buyer) REFERENCES users(id) ON DELETE CASCADE
+      status TEXT NOT NULL CHECK(status IN ('pending','paid','shipped','delivered','cancelled')),
+      shipping_address TEXT NOT NULL,
+      negotiation_id TEXT, -- Opțional: ca să știm dacă a provenit dintr-o negociere
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(buyer_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY(product_id) REFERENCES products(id)
     );
   `);
 

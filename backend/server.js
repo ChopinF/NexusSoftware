@@ -467,42 +467,146 @@ async function seed() {
     );
   }
 
-  // Demo Orders
-  const demoOrders = [
-    { buyerEmail: "b@gmail.com", price: 120, status: "pending" },
-    { buyerEmail: "b@gmail.com", price: 60, status: "paid" },
-    { buyerEmail: "a@yahoo.com", price: 45, status: "shipped" },
+  // Demo negocieri
+  const dbUsers = await all(`SELECT id, email FROM users`);
+  const usersMap = Object.fromEntries(dbUsers.map(u => [u.email, u.id]));
+
+  const dbProducts = await all(`SELECT id, title, seller FROM products`);
+  const productsMap = Object.fromEntries(dbProducts.map(p => [p.title, p]));
+
+  const demoNegotiations = [
+    {
+      productTitle: "Carte JS pentru Începători",
+      buyerEmail: "b@gmail.com",
+      offeredPrice: 100,
+      status: "PENDING"
+    },
+    {
+      productTitle: "Mouse Office",
+      buyerEmail: "c@gmail.com",
+      offeredPrice: 30,
+      status: "REJECTED"
+    },
+    {
+      productTitle: "Pernă decorativă",
+      buyerEmail: "d@gmail.com",
+      offeredPrice: 40,
+      status: "ACCEPTED"
+    },
+    {
+      productTitle: "Set vase",
+      buyerEmail: "b@gmail.com",
+      offeredPrice: 200,
+      status: "ORDERED"
+    },
+    {
+      productTitle: "Golf 4",
+      buyerEmail: "c@gmail.com",
+      offeredPrice: 4500,
+      status: "PENDING"
+    }
   ];
 
-  for (const o of demoOrders) {
-    const buyer = byEmail[o.buyerEmail];
-    if (!buyer) {
-      console.warn(`[seed] nu pot crea order pentru ${o.buyerEmail}`);
+  for (const neg of demoNegotiations) {
+    const product = productsMap[neg.productTitle];
+    const buyerId = usersMap[neg.buyerEmail];
+
+    if (!product) {
+      console.warn(`[seed-neg] Produsul '${neg.productTitle}' nu a fost găsit.`);
+      continue;
+    }
+    if (!buyerId) {
+      console.warn(`[seed-neg] Buyerul '${neg.buyerEmail}' nu a fost găsit.`);
       continue;
     }
 
     const exists = await get(
-      `SELECT 1 AS ok FROM orders WHERE buyer = ? AND price = ? AND status = ?`,
-      [buyer.id, o.price, o.status]
+      `SELECT 1 as ok FROM negotiations WHERE product_id = ? AND buyer_id = ? AND status = ?`,
+      [product.id, buyerId, neg.status]
     );
+
     if (exists) {
-      console.log(
-        `[seed] order deja există pentru ${o.buyerEmail} cu status ${o.status}`
-      );
+      console.log(`[seed-neg] Negocierea pentru '${neg.productTitle}' deja există.`);
       continue;
     }
 
-    const oid = uuid();
+    const negId = uuid();
+    
     await run(
-      `INSERT INTO orders (id, buyer, price, status) VALUES (?, ?, ?, ?)`,
-      [oid, buyer.id, o.price, o.status]
+      `INSERT INTO negotiations (id, product_id, buyer_id, seller_id, offered_price, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+      [
+        negId,
+        product.id,
+        buyerId,
+        product.seller,
+        neg.offeredPrice,
+        neg.status
+      ]
     );
-    console.log(`[seed] created order for ${o.buyerEmail} (${o.status})`);
+
+    console.log(`[seed-neg] Created '${neg.status}' deal: ${neg.buyerEmail} -> ${neg.productTitle}`);
   }
 
-  const allUsersList = await all(`SELECT id, email FROM users`);
-  const usersMap = Object.fromEntries(allUsersList.map((u) => [u.email, u]));
+  const productsList = await all(`SELECT id FROM products`);
+  
+  if (!productsList || productsList.length === 0) {
+    console.warn("[seed] Nu există produse, nu pot crea comenzi demo (lipsește product_id).");
+  } else {
 
+    const demoOrders = [
+      { buyerEmail: "b@gmail.com", price: 120, status: "pending" },
+      { buyerEmail: "b@gmail.com", price: 60, status: "paid" },
+      { buyerEmail: "a@yahoo.com", price: 45, status: "shipped" },
+    ];
+
+    let prodIndex = 0;
+
+    for (const o of demoOrders) {
+      const buyer = byEmail[o.buyerEmail];
+      if (!buyer) {
+        console.warn(`[seed] Nu pot crea order pentru ${o.buyerEmail} (user inexistent)`);
+        continue;
+      }
+
+      const product = productsList[prodIndex % productsList.length];
+      prodIndex++;
+
+      const demoAddress = "Strada Exemplu nr. 1, București";
+
+      const exists = await get(
+        `SELECT 1 AS ok FROM orders 
+         WHERE buyer_id = ? AND price = ? AND status = ? AND product_id = ?`,
+        [buyer.id, o.price, o.status, product.id]
+      );
+
+      if (exists) {
+        console.log(
+          `[seed] Order deja există pentru ${o.buyerEmail} (${o.status})`
+        );
+        continue;
+      }
+
+      const oid = uuid();
+      
+      await run(
+        `INSERT INTO orders (id, buyer_id, product_id, price, status, shipping_address) 
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          oid, 
+          buyer.id, 
+          product.id, 
+          o.price, 
+          o.status, 
+          demoAddress
+        ]
+      );
+      
+      console.log(`[seed] Created order for ${o.buyerEmail} -> Product: ${product.id}`);
+    }
+  }
+
+  // Demo favorite
   const demoFavorites = [
     { userEmail: "b@gmail.com", productTitle: "Mouse Office" },
     { userEmail: "b@gmail.com", productTitle: "Pernă decorativă" },
@@ -511,11 +615,17 @@ async function seed() {
     { userEmail: "a@yahoo.com", productTitle: "Pernă decorativă" }
   ];
 
-  for (const f of demoFavorites) {
-    const user = usersMap[f.userEmail];
-    const productId = byTitle[f.productTitle];
+  const usersForFav = await all(`SELECT id, email FROM users`);
+  const usersMapFav = Object.fromEntries(usersForFav.map(u => [u.email, u.id]));
 
-    if (!user) {
+  const productsForFav = await all(`SELECT id, title FROM products`);
+  const productsMapFav = Object.fromEntries(productsForFav.map(p => [p.title, p.id]));
+
+  for (const f of demoFavorites) {
+    const userId = usersMapFav[f.userEmail];
+    const productId = productsMapFav[f.productTitle];
+
+    if (!userId) {
       console.warn(`[seed] Userul ${f.userEmail} nu a fost găsit pentru favorite.`);
       continue;
     }
@@ -523,9 +633,10 @@ async function seed() {
       console.warn(`[seed] Produsul '${f.productTitle}' nu a fost găsit pentru favorite.`);
       continue;
     }
+
     const exists = await get(
       `SELECT 1 as ok FROM favorites WHERE user_id = ? AND product_id = ?`,
-      [user.id, productId]
+      [userId, productId]
     );
 
     if (exists) {
@@ -536,9 +647,9 @@ async function seed() {
     const fid = uuid();
     await run(
       `INSERT INTO favorites (id, user_id, product_id, created_at) VALUES (?, ?, ?, datetime('now'))`,
-      [fid, user.id, productId]
+      [fid, userId, productId]
     );
-    console.log(`[seed] Adăugat la favorite: ${f.userEmail} a dat like la '${f.productTitle}'`);
+    console.log(`[seed] Adăugat la favorite: ${f.userEmail} -> '${f.productTitle}'`);
   }
 }
 
@@ -1206,12 +1317,29 @@ function validateProduct(product) {
 }
 
 function validateOrder(order) {
-  const { buyerEmail, price, status } = order;
+  const { price, status, shipping_address, productId } = order;
   let errors = [];
-  if (!buyerEmail) errors.push("Invalid buyer");
-  if (!validateInteger(price)) errors.push("Invalid price");
-  if (!status) errors.push("Invalid status");
-  if (errors.length > 0) throw new Error(errors.join("; "));
+
+  if (price === undefined || price === null || isNaN(parseInt(price)) || parseInt(price) < 0) {
+    errors.push("Invalid price: must be a positive number");
+  }
+
+  const validStatuses = ['pending', 'paid', 'shipped', 'delivered', 'cancelled'];
+  if (!status || !validStatuses.includes(status)) {
+    errors.push(`Invalid status: must be one of ${validStatuses.join(", ")}`);
+  }
+
+  if (!shipping_address || typeof shipping_address !== 'string' || shipping_address.trim().length < 5) {
+    errors.push("Invalid shipping address: must be at least 5 characters long");
+  }
+
+  if (!productId || typeof productId !== 'string') {
+    errors.push("Product ID is required to process the order");
+  }
+
+  if (errors.length > 0) {
+    throw new Error(errors.join("; "));
+  }
 }
 
 function validateReview(review) {
@@ -1284,36 +1412,160 @@ app.post(
   }
 );
 
-app.post("/order", async (req, res, next) => {
+app.get("/negotiations/list", authenticate, async (req, res, next) => {
   try {
-    const order = req.body;
-    validateOrder(order);
+    const userId = req.user.sub;
 
-    const added = await run(
-      `INSERT INTO orders (id, buyer, price, status) VALUES (?,?,?,?)`,
-      [uuid(), order.buyerEmail, parseInt(order.price), order.status]
+    const negotiations = await all(
+      `SELECT 
+        n.*,
+        p.title as product_title,
+        p.imageUrl as product_image,
+        u_buyer.email as buyer_email,
+        u_seller.email as seller_email
+       FROM negotiations n
+       JOIN products p ON n.product_id = p.id
+       JOIN users u_buyer ON n.buyer_id = u_buyer.id
+       JOIN users u_seller ON n.seller_id = u_seller.id
+       WHERE n.buyer_id = ? OR n.seller_id = ?
+       ORDER BY n.created_at DESC`,
+      [userId, userId]
     );
 
-    if (order.productId) {
-      const product = await get(`SELECT seller, title FROM products WHERE id = ?`, [
-        order.productId
-      ]);
-
-      if (product && product.seller) {
-        await sendNotification(
-          product.seller,
-          `Great news! Someone just ordered your product "${product.title}"`,
-          "order"
-        );
-      }
-    } else {
-      console.warn("Cannot notify seller: productId missing in order request");
-    }
-
-    res.json(added);
+    res.json(negotiations);
   } catch (e) {
     next(e);
   }
+});
+
+app.post("/negotiations", authenticate, async (req, res, next) => {
+  try {
+    const { productId, offeredPrice } = req.body;
+    const buyerId = req.user.sub;
+    
+    const product = await get(`SELECT seller FROM products WHERE id = ?`, [productId]);
+    if (!product) return res.status(404).json({ error: "Produs inexistent" });
+
+    if (product.seller === buyerId) return res.status(400).json({ error: "Nu poți negocia cu tine însuți" });
+
+    const negotiationId = uuid();
+    
+    await run(
+      `INSERT INTO negotiations (id, product_id, buyer_id, seller_id, offered_price, status) 
+       VALUES (?, ?, ?, ?, ?, 'PENDING')`,
+      [negotiationId, productId, buyerId, product.seller, offeredPrice]
+    );
+
+    res.status(201).json({ id: negotiationId, status: 'PENDING', message: "Ofertă trimisă!" });
+  } catch (e) { next(e); }
+});
+
+app.get("/negotiation", authenticate, async (req, res, next) => {
+  try {
+    const { productId, negotiationId } = req.query;
+    const buyerId = req.user.sub;
+
+    let negotiation = null;
+
+    if (negotiationId) {
+      negotiation = await get(
+        `SELECT id, offered_price, status 
+         FROM negotiations 
+         WHERE id = ? AND buyer_id = ?`,
+        [negotiationId, buyerId]
+      );
+    } else if (productId) {
+      negotiation = await get(
+        `SELECT id, offered_price, status 
+         FROM negotiations 
+         WHERE product_id = ? AND buyer_id = ? 
+         ORDER BY created_at DESC 
+         LIMIT 1`,
+        [productId, buyerId]
+      );
+    } else {
+      return res.status(400).json({ error: "Lipsesc parametrii (productId sau negotiationId)" });
+    }
+
+    if (!negotiation) {
+      return res.status(200).json(null);
+    }
+
+    res.json({
+      negotiationId: negotiation.id,
+      price: negotiation.offered_price,
+      status: negotiation.status
+    });
+
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.patch("/negotiations/:id/accept", authenticate, async (req, res, next) => {
+  try {
+    const negotiationId = req.params.id;
+    const sellerId = req.user.sub;
+
+    const negotiation = await get(`SELECT * FROM negotiations WHERE id = ?`, [negotiationId]);
+    if (!negotiation) return res.status(404).json({ error: "Negociere inexistentă" });
+    if (negotiation.seller_id !== sellerId) return res.status(403).json({ error: "Nu ești vânzătorul produsului" });
+
+    await run(`UPDATE negotiations SET status = 'ACCEPTED' WHERE id = ?`, [negotiationId]);
+
+    res.json({ message: "Ofertă acceptată.", status: 'ACCEPTED' });
+  } catch (e) { next(e); }
+});
+
+app.patch("/negotiations/:id/decline", authenticate, async (req, res, next) => {
+  try {
+    const negotiationId = req.params.id;
+    const sellerId = req.user.sub;
+
+    const negotiation = await get(`SELECT * FROM negotiations WHERE id = ?`, [negotiationId]);
+    if (!negotiation) return res.status(404).json({ error: "Negociere inexistentă" });
+    if (negotiation.seller_id !== sellerId) return res.status(403).json({ error: "Nu ești vânzătorul produsului" });
+
+    await run(`UPDATE negotiations SET status = 'REJECTED' WHERE id = ?`, [negotiationId]);
+
+    res.json({ message: "Ofertă respinsă.", status: 'REJECTED' });
+  } catch (e) { next(e); }
+});
+
+app.post("/order", authenticate, async (req, res, next) => {
+  try {
+    const { productId, shipping_address, negotiationId } = req.body; 
+    const buyerId = req.user.sub;
+    
+    let finalPrice = 0;
+
+    if (negotiationId) {
+      const negotiation = await get(`SELECT * FROM negotiations WHERE id = ?`, [negotiationId]);
+
+      if (!negotiation) return res.status(404).json({ error: "Negociere invalidă" });
+      if (negotiation.buyer_id !== buyerId) return res.status(403).json({ error: "Nu e negocierea ta" });
+      if (negotiation.product_id !== productId) return res.status(400).json({ error: "Produs incorect" });
+      if (negotiation.status !== 'ACCEPTED') return res.status(400).json({ error: "Prețul trebuie acceptat de vânzător" });
+
+      finalPrice = negotiation.offered_price;
+
+      await run(`UPDATE negotiations SET status = 'ORDERED' WHERE id = ?`, [negotiationId]);
+    } else {
+      const product = await get(`SELECT price FROM products WHERE id = ?`, [productId]);
+      if (!product) return res.status(404).json({ error: "Produsul nu există" });
+      finalPrice = product.price;
+    }
+
+    const orderId = uuid();
+    await run(
+      `INSERT INTO orders (id, buyer_id, product_id, price, status, shipping_address, negotiation_id) 
+       VALUES (?, ?, ?, ?, 'pending', ?, ?)`,
+      [orderId, buyerId, productId, finalPrice, shipping_address, negotiationId || null]
+    );
+
+    res.status(201).json({ id: orderId, price: finalPrice, status: 'pending' });
+
+  } catch (e) { next(e); }
 });
 
 app.post("/review", async (req, res, next) => {
