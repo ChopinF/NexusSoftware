@@ -20,11 +20,12 @@ EdgeUp is an AI Enhanced Marketplace platform designed to connect buyers and sel
 3) admin interface for approving/rejecting "trusted" requests
 4) chat between potential buyer and seller
 5) negotiated product prices
-6) ai assistant chatbot marketplace dedicated
-7) web scraper&crawler to compare prices/products
-8) add review
-9) view my ads (for logged-in trusted user)
-10) view favorite posts
-11) login/register user
-12) filter,search,sort products
-13) user notifications
+6) (TO DO) orders tracking 
+7) ai assistant chatbot marketplace dedicated
+8) web scraper&crawler to compare prices/products
+9) add review
+10) view my ads (for logged-in trusted user)
+11) view favorite posts
+12) login/register user
+13) filter,search,sort products
+14) user notifications
