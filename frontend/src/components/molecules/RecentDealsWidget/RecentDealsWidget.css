@@ -1,0 +1,141 @@
+.negotiations-widget {
+    background-color: #1F2937;
+    border: 1px solid #374151;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    animation: fadeIn 0.5s ease;
+}
+
+.widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #374151;
+    padding-bottom: 0.75rem;
+}
+
+.widget-header h3 {
+    margin: 0;
+    color: #F9FAFB;
+    font-size: 1.25rem;
+}
+
+.offer-count {
+    background-color: #374151;
+    color: #9CA3AF;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.widget-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.widget-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #111827;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #374151;
+}
+
+.item-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    background-color: #374151;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9CA3AF;
+}
+
+.item-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.buyer-email {
+    color: #F3F4F6;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.offer-date {
+    color: #6B7280;
+    font-size: 0.75rem;
+}
+
+.item-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.offer-price {
+    color: #F9FAFB;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-transform: capitalize;
+}
+
+.status-badge.pending { background: rgba(245, 158, 11, 0.1); color: #F59E0B; }
+.status-badge.accepted { background: rgba(16, 185, 129, 0.1); color: #10B981; }
+.status-badge.rejected { background: rgba(239, 68, 68, 0.1); color: #EF4444; }
+
+.view-all-btn {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: transparent;
+    border: 1px dashed #4B5563;
+    color: #9CA3AF;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.view-all-btn:hover {
+    background-color: #374151;
+    color: #F3F4F6;
+    border-color: #6B7280;
+}
+
+@media (max-width: 640px) {
+    .widget-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    .item-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+}

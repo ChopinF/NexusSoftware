@@ -1,8 +1,14 @@
-// components/molecules/ReviewsList.tsx
 import React, { useState } from "react";
 import "./ReviewList.css";
-import type {Review} from "../../pages/ProductPage/ProductPage.tsx";
 import {Star} from "lucide-react";
+
+interface Review {
+    id: string;
+    user_name: string;
+    user_email: string;
+    rating: number;
+    comment: string;
+}
 
 interface ReviewsListProps {
     reviews: Review[];

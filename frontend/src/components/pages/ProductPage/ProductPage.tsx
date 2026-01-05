@@ -7,14 +7,17 @@ import ProductContent from "../../organisms/ProductContent/ProductContent";
 import ReviewsList from "../../molecules/ReviewList/ReviewList";
 import AlertModal from './AddReviewAlertModal';
 import { useFavorite } from "../../../hooks/useFavorite";
+import { useUser } from "../../../contexts/UserContext";
 import { API_URL } from "../../../config";
 import type { Product } from "../../../types/Product";
 import type { Review } from "../../../types/Review";
 import type { PriceComparisonData } from "../../../types/PriceComparison";
+import RecentDealsWidget from "../../molecules/RecentDealsWidget/RecentDealsWidget";
 import './ProductPage.css';
 
 const ProductPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
+    const { user } = useUser();
     
     const [loading, setLoading] = useState(true);
     const [product, setProduct] = useState<Product | null>(null);
@@ -96,6 +99,8 @@ const ProductPage: React.FC = () => {
         );
     }
 
+    const isOwner = user && user.id === product.seller_id;
+
     return (
         <MainTemplate>
             <div className="product-page">
@@ -105,6 +110,10 @@ const ProductPage: React.FC = () => {
                         product={product} 
                         onToggleFavorite={handleToggleFavorite} 
                     />
+                    
+                    {isOwner && id && (
+                        <RecentDealsWidget productId={id} />
+                    )}
                 </section>
 
                 <section className="widget-section">

@@ -13,7 +13,6 @@ interface MainTemplateProps {
 
 export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
   const navigate = useNavigate();
-  // Păstrăm useUser doar pentru funcționalitatea de SignOut
   const { setUser, setToken } = useUser();
 
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -66,6 +65,10 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
     navigate("/my-profile");
   }
 
+  const handleDealsClick = () => {
+    navigate("/deals")
+  }
+
   return (
     <div className={styles.layoutWrapper}>
       <Header
@@ -80,6 +83,7 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
         onFavouritesClick={handleFavouritesClick}
         onMyProductsClick={handleMyProductsClick}
         onProfileClick={handleProfileClick}
+        onDealsClick={handleDealsClick}
       />
 
       <main className={styles.contentArea}>{children}</main>

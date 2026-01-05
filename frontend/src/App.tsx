@@ -19,6 +19,8 @@ import { MyProductsPage } from "./components/pages/MyProductsPage/MyProductsPage
 import { EditProductPage } from "./components/pages/EditProductPage/EditProductPage.tsx";
 import { EditProfilePage } from "./components/pages/EditProfilePage/EditProfilePage.tsx";
 import { ProfilePage } from "./components/pages/ProfilePage/ProfilePage.tsx";
+import { OrderProductPage } from "./components/pages/OrderProductPage/OrderProductPage.tsx";
+import NegotiationsPage from "./components/pages/DealsPage/DealsPage.tsx";
 
 const App: React.FC = () => {
   return (
@@ -39,9 +41,11 @@ const App: React.FC = () => {
               <Route path="/my-notifications" element={<NotificationsPage />} />
               <Route path="/my-favourites" element={<FavouritesPage/>}/>
               <Route path="/my-products" element={<MyProductsPage/>} />
-              <Route path="/edit-product/:id" element={<EditProductPage/>}/>
+              <Route path="/product/:id/edit" element={<EditProductPage/>}/>
               <Route path="/my-profile" element={<ProfilePage/>}/>
               <Route path="/my-profile/edit" element={<EditProfilePage/>}/>
+              <Route path="/product/:id/order" element={<OrderProductPage/>}/>
+              <Route path="/deals" element={<NegotiationsPage/>}/>
             </Route>
 
             <Route path="*" element={<Navigate to="/" />} />
