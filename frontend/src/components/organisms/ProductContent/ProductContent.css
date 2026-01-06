@@ -247,7 +247,6 @@
     box-shadow: 0 6px 12px rgba(124, 58, 237, 0.4);
 }
 
-/* Responsive updates */
 @media (max-width: 768px) {
     .price-action-row {
         flex-direction: column;
@@ -259,3 +258,148 @@
         width: 100%;
     }
 }
+
+.buy-now-btn.btn-disabled {
+    background: rgba(239, 68, 68, 0.15);
+    color: #F87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.buy-now-btn.btn-disabled:hover {
+    background: rgba(239, 68, 68, 0.15);
+    transform: none;
+}
+
+.owner-status-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    cursor: default;
+    width: fit-content;
+}
+
+.owner-status-badge.status-green {
+    background-color: rgba(16, 185, 129, 0.15); 
+    color: #10B981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.owner-status-badge.status-red {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #F87171; 
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Containerul care ține ori SellerCard ori OwnerDashboard */
+.seller-section-wrapper {
+    margin-top: 2rem;
+}
+
+/* --- Owner Dashboard Styles --- */
+.owner-dashboard {
+    background-color: #1F2937;
+    border: 1px solid #374151;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.dashboard-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #374151;
+    color: #F3F4F6;
+}
+
+.dashboard-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-item {
+    background-color: #111827;
+    padding: 0.75rem;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.stat-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #F3F4F6;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.text-green { color: #10B981; }
+.text-red { color: #F87171; }
+
+.dashboard-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.dash-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.btn-edit {
+    background-color: #374151;
+    color: white;
+    border-color: #4B5563;
+}
+.btn-edit:hover {
+    background-color: #4B5563;
+    border-color: #6B7280;
+}
+
+.btn-delete {
+    background-color: rgba(220, 38, 38, 0.1);
+    color: #F87171;
+    border-color: rgba(220, 38, 38, 0.3);
+}
+.btn-delete:hover {
+    background-color: rgba(220, 38, 38, 0.2);
+    border-color: #EF4444;
+}
+

@@ -28,6 +28,7 @@ export const EditProductForm: React.FC = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [stock, setStock] = useState(""); 
   const [category, setCategory] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
 
@@ -53,6 +54,7 @@ export const EditProductForm: React.FC = () => {
         setTitle(data.title);
         setDescription(data.description);
         setPrice(data.price.toString());
+        setStock(data.stock ? data.stock.toString() : "0");
         setCategory(data.category);
       } catch (err) {
         console.error(err);
@@ -88,7 +90,7 @@ export const EditProductForm: React.FC = () => {
     e.preventDefault();
     setError(null);
 
-    if (!title || !description || !price || !category) {
+    if (!title || !description || !price || !category || !stock) {
       setError("All fields required.");
       return;
     }
@@ -99,6 +101,7 @@ export const EditProductForm: React.FC = () => {
     formData.append("title", title);
     formData.append("description", description);
     formData.append("price", price);
+    formData.append("stock", stock);
     formData.append("category", category);
     
     if (imageFile) {
@@ -181,6 +184,18 @@ export const EditProductForm: React.FC = () => {
             onChange={(e) => setPrice(e.target.value)}
             disabled={isSaving}
             min="1"
+            required
+          />
+        </FormField>
+
+        <FormField label="Stock Quantity" htmlFor="ad-stock">
+          <Input
+            type="number"
+            id="ad-stock"
+            value={stock}
+            onChange={(e) => setStock(e.target.value)}
+            disabled={isSaving}
+            min="0"
             required
           />
         </FormField>

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import styles from "./ProductCard.module.css";
 import type { Product } from "../../../types/Product";
 import { API_URL } from "../../../config";
 import { useFavorite } from "../../../hooks/useFavorite";
-import { Heart } from "lucide-react";
+import { Heart, ShoppingCart } from "lucide-react";
+import { useUser } from "../../../contexts/UserContext";
 
 interface ProductCardProps {
   product: Product;
@@ -15,9 +16,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   product,
   onToggleFavorite,
 }) => {
+  const navigate = useNavigate();
+  const { user } = useUser(); 
+  
   const [isFavorite, setIsFavorited] = useState(product.isFavorite);
-  const isAuthenticated = !!localStorage.getItem("token");
+  const isAuthenticated = !!user;
   const { toggleFavoriteApi } = useFavorite();
+
+  const isOwner = user?.id === product.seller_id;
 
   useEffect(() => {
     setIsFavorited(product.isFavorite);
@@ -52,7 +58,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     }).format(price);
   };
 
+  const handleBuyNowClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/product/${product.id}/order`);
+  };
+
   const imageUrl = product.imageUrl ? `${API_URL}${product.imageUrl}` : "";
+  const hasStock = (product.stock || 0) > 0;
 
   return (
     <Link to={`/product/${product.id}`} className={styles.cardLink}>
@@ -64,6 +77,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           onError={(e) => (e.currentTarget.src = "https://placehold.co/400x400/1f2937/6b7280?text=No+Image")}
         />
         
+        {!hasStock && (
+            <div className={styles.outOfStockOverlay}>
+                Sold Out
+            </div>
+        )}
+
         {isAuthenticated && (
           <button
             type="button"
@@ -83,7 +102,27 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       <div className={styles.detailsWrapper}>
         <span className={styles.categoryBadge}>{product.category || "General"}</span>
         <h3 className={styles.title}>{product.title}</h3>
-        <span className={styles.price}>{formatPrice(product.price)}</span>
+        
+        <div className={styles.cardFooter}>
+            <span className={styles.price}>{formatPrice(product.price)}</span>
+            
+            {!isOwner ? (
+                hasStock ? (
+                    <span className={styles.buyButton} onClick={handleBuyNowClick}>
+                        <ShoppingCart size={14} style={{ marginRight: 4 }} />
+                        Buy Now
+                    </span>
+                ) : (
+                    <span className={styles.outOfStockText}>
+                        Out of Stock
+                    </span>
+                )
+            ) : (
+                <span style={{ fontSize: '0.75rem', color: '#9CA3AF', fontWeight: 600, textTransform: 'uppercase' }}>
+                   Your Product
+                </span>
+            )}
+        </div>
       </div>
     </Link>
   );

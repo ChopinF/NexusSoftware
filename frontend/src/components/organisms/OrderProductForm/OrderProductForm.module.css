@@ -70,3 +70,41 @@
   display: flex;
   justify-content: center;
 }
+
+.productSummary {
+  background-color: #1F2937;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.summaryLabel {
+  color: #9CA3AF;
+  font-size: 0.9rem;
+  display: block;
+}
+
+.summaryValue {
+  color: #F9FAFB;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.priceValue {
+  color: #8B5CF6;
+  font-size: 1.25rem;
+}
+
+.oldPrice {
+  text-decoration: line-through;
+  color: #6B7280;
+  font-size: 0.9rem;
+  margin-right: 0.5rem;
+}
+
+.priceContainer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}

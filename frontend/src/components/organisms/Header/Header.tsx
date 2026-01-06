@@ -10,8 +10,8 @@ import { useUser } from "../../../contexts/UserContext";
 import { Button } from "../../atoms/Button/Button";
 import { 
   Bell, Heart, LogOut, MessageCircle, Package, 
-  User as UserIcon, Shield, Store, PlusCircle, Handshake 
-} from "lucide-react";
+  User as UserIcon, Shield, Store, PlusCircle, Handshake, ShoppingBag 
+} from "lucide-react"; // 1. Am adăugat ShoppingBag
 import { API_URL } from "../../../config";
 
 interface HeaderProps {
@@ -27,6 +27,7 @@ interface HeaderProps {
   onFavouritesClick: () => void;
   onMyProductsClick: () => void;
   onDealsClick: () => void;
+  onOrdersClick: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -42,6 +43,7 @@ export const Header: React.FC<HeaderProps> = ({
   onFavouritesClick,
   onMyProductsClick,
   onDealsClick,
+  onOrdersClick,
 }) => {
   const { user } = useUser(); 
 
@@ -161,10 +163,14 @@ export const Header: React.FC<HeaderProps> = ({
                   </>
                 )}
 
+                <button onClick={() => handleMenuClick(onOrdersClick)} className={styles.dropdownItem}>
+                  <ShoppingBag size={18} /> My Orders
+                </button>
+
                 <button onClick={() => handleMenuClick(onDealsClick)} className={styles.dropdownItem}>
                   <Handshake size={18} /> Offers
                 </button>
-
+                
                 <div className={styles.separator} />
 
                 <button onClick={() => handleMenuClick(onNotificationsClick)} className={styles.dropdownItem}>
