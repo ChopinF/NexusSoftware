@@ -105,8 +105,10 @@ const ProductContent: React.FC<{
   const [isFavorite, setIsFavorite] = useState(product.isFavorite ?? false);
   const [isOfferOpen, setIsOfferOpen] = useState(false);
   const [negotiation, setNegotiation] = useState<NegotiationState | null>(null);
+  
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [conversationId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [chatInitialOffer, setChatInitialOffer] = useState<string | undefined>(undefined);
   
   const { user, token } = useUser();
   const { toggleFavoriteApi } = useFavorite();
@@ -193,8 +195,65 @@ const ProductContent: React.FC<{
   };
 
   const handleDirectMessage = async () => {
-    if (!user) return alert("Please login.");
-    setIsChatOpen(true); 
+    console.log("DM click: product", product.id, "seller", product.seller_id);
+    try {
+      if (!user) {
+        alert("Please login to message sellers.");
+        return;
+      }
+
+      const findRes = await fetch(`${API_URL}/conversations/user/${user.id}`, {
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      });
+
+      let foundId: string | null = null;
+      if (findRes.ok) {
+        const rows = await findRes.json();
+        console.log("DM: conversations rows:", rows);
+        const row = rows.find(
+          (r: any) =>
+            r.seller_id === product.seller_id ||
+            r.buyer_id === product.seller_id
+        );
+        if (row) foundId = row.conversation_id || row.id; 
+      } else {
+        console.warn("DM: could not fetch conversations for user", user.id);
+      }
+
+      if (!foundId) {
+        const createRes = await fetch(`${API_URL}/conversations`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+          body: JSON.stringify({
+            buyer_id: user.id,
+            seller_id: product.seller_id,
+          }),
+        });
+        if (createRes.ok) {
+          const data = await createRes.json();
+          foundId = data.id;
+          console.log("DM: created conversation", foundId);
+        } else {
+          const text = await createRes.text();
+          console.error("DM: create failed", text);
+          alert("Could not create conversation (server error)");
+        }
+      }
+
+      if (foundId) {
+        setConversationId(foundId);
+        setChatInitialOffer(undefined);
+        setIsChatOpen(true);
+      } else {
+        console.warn("DM: no conversation id found/created");
+      }
+    } catch (err) {
+      console.error("DM error", err);
+      alert("An error occurred while opening the conversation.");
+    }
   };
 
   const handleMakeOfferClick = () => {
@@ -213,7 +272,7 @@ const ProductContent: React.FC<{
     const priceValue = parseFloat(amount);
     
     if (isNaN(priceValue) || priceValue <= 0) {
-        alert("Preț invalid. Te rugăm să introduci un număr valid.");
+        alert("Preț invalid.");
         return;
     }
 
@@ -236,7 +295,7 @@ const ProductContent: React.FC<{
         const data = await response.json();
 
         if (response.ok) {
-            alert(`Ofertă de ${priceValue} RON (x${quantity} buc) trimisă cu succes!`);
+            alert(`Ofertă de ${priceValue} RON trimisă cu succes!`);
             setIsOfferOpen(false);
             setNegotiation({
               negotiationId: data.id, 
@@ -260,7 +319,6 @@ const ProductContent: React.FC<{
           ) : (
             <span className="no-image">No Image Available</span>
           )}
-        
         </div>
       </div>
 
@@ -343,6 +401,7 @@ const ProductContent: React.FC<{
             otherUserId={product.seller_id}
             otherUserName={product.seller_name}
             onClose={() => setIsChatOpen(false)}
+            initialOffer={chatInitialOffer}
           />
         )}
       </div>
