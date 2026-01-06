@@ -234,6 +234,7 @@ async function seed() {
     sellerEmail: "a@yahoo.com",
     category: "Books",
     imageUrl: "/uploads/products/js-book.jpg",
+    stock: 1,
   },
   {
     title: "Mouse Office",
@@ -242,6 +243,7 @@ async function seed() {
     sellerEmail: "a@yahoo.com",
     category: "Electronics",
     imageUrl: "/uploads/products/office-mouse.jpg",
+    stock: 0,
   },
   {
     title: "Pernă decorativă",
@@ -250,6 +252,7 @@ async function seed() {
     sellerEmail: "a@yahoo.com",
     category: "Home",
     imageUrl: "/uploads/products/decorative-pillow.png",
+    stock: 3
   },
   {
     title: "Haina alba",
@@ -258,6 +261,7 @@ async function seed() {
     sellerEmail: "a@yahoo.com",
     category: "Clothes",
     imageUrl: "/uploads/products/image-1767526183037-168835722.jpg",
+    stock: 0
   },
   {
     title: "Set vase",
@@ -266,6 +270,7 @@ async function seed() {
     sellerEmail: "a@yahoo.com",
     category: "Home",
     imageUrl: "/uploads/products/image-1767526246113-512683878.jpg",
+    stock: 1,
   },
   {
     title: "Bormasina",
@@ -274,6 +279,7 @@ async function seed() {
     sellerEmail: "a@yahoo.com",
     category: "Home",
     imageUrl: "/uploads/products/image-1767526319227-423631283.jpg",
+    stock: 3,
   },
   {
     title: "Golf 4",
@@ -282,6 +288,7 @@ async function seed() {
     sellerEmail: "a@yahoo.com",
     category: "Other",
     imageUrl: "/uploads/products/image-1767526382630-134354687.jpg",
+    stock: 1,
   },
   {
     title: "Tractor",
@@ -290,6 +297,7 @@ async function seed() {
     sellerEmail: "a@yahoo.com",
     category: "Other",
     imageUrl: "/uploads/products/image-1767526446540-295008304.jpg",
+    stock: 1,
   },
   {
     title: "Carte jocuri de craciun",
@@ -298,6 +306,7 @@ async function seed() {
     sellerEmail: "a@yahoo.com",
     category: "Books",
     imageUrl: "/uploads/products/image-1767526523036-271840831.png",
+    stock: 2,
   },
   {
     title: "Tricou gucci",
@@ -306,6 +315,7 @@ async function seed() {
     sellerEmail: "a@yahoo.com",
     category: "Clothes",
     imageUrl: "/uploads/products/image-1767526607401-48250080.jpg",
+    stock: 0
   },
   ];
 
@@ -337,8 +347,8 @@ async function seed() {
 
     const pid = uuid();
     await run(
-      `INSERT INTO products (id, title, description, price, seller, category, imageUrl)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO products (id, title, description, price, seller, category, imageUrl, stock, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         pid,
         p.title,
@@ -347,6 +357,8 @@ async function seed() {
         seller.id,
         p.category,
         p.imageUrl ?? null,
+        p.stock,
+        'ACTIVE'
       ]
     );
     console.log(
@@ -479,30 +491,35 @@ async function seed() {
       productTitle: "Carte JS pentru Începători",
       buyerEmail: "b@gmail.com",
       offeredPrice: 100,
+      quantity: 1,
       status: "PENDING"
     },
     {
       productTitle: "Mouse Office",
       buyerEmail: "c@gmail.com",
       offeredPrice: 30,
+      quantity: 2,
       status: "REJECTED"
     },
     {
       productTitle: "Pernă decorativă",
       buyerEmail: "d@gmail.com",
       offeredPrice: 40,
+      quantity: 1,
       status: "ACCEPTED"
     },
     {
       productTitle: "Set vase",
       buyerEmail: "b@gmail.com",
       offeredPrice: 200,
+      quantity: 1,
       status: "ORDERED"
     },
     {
       productTitle: "Golf 4",
       buyerEmail: "c@gmail.com",
       offeredPrice: 4500,
+      quantity: 1, 
       status: "PENDING"
     }
   ];
@@ -533,21 +550,23 @@ async function seed() {
     const negId = uuid();
     
     await run(
-      `INSERT INTO negotiations (id, product_id, buyer_id, seller_id, offered_price, status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+      `INSERT INTO negotiations (id, product_id, buyer_id, seller_id, offered_price, quantity, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
       [
         negId,
         product.id,
         buyerId,
         product.seller,
         neg.offeredPrice,
+        neg.quantity,
         neg.status
       ]
     );
 
-    console.log(`[seed-neg] Created '${neg.status}' deal: ${neg.buyerEmail} -> ${neg.productTitle}`);
+    console.log(`[seed-neg] Created '${neg.status}' deal: ${neg.buyerEmail} -> ${neg.productTitle} (x${neg.quantity})`);
   }
 
+  // Demo orders
   const productsList = await all(`SELECT id FROM products`);
   
   if (!productsList || productsList.length === 0) {
@@ -555,9 +574,9 @@ async function seed() {
   } else {
 
     const demoOrders = [
-      { buyerEmail: "b@gmail.com", price: 120, status: "pending" },
-      { buyerEmail: "b@gmail.com", price: 60, status: "paid" },
-      { buyerEmail: "a@yahoo.com", price: 45, status: "shipped" },
+      { buyerEmail: "b@gmail.com", price: 120, quantity: 1, status: "pending" },
+      { buyerEmail: "b@gmail.com", price: 60, quantity: 1, status: "paid" },
+      { buyerEmail: "a@yahoo.com", price: 90, quantity: 2, status: "shipped" },
     ];
 
     let prodIndex = 0;
@@ -590,19 +609,20 @@ async function seed() {
       const oid = uuid();
       
       await run(
-        `INSERT INTO orders (id, buyer_id, product_id, price, status, shipping_address) 
-         VALUES (?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO orders (id, buyer_id, product_id, price, quantity, status, shipping_address) 
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           oid, 
           buyer.id, 
           product.id, 
           o.price, 
+          o.quantity,
           o.status, 
           demoAddress
         ]
       );
       
-      console.log(`[seed] Created order for ${o.buyerEmail} -> Product: ${product.id}`);
+      console.log(`[seed] Created order for ${o.buyerEmail} -> Product: ${product.id} (x${o.quantity})`);
     }
   }
 
@@ -920,7 +940,7 @@ app.get("/products", async (req, res, next) => {
     }
 
     let sql = `
-        SELECT p.id, p.title, p.description, p.price, p.category, p.imageUrl,
+        SELECT p.id, p.title, p.description, p.price, p.category, p.imageUrl, p.stock,
                u.id AS seller_id, u.name AS seller_name, u.email AS seller_email,
                ${favoriteColumnSQL},
                (SELECT COUNT(*) FROM favorites fav WHERE fav.product_id = p.id) AS favorites_count
@@ -928,7 +948,8 @@ app.get("/products", async (req, res, next) => {
         INNER JOIN users u ON p.seller = u.id
     `;
 
-    const conditions = [];
+    const conditions = ["p.status = 'ACTIVE'"]; 
+
     if (category) {
       conditions.push("LOWER(p.category) = LOWER(?)");
       params.push(category);
@@ -975,6 +996,7 @@ app.get("/my-products", authenticate, async (req, res, next) => {
                    p.price,
                    p.category,
                    p.imageUrl,
+                   p.stock,
                    u.id    AS seller_id,
                    u.name  AS seller_name,
                    u.email AS seller_email,
@@ -984,7 +1006,7 @@ app.get("/my-products", authenticate, async (req, res, next) => {
                    ${favoriteColumnSQL}
             FROM products p
             INNER JOIN users u ON p.seller = u.id
-            WHERE p.seller = ?
+            WHERE p.seller = ? AND p.status = 'ACTIVE'
             ORDER BY p.title
         `;
 
@@ -1045,6 +1067,7 @@ app.get("/product/:id", async (req, res, next) => {
           p.price,
           p.category,
           p.imageUrl,
+          p.stock,
           u.id AS seller_id,
           u.name AS seller_name,
           u.email AS seller_email,
@@ -1079,6 +1102,24 @@ app.get("/product/:id", async (req, res, next) => {
 
   } catch (e) {
     console.error("Error fetching product:", e);
+    next(e);
+  }
+});
+
+app.delete("/product/:id", authenticate, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.sub;
+
+    const product = await get(`SELECT seller FROM products WHERE id = ?`, [id]);
+    
+    if (!product) return res.status(404).json({ error: "Product not found" });
+    if (product.seller !== userId) return res.status(403).json({ error: "Not authorized" });
+
+    await run(`UPDATE products SET status = 'ARCHIVED' WHERE id = ?`, [id]);
+
+    res.json({ message: "Product deleted successfully" });
+  } catch (e) {
     next(e);
   }
 });
@@ -1194,12 +1235,17 @@ app.get("/my-favorites", authenticate, async (req, res, next) => {
       `SELECT p.*, f.created_at as favorited_at
        FROM products p
        JOIN favorites f ON p.id = f.product_id
-       WHERE f.user_id = ?
+       WHERE f.user_id = ? AND p.status = 'ACTIVE' 
        ORDER BY f.created_at DESC`,
       [userId]
     );
 
-    res.json(favorites);
+    const formattedFavorites = favorites.map(fav => ({
+        ...fav,
+        isFavorite: true 
+    }));
+
+    res.json(formattedFavorites);
   } catch (e) {
     next(e);
   }
@@ -1222,10 +1268,127 @@ app.get("/my-favorites/ids", authenticate, async (req, res, next) => {
   }
 });
 
-app.get("/orders", async (_req, res, next) => {
+app.get("/orders/buying", authenticate, async (req, res, next) => {
   try {
-    const rows = await all("SELECT * FROM orders");
-    res.json(rows);
+    const userId = req.user.sub;
+
+    const orders = await all(`
+      SELECT 
+        o.id, 
+        o.price, 
+        o.status, 
+        o.created_at, 
+        p.title as product_title, 
+        p.imageUrl as product_image,
+        p.id as product_id
+      FROM orders o
+      JOIN products p ON o.product_id = p.id
+      WHERE o.buyer_id = ?
+      ORDER BY o.created_at DESC
+    `, [userId]);
+
+    res.json(orders);
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.get("/orders/selling", authenticate, async (req, res, next) => {
+  try {
+    const sellerId = req.user.sub;
+
+    const orders = await all(`
+      SELECT 
+        o.id, 
+        o.product_id,
+        o.price, 
+        o.status, 
+        o.created_at, 
+        o.shipping_address,
+        p.title as product_title, 
+        p.imageUrl as product_image,
+        u.email as buyer_email,
+        u.name as buyer_name
+      FROM orders o
+      JOIN products p ON o.product_id = p.id
+      JOIN users u ON o.buyer_id = u.id
+      WHERE p.seller = ?
+      ORDER BY o.created_at DESC
+    `, [sellerId]);
+
+    res.json(orders);
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.get("/orders/:id", authenticate, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.sub;
+
+    const order = await get(`
+      SELECT 
+        o.*, 
+        p.title, 
+        p.imageUrl, 
+        p.seller as seller_id,
+        u_buyer.email as buyer_email,
+        u_buyer.name as buyer_name
+      FROM orders o
+      JOIN products p ON o.product_id = p.id
+      JOIN users u_buyer ON o.buyer_id = u_buyer.id
+      WHERE o.id = ?
+    `, [id]);
+
+    if (!order) return res.status(404).json({ error: "Comanda nu există" });
+
+    const isBuyer = order.buyer_id === userId;
+    const isSeller = order.seller_id === userId;
+
+    if (!isBuyer && !isSeller) {
+      return res.status(403).json({ error: "Nu ai acces la această comandă" });
+    }
+
+    res.json({ ...order, role: isBuyer ? 'buyer' : 'seller' });
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.patch("/orders/:id/status", authenticate, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const userId = req.user.sub;
+
+    const allowedStatuses = ['pending', 'paid', 'shipped', 'delivered', 'cancelled'];
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({ error: "Status invalid" });
+    }
+
+    const orderData = await get(`
+      SELECT o.id, o.buyer_id, p.seller, p.title as product_title
+      FROM orders o
+      JOIN products p ON o.product_id = p.id
+      WHERE o.id = ?
+    `, [id]);
+
+    if (!orderData) return res.status(404).json({ error: "Comanda nu există" });
+
+    if (orderData.seller !== userId) {
+      return res.status(403).json({ error: "Doar vânzătorul poate actualiza statusul" });
+    }
+
+    await run(`UPDATE orders SET status = ? WHERE id = ?`, [status, id]);
+
+    let notificationMessage = `Your order for "${orderData.product_title}" status updated to: ${status}`;
+    if (status === 'shipped') notificationMessage = `Your order for "${orderData.product_title}" has been shipped! 🚚`;
+    if (status === 'delivered') notificationMessage = `Your order for "${orderData.product_title}" has been delivered! 🎉`;
+
+    await sendNotification(orderData.buyer_id, notificationMessage, "order");
+
+    res.json({ message: "Status actualizat", status });
   } catch (e) {
     next(e);
   }
@@ -1380,8 +1543,11 @@ app.post(
         imageUrl = `/uploads/products/${imageFile.filename}`;
       }
 
+      const stockValue = parseInt(product.stock) || 1;
+
       await run(
-        `INSERT INTO products (id, title, description, price, seller, category, imageUrl) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO products (id, title, description, price, seller, category, imageUrl, stock, status) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           newProductId,
           product.title,
@@ -1390,6 +1556,8 @@ app.post(
           sellerId,
           product.category,
           imageUrl,
+          stockValue,
+          'ACTIVE'     
         ]
       );
 
@@ -1397,6 +1565,7 @@ app.post(
         `
           SELECT 
             p.id, p.title, p.description, p.price, p.category, p.imageUrl,
+            p.stock, p.status,
             u.id AS seller_id, u.name AS seller_name, u.email AS seller_email,
             u.role AS seller_role, u.country AS seller_country, u.city AS seller_city
           FROM products p
@@ -1440,24 +1609,31 @@ app.get("/negotiations/list", authenticate, async (req, res, next) => {
 
 app.post("/negotiations", authenticate, async (req, res, next) => {
   try {
-    const { productId, offeredPrice } = req.body;
+    const { productId, offeredPrice, quantity = 1 } = req.body;
     const buyerId = req.user.sub;
-    
-    const product = await get(`SELECT seller FROM products WHERE id = ?`, [productId]);
-    if (!product) return res.status(404).json({ error: "Produs inexistent" });
+    const qty = parseInt(quantity);
 
-    if (product.seller === buyerId) return res.status(400).json({ error: "Nu poți negocia cu tine însuți" });
+    if (qty < 1) return res.status(400).json({ error: "Cantitatea minimă este 1" });
 
-    const negotiationId = uuid();
+    const product = await get(`SELECT seller, stock, status FROM products WHERE id = ?`, [productId]);
+    if (!product) return res.status(404).json({ error: "Produsul nu există" });
+    if (product.status !== 'ACTIVE') return res.status(400).json({ error: "Produs indisponibil" });
     
+    if (product.stock < qty) return res.status(400).json({ error: `Stoc insuficient. Doar ${product.stock} disponibile.` });
+
+    if (product.seller === buyerId) return res.status(400).json({ error: "Nu poți negocia propriul produs" });
+
+    const negId = uuid();
     await run(
-      `INSERT INTO negotiations (id, product_id, buyer_id, seller_id, offered_price, status) 
-       VALUES (?, ?, ?, ?, ?, 'PENDING')`,
-      [negotiationId, productId, buyerId, product.seller, offeredPrice]
+      `INSERT INTO negotiations (id, product_id, buyer_id, seller_id, offered_price, quantity, status)
+       VALUES (?, ?, ?, ?, ?, ?, 'PENDING')`,
+      [negId, productId, buyerId, product.seller, offeredPrice, qty]
     );
 
-    res.status(201).json({ id: negotiationId, status: 'PENDING', message: "Ofertă trimisă!" });
-  } catch (e) { next(e); }
+    res.status(201).json({ message: "Offer sent", id: negId });
+  } catch (e) {
+    next(e);
+  }
 });
 
 app.get("/negotiation", authenticate, async (req, res, next) => {
@@ -1469,14 +1645,14 @@ app.get("/negotiation", authenticate, async (req, res, next) => {
 
     if (negotiationId) {
       negotiation = await get(
-        `SELECT id, offered_price, status 
+        `SELECT id, offered_price, quantity, status 
          FROM negotiations 
          WHERE id = ? AND buyer_id = ?`,
         [negotiationId, buyerId]
       );
     } else if (productId) {
       negotiation = await get(
-        `SELECT id, offered_price, status 
+        `SELECT id, offered_price, quantity, status 
          FROM negotiations 
          WHERE product_id = ? AND buyer_id = ? 
          ORDER BY created_at DESC 
@@ -1494,6 +1670,7 @@ app.get("/negotiation", authenticate, async (req, res, next) => {
     res.json({
       negotiationId: negotiation.id,
       price: negotiation.offered_price,
+      quantity: negotiation.quantity,
       status: negotiation.status
     });
 
@@ -1507,11 +1684,35 @@ app.patch("/negotiations/:id/accept", authenticate, async (req, res, next) => {
     const negotiationId = req.params.id;
     const sellerId = req.user.sub;
 
-    const negotiation = await get(`SELECT * FROM negotiations WHERE id = ?`, [negotiationId]);
-    if (!negotiation) return res.status(404).json({ error: "Negociere inexistentă" });
-    if (negotiation.seller_id !== sellerId) return res.status(403).json({ error: "Nu ești vânzătorul produsului" });
+    const data = await get(`
+        SELECT 
+            n.id, n.seller_id, n.buyer_id, n.quantity, n.offered_price,
+            p.stock, p.status as product_status, p.title
+        FROM negotiations n
+        JOIN products p ON n.product_id = p.id
+        WHERE n.id = ?
+    `, [negotiationId]);
+
+    if (!data) return res.status(404).json({ error: "Negociere inexistentă" });
+    if (data.seller_id !== sellerId) return res.status(403).json({ error: "Nu ești vânzătorul produsului" });
+
+    if (data.product_status !== 'ACTIVE') {
+        return res.status(400).json({ error: "Produsul nu mai este activ (a fost șters sau arhivat)." });
+    }
+
+    if (data.stock < data.quantity) {
+        return res.status(400).json({ 
+            error: `Stoc insuficient! Oferta este pentru ${data.quantity} buc, dar stocul actual este ${data.stock}.` 
+        });
+    }
 
     await run(`UPDATE negotiations SET status = 'ACCEPTED' WHERE id = ?`, [negotiationId]);
+
+    await sendNotification(
+        data.buyer_id,
+        `Great news! Your offer for "${data.title}" was accepted. Go to 'Offers' to complete the order.`,
+        'deal'
+    );
 
     res.json({ message: "Ofertă acceptată.", status: 'ACCEPTED' });
   } catch (e) { next(e); }
@@ -1534,36 +1735,57 @@ app.patch("/negotiations/:id/decline", authenticate, async (req, res, next) => {
 
 app.post("/order", authenticate, async (req, res, next) => {
   try {
-    const { productId, shipping_address, negotiationId } = req.body; 
+    const { productId, shipping_address, negotiationId, quantity } = req.body; 
     const buyerId = req.user.sub;
     
-    let finalPrice = 0;
+    let finalUnitPrice = 0;
+    let finalQuantity = parseInt(quantity || 1);
 
     if (negotiationId) {
       const negotiation = await get(`SELECT * FROM negotiations WHERE id = ?`, [negotiationId]);
 
       if (!negotiation) return res.status(404).json({ error: "Negociere invalidă" });
       if (negotiation.buyer_id !== buyerId) return res.status(403).json({ error: "Nu e negocierea ta" });
-      if (negotiation.product_id !== productId) return res.status(400).json({ error: "Produs incorect" });
-      if (negotiation.status !== 'ACCEPTED') return res.status(400).json({ error: "Prețul trebuie acceptat de vânzător" });
-
-      finalPrice = negotiation.offered_price;
+      if (negotiation.status !== 'ACCEPTED') return res.status(400).json({ error: "Oferta nu a fost acceptată încă" });
+      
+      finalUnitPrice = negotiation.offered_price;
+      finalQuantity = negotiation.quantity;
 
       await run(`UPDATE negotiations SET status = 'ORDERED' WHERE id = ?`, [negotiationId]);
-    } else {
+    } 
+    else {
       const product = await get(`SELECT price FROM products WHERE id = ?`, [productId]);
       if (!product) return res.status(404).json({ error: "Produsul nu există" });
-      finalPrice = product.price;
+      finalUnitPrice = product.price;
     }
+
+    const productData = await get(`SELECT stock, status, seller, title FROM products WHERE id = ?`, [productId]);
+    
+    if (productData.stock < finalQuantity) {
+        return res.status(400).json({ error: `Stoc insuficient. Negocierea a fost pentru ${finalQuantity}, dar mai sunt doar ${productData.stock}.` });
+    }
+    if (productData.status !== 'ACTIVE') {
+        return res.status(400).json({ error: "Produsul nu mai este activ." });
+    }
+
+    const totalPrice = finalUnitPrice * finalQuantity;
 
     const orderId = uuid();
     await run(
-      `INSERT INTO orders (id, buyer_id, product_id, price, status, shipping_address, negotiation_id) 
-       VALUES (?, ?, ?, ?, 'pending', ?, ?)`,
-      [orderId, buyerId, productId, finalPrice, shipping_address, negotiationId || null]
+      `INSERT INTO orders (id, buyer_id, product_id, price, quantity, status, shipping_address, negotiation_id) 
+       VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)`,
+      [orderId, buyerId, productId, totalPrice, finalQuantity, shipping_address, negotiationId || null]
     );
 
-    res.status(201).json({ id: orderId, price: finalPrice, status: 'pending' });
+    await run(`UPDATE products SET stock = stock - ? WHERE id = ?`, [finalQuantity, productId]);
+
+    await sendNotification(
+        productData.seller, 
+        `You sold ${finalQuantity} x "${productData.title}" for ${totalPrice} RON!`, 
+        'order'
+    );
+
+    res.status(201).json({ id: orderId, price: totalPrice, quantity: finalQuantity, status: 'pending' });
 
   } catch (e) { next(e); }
 });
@@ -2139,7 +2361,8 @@ app.put(
       dataToUpdate.imageUrl = `/uploads/products/${req.file.filename}`;
     }
 
-    const numericColumns = ["price"];
+    const numericColumns = ["price", "stock"]; 
+    
     const processedBody = processBody(dataToUpdate, numericColumns); 
     
     const PRODUCT_UPDATABLE_COLUMNS = [
@@ -2147,7 +2370,8 @@ app.put(
       "description",
       "price",
       "category",
-      "imageUrl"
+      "imageUrl",
+      "stock"
     ];
 
     const { statement, values } = prepareUpdateStatement(
@@ -2168,26 +2392,6 @@ app.put(
     if (e.message === "No valid fields provided for update.") {
         return res.status(400).json({ error: e.message });
     }
-    next(e);
-  }
-});
-
-app.put("/order/:id", async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const numericColumns = ["price"];
-    const processedBody = processBody(req.body, numericColumns);
-    const ORDER_UPDATABLE_COLUMNS = ["buyer", "price", "status"];
-    const { statement, values } = prepareUpdateStatement(
-      processedBody,
-      `orders`,
-      ORDER_UPDATABLE_COLUMNS
-    );
-    const finalValues = [...values, id];
-
-    const updated = await run(statement, finalValues);
-    res.json(updated);
-  } catch (e) {
     next(e);
   }
 });
