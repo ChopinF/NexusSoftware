@@ -52,6 +52,8 @@ export async function migrate() {
       seller TEXT NOT NULL,
       category TEXT NOT NULL CHECK(category IN ('Electronics','Books','Clothes','Home','Other')),
       imageUrl TEXT,
+      stock INTEGER NOT NULL DEFAULT 1 CHECK(stock >= 0),
+      status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK(status IN ('ACTIVE', 'ARCHIVED')),
       FOREIGN KEY(seller) REFERENCES users(id) ON DELETE CASCADE
     );
   `);
@@ -63,6 +65,7 @@ export async function migrate() {
       buyer_id TEXT NOT NULL,
       seller_id TEXT NOT NULL,
       offered_price INTEGER NOT NULL CHECK(offered_price >= 0),
+      quantity INTEGER NOT NULL DEFAULT 1 CHECK(quantity > 0),
       status TEXT NOT NULL CHECK(status IN ('PENDING', 'ACCEPTED', 'REJECTED', 'ORDERED')) DEFAULT 'PENDING',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE,
@@ -75,10 +78,11 @@ export async function migrate() {
       id TEXT PRIMARY KEY,
       buyer_id TEXT NOT NULL,
       product_id TEXT NOT NULL, 
-      price INTEGER NOT NULL CHECK(price >= 0),
+      price INTEGER NOT NULL CHECK(price >= 0), -- Preț TOTAL (unit * qty)
+      quantity INTEGER NOT NULL DEFAULT 1 CHECK(quantity > 0),
       status TEXT NOT NULL CHECK(status IN ('pending','paid','shipped','delivered','cancelled')),
       shipping_address TEXT NOT NULL,
-      negotiation_id TEXT, -- Opțional: ca să știm dacă a provenit dintr-o negociere
+      negotiation_id TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(buyer_id) REFERENCES users(id) ON DELETE CASCADE,
       FOREIGN KEY(product_id) REFERENCES products(id)

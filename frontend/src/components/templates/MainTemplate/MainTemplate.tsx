@@ -69,6 +69,10 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
     navigate("/deals")
   }
 
+  const handleOrdersClick = () => {
+    navigate("/orders")
+  }
+
   return (
     <div className={styles.layoutWrapper}>
       <Header
@@ -84,6 +88,7 @@ export const MainTemplate: React.FC<MainTemplateProps> = ({ children }) => {
         onMyProductsClick={handleMyProductsClick}
         onProfileClick={handleProfileClick}
         onDealsClick={handleDealsClick}
+        onOrdersClick={handleOrdersClick}
       />
 
       <main className={styles.contentArea}>{children}</main>

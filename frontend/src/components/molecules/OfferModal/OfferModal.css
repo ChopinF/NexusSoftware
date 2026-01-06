@@ -338,3 +338,56 @@
 .back-btn:hover { color: white; }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.inputs-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.input-label {
+    display: block;
+    font-size: 0.75rem;
+    color: #9CA3AF;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+/* Ajustam input-group sa nu mai aiba margin-bottom mare implicit in grid */
+.inputs-row .input-group {
+    margin-bottom: 0;
+}
+
+.offer-summary {
+    background-color: rgba(31, 41, 55, 0.5);
+    border: 1px solid #374151;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    margin-top: 1rem;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: #D1D5DB;
+    margin-bottom: 0.25rem;
+}
+
+.summary-divider {
+    height: 1px;
+    background-color: #374151;
+    margin: 0.5rem 0;
+}
+
+.summary-row.total {
+    margin-bottom: 0;
+    color: #F9FAFB;
+    font-weight: 600;
+    align-items: center;
+}
+
+/* Helper text pentru erori */
+.text-red-500 {
+    color: #ef4444;
+}

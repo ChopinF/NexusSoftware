@@ -10,16 +10,13 @@ import ConversationModal from "../../molecules/ConversationModal/ConversationMod
 import { API_URL } from "../../../config";
 import { useFavorite } from "../../../hooks/useFavorite";
 import { useNavigate } from "react-router-dom"; 
-import { Pencil, ShoppingCart, CheckCircle, Clock } from "lucide-react";
+import { Pencil, ShoppingCart, CheckCircle, Clock, AlertCircle, Trash2, Settings, Package } from "lucide-react";
 
-// Tip pentru negociere
 interface NegotiationState {
   negotiationId: string;
   price: number;
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'ORDERED';
 }
-
-// --- Components ---
 
 const ProductHeader: React.FC<{
   title: string;
@@ -28,23 +25,11 @@ const ProductHeader: React.FC<{
   onFavoriteClick: () => void;
   isAuthenticated: boolean;
   isOwner: boolean;
-  onEditClick: () => void;
-}> = ({ title, category, isFavorite, onFavoriteClick, isAuthenticated, isOwner, onEditClick }) => (
+}> = ({ title, category, isFavorite, onFavoriteClick, isAuthenticated }) => (
   <div className="product-header">
     <div className="header-top">
       <h1 className="product-title">{title}</h1>
-      
       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-        {isOwner && (
-          <button 
-            onClick={onEditClick}
-            title="Edit Product"
-            className="icon-btn"
-          >
-            <Pencil size={24} />
-          </button>
-        )}
-
         {isAuthenticated && (
           <FavoriteButton isFavorite={isFavorite} onClick={onFavoriteClick} />
         )}
@@ -60,34 +45,26 @@ const ProductDetails: React.FC<{
   onBuyClick: () => void;
   isOwner: boolean;
   negotiation: NegotiationState | null;
-}> = ({ description, price, onBuyClick, isOwner, negotiation }) => {
+  hasStock: boolean;
+}> = ({ description, price, onBuyClick, isOwner, negotiation, hasStock }) => {
   
-  // Logică de afișare a prețului
   const isDealAccepted = negotiation?.status === 'ACCEPTED';
   const isDealPending = negotiation?.status === 'PENDING';
 
   return (
     <div className="product-details">
-      
-      {/* Zona de Pret si Actiune */}
       <div className="price-action-row">
-          
-          {/* Afișare condiționată preț */}
           <div className="price-wrapper">
             {isDealAccepted ? (
               <>
                 <div className="price-tag deal-price">{negotiation!.price} RON</div>
                 <div className="old-price-tag">{price} RON</div>
-                <div className="deal-badge accepted">
-                  <CheckCircle size={14} /> Deal Accepted
-                </div>
+                <div className="deal-badge accepted"><CheckCircle size={14} /> Deal Accepted</div>
               </>
             ) : isDealPending ? (
               <>
                 <div className="price-tag">{price} RON</div>
-                <div className="deal-badge pending">
-                  <Clock size={14} /> Offer Pending: {negotiation!.price} RON
-                </div>
+                <div className="deal-badge pending"><Clock size={14} /> Offer Pending: {negotiation!.price} RON</div>
               </>
             ) : (
               <div className="price-tag">{price} RON</div>
@@ -95,11 +72,22 @@ const ProductDetails: React.FC<{
           </div>
           
           {!isOwner && (
-            <button className="buy-now-btn" onClick={onBuyClick}>
-              <ShoppingCart size={20} />
-              <span>
-                {isDealAccepted ? `Buy for ${negotiation!.price} RON` : 'Buy Now'}
-              </span>
+            <button 
+                className={`buy-now-btn ${!hasStock ? 'btn-disabled' : ''}`} 
+                onClick={hasStock ? onBuyClick : undefined}
+                disabled={!hasStock}
+            >
+              {hasStock ? (
+                  <>
+                    <ShoppingCart size={20} />
+                    <span>{isDealAccepted ? `Buy for ${negotiation!.price} RON` : 'Buy Now'}</span>
+                  </>
+              ) : (
+                  <>
+                    <AlertCircle size={20} />
+                    <span>Out of Stock</span>
+                  </>
+              )}
             </button>
           )}
       </div>
@@ -117,7 +105,6 @@ const ProductContent: React.FC<{
   const [isFavorite, setIsFavorite] = useState(product.isFavorite ?? false);
   const [isOfferOpen, setIsOfferOpen] = useState(false);
   const [negotiation, setNegotiation] = useState<NegotiationState | null>(null);
-  
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [conversationId] = useState<string | null>(null);
   
@@ -128,12 +115,12 @@ const ProductContent: React.FC<{
   const imageUrl = product.imageUrl ? `${API_URL}${product.imageUrl}` : null;
   const isOwner = user && user.id === product.seller_id;
   const isAuthenticated = !!user;
+  const hasStock = (product.stock || 0) > 0;
 
   useEffect(() => {
     setIsFavorite(product.isFavorite ?? false);
   }, [product.isFavorite]);
 
-  // Fetch Negotiation Status
   useEffect(() => {
     const fetchNegotiation = async () => {
       if (!user || !token) return;
@@ -143,7 +130,6 @@ const ProductContent: React.FC<{
         });
         if (res.ok) {
           const data = await res.json();
-          // Backend-ul poate returna null dacă nu există negociere
           setNegotiation(data || null);
         }
       } catch (err) {
@@ -153,10 +139,32 @@ const ProductContent: React.FC<{
     fetchNegotiation();
   }, [product.id, user, token]);
 
-  // --- Handlers ---
-
   const handleEditClick = () => {
     navigate(`/product/${product.id}/edit`);
+  };
+
+  const handleDeleteClick = async () => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this product? This cannot be undone.");
+    if (!confirmDelete) return;
+
+    try {
+        const res = await fetch(`${API_URL}/product/${product.id}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+            alert("Product deleted successfully.");
+            window.dispatchEvent(new Event("products-updated-signal"));
+            navigate('/my-products');
+        } else {
+            const data = await res.json();
+            alert(data.error || "Error deleting product.");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Connection error.");
+    }
   };
 
   const handleBuyClick = () => {
@@ -189,31 +197,22 @@ const ProductContent: React.FC<{
     setIsChatOpen(true); 
   };
 
-  // 1. Deschide Modalul
   const handleMakeOfferClick = () => {
-    if (isOwner) {
-        console.warn("Owner cannot make offer");
-        return;
-    }
-    console.log("Opening offer modal...");
+    if (isOwner) return;
     setIsOfferOpen(true);
   };
 
-  // 2. Trimite Oferta (Backend)
-  const handleSubmitOffer = async (amount: string) => {
-    console.log("Submitting offer:", amount); // Debug log
+  const handleSubmitOffer = async (amount: string, quantity: number) => {
+    console.log("Submitting offer:", amount, "Qty:", quantity);
 
     if (!user || !token) {
         alert("Te rugăm să te autentifici pentru a trimite o ofertă.");
         return;
     }
 
-    // Convertim input-ul în număr
     const priceValue = parseFloat(amount);
     
-    // Verificăm dacă conversia a reușit
     if (isNaN(priceValue) || priceValue <= 0) {
-        console.error("Invalid price value:", priceValue);
         alert("Preț invalid. Te rugăm să introduci un număr valid.");
         return;
     }
@@ -221,9 +220,9 @@ const ProductContent: React.FC<{
     try {
         const payload = {
             productId: product.id,
-            offeredPrice: priceValue
+            offeredPrice: priceValue,
+            quantity: quantity 
         };
-        console.log("Sending payload:", payload);
 
         const response = await fetch(`${API_URL}/negotiations`, {
             method: "POST",
@@ -237,21 +236,17 @@ const ProductContent: React.FC<{
         const data = await response.json();
 
         if (response.ok) {
-            alert(`Ofertă de ${priceValue} RON trimisă cu succes!`);
+            alert(`Ofertă de ${priceValue} RON (x${quantity} buc) trimisă cu succes!`);
             setIsOfferOpen(false);
-            
-            // Actualizăm UI-ul instant
             setNegotiation({
               negotiationId: data.id, 
               price: priceValue, 
               status: 'PENDING'
             });
         } else {
-            console.error("Offer error from server:", data);
             alert(data.error || "Nu s-a putut trimite oferta.");
         }
     } catch (err) {
-        console.error("Network error submitting offer:", err);
         alert("Eroare de conexiune.");
     }
   };
@@ -265,6 +260,7 @@ const ProductContent: React.FC<{
           ) : (
             <span className="no-image">No Image Available</span>
           )}
+        
         </div>
       </div>
 
@@ -276,7 +272,6 @@ const ProductContent: React.FC<{
           onFavoriteClick={handleFavoriteClick}
           isAuthenticated={isAuthenticated}
           isOwner={isOwner || false} 
-          onEditClick={handleEditClick}
         />
 
         <ProductDetails
@@ -285,25 +280,61 @@ const ProductContent: React.FC<{
           onBuyClick={handleBuyClick}
           isOwner={isOwner || false}
           negotiation={negotiation}
+          hasStock={hasStock}
         />
 
-        <SellerCard
-          name={product.seller_name}
-          email={product.seller_email}
-          role={product.seller_role}
-          country={product.seller_country}
-          city={product.seller_city}
-          onDirectMessage={!isOwner ? handleDirectMessage : undefined} 
-          // Aici se activează butonul doar dacă NU ești proprietar
-          onMakeOffer={!isOwner ? handleMakeOfferClick : undefined}
-        />
+        <div className="seller-section-wrapper">
+            {isOwner ? (
+                <div className="owner-dashboard">
+                    <div className="dashboard-header">
+                        <Settings size={20} />
+                        <h3>Product Management</h3>
+                    </div>
+                    
+                    <div className="dashboard-stats">
+                        <div className="stat-item">
+                            <span className="stat-label">Status</span>
+                            <span className={`stat-value ${hasStock ? 'text-green' : 'text-red'}`}>
+                                {hasStock ? 'Active' : 'Out of Stock'}
+                            </span>
+                        </div>
+                        <div className="stat-item">
+                            <span className="stat-label">Stock Level</span>
+                            <span className="stat-value">
+                                <Package size={16} /> {product.stock} units
+                            </span>
+                        </div>
+                    </div>
 
+                    <div className="dashboard-actions">
+                        <button onClick={handleEditClick} className="dash-btn btn-edit">
+                            <Pencil size={18} /> Edit Product
+                        </button>
+                        <button onClick={handleDeleteClick} className="dash-btn btn-delete">
+                            <Trash2 size={18} /> Delete Product
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                <SellerCard
+                    name={product.seller_name}
+                    email={product.seller_email}
+                    role={product.seller_role}
+                    country={product.seller_country}
+                    city={product.seller_city}
+                    onDirectMessage={handleDirectMessage} 
+                    onMakeOffer={hasStock ? handleMakeOfferClick : undefined}
+                />
+            )}
+        </div>
+        
         <OfferModal
           isOpen={isOfferOpen}
           onClose={() => setIsOfferOpen(false)}
           productTitle={product.title}
           actualPrice={product.price}
           onConfirm={handleSubmitOffer}
+          maxStock={product.stock}
         />
 
         {isChatOpen && conversationId && (

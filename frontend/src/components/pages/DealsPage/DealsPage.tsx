@@ -43,6 +43,7 @@ interface DealItem {
   buyer_id: string;
   seller_id: string;
   offered_price: number;
+  quantity: number;
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'ORDERED';
   created_at: string;
   product_title: string;
@@ -59,7 +60,6 @@ const DealsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending'>('all');
 
-  // Fetch Data
   const fetchDeals = async () => {
     if (!token) return;
     try {
@@ -81,31 +81,26 @@ const DealsPage: React.FC = () => {
     fetchDeals();
   }, [token]);
 
-  // Actions
   const handleAction = async (id: string, action: 'accept' | 'decline') => {
     try {
       await fetch(`${API_URL}/negotiations/${id}/${action}`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       });
-      // Refresh list after action
       fetchDeals();
     } catch (err) {
       console.error(err);
     }
   };
 
-  // Filter Logic
   const filteredList = useMemo(() => {
     if (filter === 'pending') return Deals.filter(n => n.status === 'PENDING');
     return Deals;
   }, [Deals, filter]);
 
-  // Render Helper
   const renderActions = (item: DealItem) => {
     const isSeller = user?.id === item.seller_id;
 
-    // 1. Seller vede Pending -> Butoane Accept/Decline
     if (isSeller && item.status === 'PENDING') {
       return (
         <div className={styles.buttonsGroup}>
@@ -127,22 +122,20 @@ const DealsPage: React.FC = () => {
       );
     }
 
-    // 2. Buyer vede Accepted -> Buton Buy Now
     if (!isSeller && item.status === 'ACCEPTED') {
       return (
         <button 
-           onClick={(e) => { 
-             e.stopPropagation(); 
-             navigate(`/product/${item.product_id}/order?dealId=${item.id}`); 
-           }}
-           className={`${styles.buyBtn}`}
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              navigate(`/product/${item.product_id}/order?dealId=${item.id}`); 
+            }}
+            className={`${styles.buyBtn}`}
         >
           Buy Now <ArrowRight size={16} />
         </button>
       );
     }
 
-    // 3. Status Text pentru restul cazurilor
     return (
       <span className={`${styles.statusBadge} ${styles[item.status.toLowerCase()]}`}>
         {item.status}
@@ -154,7 +147,6 @@ const DealsPage: React.FC = () => {
     <MainTemplate>
       <div className={styles.container}>
         
-        {/* HEADER */}
         <div className={styles.header}>
           <div className={styles.titleSection}>
             <h1>Deals</h1>
@@ -162,7 +154,6 @@ const DealsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* FILTERS */}
         <div className={styles.filters}>
           <button 
             className={`${styles.filterBtn} ${filter === 'all' ? styles.activeFilter : ''}`} 
@@ -178,7 +169,6 @@ const DealsPage: React.FC = () => {
           </button>
         </div>
 
-        {/* LIST */}
         <div className={styles.list}>
           {loading ? (
              <div className={styles.loader}><Spinner size="lg" /></div>
@@ -198,12 +188,10 @@ const DealsPage: React.FC = () => {
                   className={`${styles.card} ${item.status === 'PENDING' ? styles.unread : ''}`}
                   onClick={() => navigate(`/product/${item.product_id}`)}
                 >
-                  {/* Icon Status */}
                   <div className={styles.iconWrapper}>
                     <StatusIcon status={item.status} />
                   </div>
 
-                  {/* Content */}
                   <div className={styles.contentWrapper}>
                     <div className={styles.topRow}>
                        <span className={styles.productTitle}>{item.product_title}</span>
@@ -214,16 +202,22 @@ const DealsPage: React.FC = () => {
                       {isSeller ? (
                         <>
                           Buyer <strong>{item.buyer_email}</strong> offered: <span className={styles.priceHighlight}>{item.offered_price} RON</span>
+                          <span style={{ marginLeft: '6px', color: '#9CA3AF', fontWeight: 500 }}>
+                            (x{item.quantity} buc)
+                          </span>
                         </>
                       ) : (
                         <>
-                          You offered: <span className={styles.priceHighlight}>{item.offered_price} RON</span> to seller.
+                          You offered: <span className={styles.priceHighlight}>{item.offered_price} RON</span> 
+                          <span style={{ margin: '0 6px', color: '#9CA3AF', fontWeight: 500 }}>
+                            (x{item.quantity} buc)
+                          </span>
+                          to seller.
                         </>
                       )}
                     </p>
                   </div>
 
-                  {/* Actions (Buttons or Badge) */}
                   <div className={styles.actionsSide}>
                     {renderActions(item)}
                   </div>

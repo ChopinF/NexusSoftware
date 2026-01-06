@@ -21,6 +21,7 @@ import { EditProfilePage } from "./components/pages/EditProfilePage/EditProfileP
 import { ProfilePage } from "./components/pages/ProfilePage/ProfilePage.tsx";
 import { OrderProductPage } from "./components/pages/OrderProductPage/OrderProductPage.tsx";
 import NegotiationsPage from "./components/pages/DealsPage/DealsPage.tsx";
+import OrdersPage from "./components/pages/OrdersPage.tsx/OrdersPage.tsx";
 
 const App: React.FC = () => {
   return (
@@ -46,6 +47,7 @@ const App: React.FC = () => {
               <Route path="/my-profile/edit" element={<EditProfilePage/>}/>
               <Route path="/product/:id/order" element={<OrderProductPage/>}/>
               <Route path="/deals" element={<NegotiationsPage/>}/>
+              <Route path="/orders" element={<OrdersPage/>}/>
             </Route>
 
             <Route path="*" element={<Navigate to="/" />} />
