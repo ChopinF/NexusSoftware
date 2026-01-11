@@ -85,7 +85,7 @@ export const uploadAvatar = multer({ storage: createStorage("avatars") });
 app.use("/uploads", express.static("uploads"));
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY || "sk-cheie-falsa-doar-ca-sa-mearga-serverul",
 });
 
 const assert = (cond, msg, code = 400) => {
@@ -2486,15 +2486,17 @@ const PORT = process.env.PORT || 3000;
 async function main() {
   await migrate();
 
-  //DB population - uncomment at first run
-  await seed();
 
-  httpServer.listen(PORT, () => console.log(`Listening on http://localhost:${PORT}`));
-
-  process.on("SIGINT", () => db.close(() => process.exit(0)));
+  if (process.env.NODE_ENV !== 'test') {
+       await seed(); 
+      httpServer.listen(PORT, () => console.log(`Listening on http://localhost:${PORT}`));
+  }
 }
 
 main().catch((e) => {
   console.error("Fatal startup error:", e);
   process.exit(1);
 });
+
+
+export { app, httpServer, main };

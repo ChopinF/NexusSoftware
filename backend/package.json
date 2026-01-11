@@ -6,11 +6,13 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "test": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest",
     "reset": "rm -f app.db && node server.js"
   },
   "dependencies": {
     "axios": "^1.13.2",
-    "bcryptjs": "^3.0.2",
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.3",
     "cheerio": "^1.1.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
@@ -21,5 +23,10 @@
     "socket.io": "^4.8.1",
     "sqlite3": "^5.1.7",
     "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.4"
   }
 }
