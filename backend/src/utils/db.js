@@ -1,23 +1,23 @@
-import sqlite3 from 'sqlite3'
-import path from 'path';
+import sqlite3 from "sqlite3";
+import path from "path";
 
-sqlite3.verbose()
+sqlite3.verbose();
 
-const dbPath = process.env.DB_PATH || path.resolve('./data/app.db');
-export const db = new sqlite3.Database(dbPath)
+const dbPath = process.env.DB_PATH || path.resolve("./data/app.db");
+export const db = new sqlite3.Database(dbPath);
 
 export const run = (sql, params = []) =>
   new Promise((res, rej) => {
     db.run(sql, params, function (err) {
       if (err) rej(err);
       else res({ lastID: this.lastID, changes: this.changes });
-    })
-  })
+    });
+  });
 
 export const get = (sql, params = []) =>
   new Promise((res, rej) => {
-    db.get(sql, params, (err, rows) => (err ? rej(err) : res(rows)))
-  })
+    db.get(sql, params, (err, rows) => (err ? rej(err) : res(rows)));
+  });
 
 export const all = (sql, params = []) =>
   new Promise((res, rej) => {
@@ -57,7 +57,7 @@ export async function migrate() {
       FOREIGN KEY(seller) REFERENCES users(id) ON DELETE CASCADE
     );
   `);
-  
+
   await run(`
     CREATE TABLE IF NOT EXISTS negotiations (
       id TEXT PRIMARY KEY,
@@ -121,7 +121,7 @@ export async function migrate() {
         FOREIGN KEY(seller_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY(buyer_id) REFERENCES users(id) ON DELETE CASCADE
     )
-  `)
+  `);
 
   await run(`
     CREATE TABLE IF NOT EXISTS messages (
@@ -136,7 +136,7 @@ export async function migrate() {
         FOREIGN KEY(from_user) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY(to_user) REFERENCES users(id) ON DELETE CASCADE
     )
-  `)
+  `);
 
   await run(`
     CREATE TABLE IF NOT EXISTS trusted_requests (
@@ -161,14 +161,31 @@ export async function migrate() {
     );
   `);
 
-  await run(`CREATE INDEX IF NOT EXISTS idx_products_seller ON products(seller);`);
-  await run(`CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);`);
-  await run(`CREATE INDEX IF NOT EXISTS idx_users_country_city ON users(country, city);`);
-  await run(`CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(id_user, is_read);`);
-  await run(`CREATE INDEX IF NOT EXISTS idx_conversations_seller ON conversations(seller_id);`);
-  await run(`CREATE INDEX IF NOT EXISTS idx_conversations_buyer ON conversations(buyer_id);`);
-  await run(`CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id);`);
-  await run(`CREATE INDEX IF NOT EXISTS idx_trusted_requests_status ON trusted_requests(status);`);
-  await run(`CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id);`);
+  await run(
+    `CREATE INDEX IF NOT EXISTS idx_products_seller ON products(seller);`
+  );
+  await run(
+    `CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);`
+  );
+  await run(
+    `CREATE INDEX IF NOT EXISTS idx_users_country_city ON users(country, city);`
+  );
+  await run(
+    `CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(id_user, is_read);`
+  );
+  await run(
+    `CREATE INDEX IF NOT EXISTS idx_conversations_seller ON conversations(seller_id);`
+  );
+  await run(
+    `CREATE INDEX IF NOT EXISTS idx_conversations_buyer ON conversations(buyer_id);`
+  );
+  await run(
+    `CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id);`
+  );
+  await run(
+    `CREATE INDEX IF NOT EXISTS idx_trusted_requests_status ON trusted_requests(status);`
+  );
+  await run(
+    `CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id);`
+  );
 }
-
