@@ -45,5 +45,5 @@ jobs:
         working-directory: ./frontend
 
       - name: Build frontend
-        run: npm start
+        run: npm build
         working-directory: ./frontend
