@@ -34,7 +34,7 @@
   cursor: pointer;
   gap: 10px;
   white-space: nowrap;
-  border-radius: 10px 0 0 10px;
+  border-radius: 0 10px 10px 0;
 }
 
 .categoryTrigger:hover {
@@ -118,7 +118,7 @@
 .dropdownMenu {
   position: absolute;
   top: calc(100% + 10px);
-  left: 0;
+  right: 0;
   width: 240px;
   background: rgba(31, 41, 55, 0.95);
   backdrop-filter: blur(12px);
